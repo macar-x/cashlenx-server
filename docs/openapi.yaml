@@ -25,11 +25,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ResponseWrapper'
-                example:
-                  data:
-                    status: healthy
-                    service: cashlenx-api
-                    message: API is running
+              example:
+                data:
+                  status: healthy
+                  service: cashlenx-api
+                  message: API is running
 
   /version:
     get:

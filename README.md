@@ -78,7 +78,8 @@ See `docs/api.md` for detailed endpoints.
 - `docs/api.md` — REST API reference
 - `docs/testing.md` — Testing guide
 - `docs/deployment_guide.md` — Deployment guide
- - `docs/roadmap.md` — Versioned roadmap and task tracking
+- `docs/roadmap.md` — Versioned roadmap and task tracking
+- `docs/quick_start.md` — Quick start guide
 
 ## Build and Test
 ```bash

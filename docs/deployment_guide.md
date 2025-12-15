@@ -344,10 +344,10 @@ For complete testing, follow the detailed guide:
 
 ```bash
 # View the complete test guide
-cat docs/api_test_guide.md
+cat docs/api.md
 
 # Or open in browser/editor
-code docs/api_test_guide.md
+code docs/api.md
 ```
 
 **The guide includes**:
@@ -480,7 +480,7 @@ After deployment, verify these work:
 
 ## 🎯 Next Steps
 
-1. **Run all 21 endpoint tests** - See `docs/api_test_guide.md`
+1. **Run all 21 endpoint tests** - See `docs/api.md`
 2. **Try the CLI commands** - See `docs/cli.md`
 3. **Import test data** - Use `./cashlenx manage import`
 4. **Export data** - Use `./cashlenx manage export`
@@ -490,7 +490,7 @@ After deployment, verify these work:
 
 ## 📖 Additional Resources
 
-- **Complete API Test Guide**: `backend/docs/api_test_guide.md`
+- **API Reference**: `docs/api.md`
 - **API Reference**: `backend/docs/api.md`
 - **CLI Reference**: `backend/docs/cli.md`
 - **Environment Setup**: `docs/environment.md`

@@ -84,7 +84,7 @@ See `docs/api.md` for detailed endpoints.
 ## Build and Test
 ```bash
 go build -o cashlenx main.go
-go test ./...
+go test .
 ```
 
 ## Technology

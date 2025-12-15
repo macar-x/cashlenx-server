@@ -30,6 +30,16 @@ func (e *AppError) Error() string {
 	return fmt.Sprintf("[%s] %s", e.Code, e.Message)
 }
 
+// GetCode returns the error code as string
+func (e *AppError) GetCode() string {
+	return string(e.Code)
+}
+
+// GetMessage returns the error message
+func (e *AppError) GetMessage() string {
+	return e.Message
+}
+
 // Unwrap returns the underlying cause error
 func (e *AppError) Unwrap() error {
 	return e.Cause

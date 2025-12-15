@@ -1,0 +1,623 @@
+openapi: 3.0.3
+info:
+  title: CashLenX API
+  description: Personal finance management API
+  version: 0.2.0
+  contact:
+    name: CashLenX Team
+    email: support@cashlenx.com
+
+servers:
+  - url: http://localhost:8080/api
+    description: Local development server
+
+paths:
+  # Health endpoints
+  /health:
+    get:
+      summary: Health check
+      description: Check if the API is running
+      operationId: healthCheck
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+                example:
+                  data:
+                    status: healthy
+                    service: cashlenx-api
+                    message: API is running
+
+  /version:
+    get:
+      summary: Version information
+      description: Get API version and information
+      operationId: versionInfo
+      responses:
+        '200':
+          description: Version information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
+  # Cash Flow endpoints
+  /cash/outcome:
+    post:
+      summary: Create outcome transaction
+      description: Record a new expense transaction
+      operationId: createOutcome
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashFlowRequest'
+      responses:
+        '200':
+          description: Outcome transaction created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
+  /cash/income:
+    post:
+      summary: Create income transaction
+      description: Record a new income transaction
+      operationId: createIncome
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashFlowRequest'
+      responses:
+        '200':
+          description: Income transaction created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
+  /cash/list:
+    get:
+      summary: List all transactions
+      description: Get all cash flow transactions
+      operationId: listAllTransactions
+      responses:
+        '200':
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
+  /cash/{id}:
+    get:
+      summary: Get transaction by ID
+      description: Retrieve a specific transaction by its ID
+      operationId: getTransactionById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Transaction details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+    put:
+      summary: Update transaction by ID
+      description: Update a specific transaction by its ID
+      operationId: updateTransactionById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashFlowRequest'
+      responses:
+        '200':
+          description: Transaction updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+    delete:
+      summary: Delete transaction by ID
+      description: Delete a specific transaction by its ID
+      operationId: deleteTransactionById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Transaction deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
+  /cash/date/{date}:
+    get:
+      summary: Get transactions by date
+      description: Retrieve transactions for a specific date (YYYYMMDD format)
+      operationId: getTransactionsByDate
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{8}$'
+      responses:
+        '200':
+          description: List of transactions for the date
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+    delete:
+      summary: Delete transactions by date
+      description: Delete all transactions for a specific date
+      operationId: deleteTransactionsByDate
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{8}$'
+      responses:
+        '200':
+          description: Transactions deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
+  /cash/range:
+    get:
+      summary: Get transactions by date range
+      description: Retrieve transactions between two dates
+      operationId: getTransactionsByDateRange
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{8}$'
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{8}$'
+      responses:
+        '200':
+          description: List of transactions in the date range
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
+  /cash/summary/daily/{date}:
+    get:
+      summary: Get daily summary
+      description: Get financial summary for a specific date
+      operationId: getDailySummary
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{8}$'
+      responses:
+        '200':
+          description: Daily summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
+  /cash/summary/monthly/{month}:
+    get:
+      summary: Get monthly summary
+      description: Get financial summary for a specific month (YYYYMM format)
+      operationId: getMonthlySummary
+      parameters:
+        - name: month
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{6}$'
+      responses:
+        '200':
+          description: Monthly summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
+  /cash/summary/yearly/{year}:
+    get:
+      summary: Get yearly summary
+      description: Get financial summary for a specific year (YYYY format)
+      operationId: getYearlySummary
+      parameters:
+        - name: year
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{4}$'
+      responses:
+        '200':
+          description: Yearly summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
+  # Category endpoints
+  /category:
+    post:
+      summary: Create category
+      description: Create a new transaction category
+      operationId: createCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+      responses:
+        '200':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
+  /category/list:
+    get:
+      summary: List all categories
+      description: Get all transaction categories
+      operationId: listAllCategories
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
+  /category/{id}:
+    get:
+      summary: Get category by ID
+      description: Retrieve a specific category by its ID
+      operationId: getCategoryById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Category details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+    put:
+      summary: Update category by ID
+      description: Update a specific category by its ID
+      operationId: updateCategoryById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+      responses:
+        '200':
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+    delete:
+      summary: Delete category by ID
+      description: Delete a specific category by its ID
+      operationId: deleteCategoryById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Category deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
+  /category/name/{name}:
+    get:
+      summary: Get category by name
+      description: Retrieve a category by its name
+      operationId: getCategoryByName
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Category details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
+  /category/children/{parent_id}:
+    get:
+      summary: Get child categories
+      description: Retrieve all child categories for a parent category
+      operationId: getChildCategories
+      parameters:
+        - name: parent_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of child categories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+        '404':
+          description: Parent category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
+components:
+  schemas:
+    # Response wrapper schema
+    ResponseWrapper:
+      type: object
+      properties:
+        data:
+          type: object
+          description: The actual data payload
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+        meta:
+          $ref: '#/components/schemas/MetaInfo'
+      required:
+        - data
+
+    ErrorInfo:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Error code for machine consumption
+        message:
+          type: string
+          description: Human-readable error message
+      required:
+        - code
+        - message
+
+    MetaInfo:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total number of items (for pagination)
+        page:
+          type: integer
+          description: Current page number
+        limit:
+          type: integer
+          description: Items per page
+        request_id:
+          type: string
+          description: Unique request identifier
+
+    # Cash Flow schemas
+    CashFlowRequest:
+      type: object
+      properties:
+        belongs_date:
+          type: string
+          format: date
+          description: Transaction date (YYYYMMDD format)
+        category_name:
+          type: string
+          description: Category name for the transaction
+        amount:
+          type: number
+          format: double
+          description: Transaction amount
+        description:
+          type: string
+          description: Transaction description
+      required:
+        - belongs_date
+        - category_name
+        - amount
+
+    CashFlowResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Transaction ID
+        category_id:
+          type: string
+          format: uuid
+          description: Category ID
+        belongs_date:
+          type: string
+          format: date-time
+          description: Transaction date
+        flow_type:
+          type: string
+          description: Flow type (income or outcome)
+          enum: [income, outcome]
+        amount:
+          type: number
+          format: double
+          description: Transaction amount
+        description:
+          type: string
+          description: Transaction description
+        remark:
+          type: string
+          description: Additional remark
+        create_time:
+          type: string
+          format: date-time
+          description: Creation time
+        modify_time:
+          type: string
+          format: date-time
+          description: Modification time
+
+    # Category schemas
+    CategoryRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Category name
+        parent_id:
+          type: string
+          format: uuid
+          description: Parent category ID (optional)
+        type:
+          type: string
+          description: Category type
+          enum: [income, outcome]
+      required:
+        - name
+        - type
+
+    CategoryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Category ID
+        name:
+          type: string
+          description: Category name
+        parent_id:
+          type: string
+          format: uuid
+          description: Parent category ID (optional)
+        type:
+          type: string
+          description: Category type
+          enum: [income, outcome]
+        create_time:
+          type: string
+          format: date-time
+          description: Creation time
+        modify_time:
+          type: string
+          format: date-time
+          description: Modification time

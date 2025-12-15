@@ -77,17 +77,18 @@ func registerCategoryRoute(r *mux.Router) {
 // Health check endpoint
 func healthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	response := model.NewSuccessResponse(map[string]interface{}{
 		"status":  "healthy",
 		"service": "cashlenx-api",
 		"message": "API is running",
 	})
+	json.NewEncoder(w).Encode(response)
 }
 
 // Version info endpoint
 func versionInfo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	response := model.NewSuccessResponse(map[string]interface{}{
 		"version":     model.Version,
 		"name":        "CashLenX API",
 		"description": "Personal finance management API",
@@ -121,4 +122,5 @@ func versionInfo(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 	})
+	json.NewEncoder(w).Encode(response)
 }

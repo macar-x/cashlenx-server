@@ -10,6 +10,7 @@ import (
 	"github.com/macar-x/cashlenx-server/util/database"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type CategoryMongoDbMapper struct{}
@@ -174,7 +175,7 @@ func (CategoryMongoDbMapper) GetAllCategories(limit, offset int) []model.Categor
 	filter := bson.D{}
 
 	ctx := context.TODO()
-	findOptions := database.GetFindOptions()
+	findOptions := options.Find()
 	if limit > 0 {
 		findOptions.SetLimit(int64(limit))
 	}

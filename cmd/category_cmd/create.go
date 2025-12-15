@@ -9,7 +9,8 @@ var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "create new category",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return category_service.CreateService(parentPlainId, categoryName)
+		_, err := category_service.CreateService(parentPlainId, categoryName)
+		return err
 	},
 }
 

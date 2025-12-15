@@ -5,29 +5,27 @@ import (
 	"fmt"
 
 	"github.com/macar-x/cashlenx-server/mapper/category_mapper"
+	"github.com/macar-x/cashlenx-server/model"
 )
 
-func QueryService(plainId, parentPlainId, categoryName string) error {
+func QueryService(plainId, parentPlainId, categoryName string) ([]model.CategoryEntity, error) {
 	if isQueryFieldsConflicted(plainId, parentPlainId, categoryName) {
-		return errors.New("should have one and only one query type")
+		return nil, errors.New("should have one and only one query type")
 	}
 
 	if plainId != "" {
-		queryById(plainId)
-		return nil
+		return queryById(plainId), nil
 	}
 
 	if parentPlainId != "" {
-		queryByParentId(parentPlainId)
-		return nil
+		return queryByParentId(parentPlainId), nil
 	}
 
 	if categoryName != "" {
-		queryByName(categoryName)
-		return nil
+		return queryByName(categoryName), nil
 	}
 
-	return errors.New("not supported query type")
+	return nil, errors.New("not supported query type")
 }
 
 func isQueryFieldsConflicted(plainId, parentPlainId, name string) bool {
@@ -59,32 +57,35 @@ func isQueryFieldsConflicted(plainId, parentPlainId, name string) bool {
 	return !semiOptionalFieldFilledFlag
 }
 
-func queryById(plainId string) {
+func queryById(plainId string) []model.CategoryEntity {
 	categoryEntity := category_mapper.INSTANCE.GetCategoryByObjectId(plainId)
 	if categoryEntity.IsEmpty() {
 		fmt.Println("category not found")
-		return
+		return []model.CategoryEntity{}
 	}
 	fmt.Println("category ", 0, ": ", categoryEntity.ToString())
+	return []model.CategoryEntity{categoryEntity}
 }
 
-func queryByParentId(plainParentId string) {
+func queryByParentId(plainParentId string) []model.CategoryEntity {
 	matchedCategoryList := category_mapper.INSTANCE.GetCategoryByParentId(plainParentId)
 	if len(matchedCategoryList) == 0 {
 		fmt.Println("no matched categories")
-		return
+		return []model.CategoryEntity{}
 	}
 
 	for index, categoryEntity := range matchedCategoryList {
 		fmt.Println("category ", index, ": ", categoryEntity.ToString())
 	}
+	return matchedCategoryList
 }
 
-func queryByName(categoryName string) {
+func queryByName(categoryName string) []model.CategoryEntity {
 	categoryEntity := category_mapper.INSTANCE.GetCategoryByName(categoryName)
 	if categoryEntity.IsEmpty() {
 		fmt.Println("category not found")
-		return
+		return []model.CategoryEntity{}
 	}
 	fmt.Println("category ", 0, ": ", categoryEntity.ToString())
+	return []model.CategoryEntity{categoryEntity}
 }

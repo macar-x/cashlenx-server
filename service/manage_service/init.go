@@ -25,7 +25,7 @@ func InitializeDemoData() error {
 
 	for _, catName := range categories {
 		// Check if category already exists
-		err := category_service.CreateService("", catName)
+		_, err := category_service.CreateService("", catName)
 		if err != nil {
 			util.Logger.Warnw("category creation skipped", "category", catName, "error", err)
 		}

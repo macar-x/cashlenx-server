@@ -18,7 +18,7 @@ func DeleteById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := category_service.DeleteService(plainId)
+	err := category_service.DeleteService(plainId, "")
 	if err != nil {
 		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return

@@ -88,9 +88,15 @@ func createLogFile() *os.File {
 		logFolder = "./logs"
 	}
 
-	// Create the log folder if it doesn't exist
+	// Create the log folder if it doesn't exist, with fallback to default
 	if err := os.MkdirAll(logFolder, 0755); err != nil {
-		log.Fatal("failed to create logs directory: ", err)
+		// Fallback to default logs folder if configured one fails
+		log.Printf("Failed to create configured log folder '%s': %v, falling back to default './logs/'", logFolder, err)
+		defaultFolder := "./logs"
+		if err := os.MkdirAll(defaultFolder, 0755); err != nil {
+			log.Fatalf("Failed to create both configured and default log folders: %v", err)
+		}
+		logFolder = defaultFolder
 	}
 
 	// Always use date-based filename in the configured folder

@@ -143,12 +143,12 @@ function Func-Exec-Cash-List {
 function Func-Exec-Cash-Range {
     $fromDate = gum input --placeholder "input start date (YYYYMMDD)..."
     if ([string]::IsNullOrEmpty($fromDate)) {
-        $fromDate = (Get-Date).AddDays(-30) -Format "yyyyMMdd"
+        $fromDate = (Get-Date).AddDays(-30).ToString("yyyyMMdd")
     }
     
     $toDate = gum input --placeholder "input end date (YYYYMMDD)..."
     if ([string]::IsNullOrEmpty($toDate)) {
-        $toDate = Get-Date -Format "yyyyMMdd"
+        $toDate = (Get-Date).ToString("yyyyMMdd")
     }
     
     $script:ExecCommand = "$script:ExecCommand -f $fromDate -t $toDate"
@@ -210,12 +210,12 @@ function Func-Exec-Category-Update {
 function Func-Exec-Manage-Export {
     $fromDate = gum input --placeholder "input start date (YYYYMMDD)..."
     if ([string]::IsNullOrEmpty($fromDate)) {
-        $fromDate = (Get-Date).AddDays(-30) -Format "yyyyMMdd"
+        $fromDate = (Get-Date).AddDays(-30).ToString("yyyyMMdd")
     }
     
     $toDate = gum input --placeholder "input end date (YYYYMMDD)..."
     if ([string]::IsNullOrEmpty($toDate)) {
-        $toDate = Get-Date -Format "yyyyMMdd"
+        $toDate = (Get-Date).ToString("yyyyMMdd")
     }
     
     $filePath = gum input --placeholder "input output file path (default: ./export.xlsx)..."

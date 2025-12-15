@@ -1,0 +1,66 @@
+package cash_flow_service
+
+import (
+	"errors"
+	"reflect"
+	"time"
+
+	"github.com/macar-x/cashlenx-server/mapper/cash_flow_mapper"
+	"github.com/macar-x/cashlenx-server/model"
+	"github.com/macar-x/cashlenx-server/util"
+	"github.com/macar-x/cashlenx-server/validation"
+)
+
+func IsDeleteFieldsConflicted(plainId, belongsDate string) bool {
+	// check if already one semi-optional field is filled
+	semiOptionalFieldFilledFlag := false
+
+	// plain_id is not empty
+	if plainId != "" {
+		semiOptionalFieldFilledFlag = true
+	}
+
+	// belongs_date is not empty
+	if belongsDate != "" {
+		if semiOptionalFieldFilledFlag {
+			return true
+		}
+		semiOptionalFieldFilledFlag = true
+	}
+
+	// should have one and only one field filled
+	return !semiOptionalFieldFilledFlag
+}
+
+func DeleteById(plainId string) (model.CashFlowEntity, error) {
+	// Validate ID
+	if err := validation.ValidateID(plainId); err != nil {
+		return model.CashFlowEntity{}, err
+	}
+
+	existCashFlowEntity := cash_flow_mapper.INSTANCE.GetCashFlowByObjectId(plainId)
+	if existCashFlowEntity.IsEmpty() {
+		return model.CashFlowEntity{}, errors.New("cash_flow not found")
+	}
+
+	existCashFlowEntity = cash_flow_mapper.INSTANCE.DeleteCashFlowByObjectId(plainId)
+	if existCashFlowEntity.IsEmpty() {
+		return model.CashFlowEntity{}, errors.New("cash_flow delete failed")
+	}
+	return existCashFlowEntity, nil
+}
+
+func DeleteByDate(belongsDate string) ([]model.CashFlowEntity, error) {
+	// Validate date
+	if err := validation.ValidateDate(belongsDate); err != nil {
+		return []model.CashFlowEntity{}, err
+	}
+
+	deleteDate := util.FormatDateFromStringWithoutDash(belongsDate)
+	if reflect.DeepEqual(deleteDate, time.Time{}) {
+		return []model.CashFlowEntity{}, errors.New("belongs_date error, try format like 19700101")
+	}
+
+	cashFlowList := cash_flow_mapper.INSTANCE.DeleteCashFlowByBelongsDate(deleteDate)
+	return cashFlowList, nil
+}

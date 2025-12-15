@@ -1,0 +1,1 @@
+create schema emm_moneybox;

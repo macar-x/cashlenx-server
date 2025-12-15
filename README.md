@@ -17,7 +17,6 @@ Go backend providing a CLI and REST API for daily expense tracking. Users can re
 - OIDC authentication with local user records
 - Statistics endpoints for insights and reporting
 - OpenAPI specification and generated docs
-- Pagination/filtering across listing endpoints
 
 ## Project Structure
 ```

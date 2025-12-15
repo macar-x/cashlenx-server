@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/macar-x/cashlenx-server/util"
 )
 
 // responseWriter wraps http.ResponseWriter to capture status code
@@ -31,15 +32,15 @@ func Logging(next http.Handler) http.Handler {
 		// Call the next handler
 		next.ServeHTTP(wrapped, r)
 
-		// Log the request
+		// Log the request using the centralized zap logger
 		duration := time.Since(start)
-		log.Printf(
-			"%s %s %d %s %s",
-			r.Method,
-			r.RequestURI,
-			wrapped.statusCode,
-			duration,
-			r.RemoteAddr,
+		util.Logger.Infow(
+			"HTTP Request",
+			"method", r.Method,
+			"path", r.RequestURI,
+			"status", wrapped.statusCode,
+			"duration", duration,
+			"remote_addr", r.RemoteAddr,
 		)
 	})
 }

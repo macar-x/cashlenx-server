@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"time"
@@ -27,14 +28,11 @@ func (entity CashFlowEntity) IsEmpty() bool {
 }
 
 func (entity CashFlowEntity) ToString() string {
-	// todo: category query from cache like redis would be better.
 	return "[ " +
 		"Id: " + entity.Id.Hex() +
-		// fixme: using mapper to fetch category name?
-		// ", Category: " + mapper.GetCategoryMapper().GetCategoryByObjectId(entity.CategoryId.Hex()).Name +
 		", Date: " + util.FormatDateToStringWithoutDash(entity.BelongsDate) +
-		", FlowType: " + entity.FlowType +
-		", Amount: " + strconv.FormatFloat(entity.Amount, 'f', 2, 64) +
+		", Type: " + entity.FlowType +
+		", Amount: " + fmt.Sprintf("%.2f", entity.Amount) +
 		", Description: " + entity.Description +
 		" ]"
 }
@@ -54,7 +52,6 @@ func (entity CashFlowEntity) Build(fieldMap map[string]string) CashFlowEntity {
 		case "BelongsDate":
 			newEntity.BelongsDate = util.FormatDateFromStringWithoutDash(value)
 		case "FlowType":
-			// todo: use enum to check if value available
 			newEntity.FlowType = value
 		case "Amount":
 			amount, err := strconv.ParseFloat(value, 64)

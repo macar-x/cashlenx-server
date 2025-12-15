@@ -41,3 +41,22 @@ func formatDateToString(date time.Time, format string) string {
 func IsDateTimeEmpty(dateTime time.Time) bool {
 	return reflect.DeepEqual(dateTime, time.Time{})
 }
+
+// ParseDate parses a date string in either YYYYMMDD or YYYY-MM-DD format and returns a time.Time
+// Returns an error if the date string is invalid
+func ParseDate(dateStr string) (time.Time, error) {
+	// Try parsing without dash first (YYYYMMDD)
+	date, err := time.Parse(defaultDateFormatInString, dateStr)
+	if err == nil {
+		return date, nil
+	}
+
+	// Try parsing with dash (YYYY-MM-DD)
+	date, err = time.Parse(dateFormatInStringWithDash, dateStr)
+	if err == nil {
+		return date, nil
+	}
+
+	// Both formats failed
+	return time.Time{}, err
+}

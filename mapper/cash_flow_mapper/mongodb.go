@@ -41,11 +41,11 @@ func (CashFlowMongoDbMapper) GetCashFlowsByObjectIdArray(plainIdList []string) [
 		primitive.E{Key: "_id", Value: bson.M{"$in": objectIdArray}},
 	}
 
-	// 打开cashFlow的数据表连线
+	// Open connection to cashFlow table
 	database.OpenMongoDbConnection(database.CashFlowTableName)
 	defer database.CloseMongoDbConnection()
 
-	// 获取查询结果并转入结构对象
+	// Get query results and convert to entity objects
 	var targetEntityList []model.CashFlowEntity
 	queryResultList := database.GetManyInMongoDB(filter)
 	for _, queryResult := range queryResultList {
@@ -59,7 +59,7 @@ func (CashFlowMongoDbMapper) GetCashFlowsByBelongsDate(belongsDate time.Time) []
 		primitive.E{Key: "belongs_date", Value: belongsDate},
 	}
 
-	// 打开cashFlow的数据表连线
+	// Open connection to cashFlow table
 	database.OpenMongoDbConnection(database.CashFlowTableName)
 	defer database.CloseMongoDbConnection()
 
@@ -135,7 +135,7 @@ func (CashFlowMongoDbMapper) GetCashFlowsByExactDesc(description string) []model
 		primitive.E{Key: "description", Value: description},
 	}
 
-	// 打开cashFlow的数据表连线
+	// Open connection to cashFlow table
 	database.OpenMongoDbConnection(database.CashFlowTableName)
 	defer database.CloseMongoDbConnection()
 
@@ -158,7 +158,7 @@ func (CashFlowMongoDbMapper) GetCashFlowsByFuzzyDesc(description string) []model
 		}},
 	}
 
-	// 打开 cash_flow 的数据表连线
+	// Open connection to cash_flow table
 	database.OpenMongoDbConnection(database.CashFlowTableName)
 	defer database.CloseMongoDbConnection()
 
@@ -347,7 +347,7 @@ func (CashFlowMongoDbMapper) CountAllCashFlows() int64 {
 }
 
 func convertCashFlowEntity2BsonD(entity model.CashFlowEntity) bson.D {
-	// 为空时自动生成新Id
+	// Generate a new Id automatically if it's empty
 	if entity.Id == primitive.NilObjectID {
 		entity.Id = primitive.NewObjectID()
 	}

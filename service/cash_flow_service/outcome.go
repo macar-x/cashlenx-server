@@ -32,16 +32,16 @@ func SaveOutcome(belongsDate, categoryName string, amount float64, description s
 		return model.CashFlowEntity{}, err
 	}
 
-	// 取小數點後兩位
+	// Round to 2 decimal places
 	amount, _ = decimal.NewFromFloat(amount).Round(2).Float64()
 
-	// 必填參數: 類別
+	// Required parameter: category
 	categoryEntity := category_mapper.INSTANCE.GetCategoryByName(categoryName)
 	if categoryEntity.IsEmpty() {
 		return model.CashFlowEntity{}, errors.New("category does not exist")
 	}
 
-	// 選填參數: 日期（默認當天）
+	// Optional parameter: date (default to today)
 	date := util.FormatDateFromStringWithoutDash(util.FormatDateToStringWithoutDash(time.Now()))
 	if belongsDate != "" {
 		date = util.FormatDateFromStringWithoutDash(belongsDate)

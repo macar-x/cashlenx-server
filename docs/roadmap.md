@@ -44,6 +44,7 @@
 - [ ] OIDC login support with local user records #security #api
 - [ ] Per-user data isolation across storage backends #security #data
 - [ ] Admin endpoints for user lifecycle (disable/export/delete) #api #security
+- [ ] Use enums for flow types and validate values #api
 
 ## v0.4.0 — Big Feature: Observability
 - [ ] Request IDs propagation and structured logging #observability
@@ -55,22 +56,30 @@
 - [ ] Bulk import validation with partial success reporting #api
 - [ ] Schema versioning for exports #data #docs
 - [ ] User-scoped exports/imports with ownership checks #security #data
+- [ ] Add batchInsert() method to mappers for efficient bulk data processing #data #performance
+- [ ] Add DeleteAllCashFlows() and DeleteAllCategories() methods to mapper interfaces #data
+- [ ] Implement data backup and restoration functionality #data #devops
 
 ## v0.6.0 — Big Feature: Migration Tooling
 - [ ] Introduce MySQL migration tooling and track schema changes #data #devops
 - [ ] Validate MongoDB indexes at startup and apply scripts #data
 - [ ] Backup/restore CLI with progress and validation #data #devops
 - [ ] Integration tests via Docker Compose for MongoDB/MySQL #data #devops
+- [ ] Add rollback functionality for failed database operations #data #security
 
 ## v0.7.0 — Big Feature: Statistics & Insights
 - [ ] Summary endpoints per user, per category, per period #api #stats
 - [ ] Trend and aggregation endpoints (weekly/monthly) #api #stats
 - [ ] Export stats reports (CSV/Excel) #api #stats #data
+- [ ] Add aggregation methods to mappers (CountCashFlowsByType, GetEarliest/latest dates) #data #stats
 
 ## v0.8.0 — Big Feature: Performance & Caching
 - [ ] Extend category cache; add invalidation on writes #performance
 - [ ] Optional read-through cache for recent queries #performance
 - [ ] Benchmarks for summaries and mapper queries #performance #devops
+- [ ] Use Redis for category caching #performance
+- [ ] Implement mapper for fetching category name efficiently #performance
+- [ ] Fix SQL injection vulnerability in MySQL mappers #security
 
 ## v0.9.0 — Big Feature: Cloud & Self-Hosted
 - [ ] Docker Compose profiles for single-tenant and multi-tenant #devops #cloud

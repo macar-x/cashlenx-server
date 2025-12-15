@@ -176,8 +176,8 @@ go test -cover ./...
 
 - Update the OpenAPI spec (`docs/openapi.yaml`) when adding or modifying endpoints
 - Generate HTML documentation from the OpenAPI spec using the provided scripts:
-  - Bash: `./docs/generate-docs.sh`
-  - PowerShell: `./docs/generate-docs.ps1`
+  - Bash: `./scripts/generate-docs.sh`
+  - PowerShell: `./scripts/generate-docs.ps1`
 - Keep README.md and other documentation files up to date
 - Document any breaking changes
 

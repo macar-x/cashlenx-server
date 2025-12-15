@@ -23,19 +23,19 @@ var (
 )
 
 func ImportService(filePath string) error {
-	// 打開並讀取目標文件
+	// Open and read the target file
 	file := readExcelFile(filePath)
 	if file == nil {
 		return errors.New("can not read data from file")
 	}
-	// 記得執行完成關閉文件
+	// Remember to close the file after execution
 	defer func() {
 		if err := file.Close(); err != nil {
 			util.Logger.Error(err.Error())
 		}
 	}()
 
-	// 獲取工作表列表，遍歷讀取數據
+	// Get the list of worksheets and iterate through them to read data
 	sheetNameList := file.GetSheetList()
 	for _, currentSheetName := range sheetNameList {
 
@@ -43,7 +43,7 @@ func ImportService(filePath string) error {
 		importIgnoredRowNumberList = []int{}
 		importFailedRowNumberList = []int{}
 
-		// report sheet 非數據表，不計入
+		// Report sheet is not a data sheet, skip it
 		if currentSheetName == defaultSheetName {
 			continue
 		}
@@ -54,7 +54,6 @@ func ImportService(filePath string) error {
 		}
 		util.Logger.Infof("processing sheet %s", currentSheetName)
 		cashFlowMapByDate := readSheetData(rows)
-		// fixme: 保存 cashFlowList 時，要考慮事務細粒度，考慮增加 batchInsert()
 		for date, cashFlowMapByColumnList := range cashFlowMapByDate {
 			saveIntoDB(cashFlowMapByColumnList)
 			util.Logger.Debugf("%s of %s's flows imported", util.FormatDateToStringWithoutDash(date), currentSheetName)
@@ -77,12 +76,12 @@ func readExcelFile(fileName string) *excelize.File {
 }
 
 /**
- * 讀取工作表的數據，以 date 爲 key 整理 cashFlows
+ * Read worksheet data and organize cashFlows with date as key
  */
 func readSheetData(sheetRowCursor *excelize.Rows) map[time.Time][]map[string]string {
 	cashFlowMapByDate := make(map[time.Time][]map[string]string)
 
-	// 第一行爲標題行，校驗格式是否正確
+	// First row is title row, verify if the format is correct
 	sheetRowCursor.Next()
 	currentRowNumber := 1
 	rowColumnList, err := sheetRowCursor.Columns()
@@ -93,9 +92,9 @@ func readSheetData(sheetRowCursor *excelize.Rows) map[time.Time][]map[string]str
 		return cashFlowMapByDate
 	}
 
-	// 遍歷每一行的數據，組裝 CashFlow
+	// Iterate through each row of data to assemble CashFlow
 	for sheetRowCursor.Next() {
-		// 更新當前行號
+		// Update current row number
 		currentRowNumber++
 
 		rowColumnList, err = sheetRowCursor.Columns()
@@ -103,7 +102,7 @@ func readSheetData(sheetRowCursor *excelize.Rows) map[time.Time][]map[string]str
 			util.Logger.Error(err.Error())
 		}
 
-		// 依序組裝每一行數據，形成 title-value Map
+		// Assemble each row of data in order to form a title-value Map
 		cashFlowMapByColumn := map[string]string{}
 		for index, colCell := range rowColumnList {
 			cashFlowMapByColumn[defaultRowTitle[index]] = colCell
@@ -119,7 +118,7 @@ func readSheetData(sheetRowCursor *excelize.Rows) map[time.Time][]map[string]str
 		}
 		cashFlowMapByColumn["CategoryId"] = newCategoryId
 
-		// 必填欄位校驗
+		// Required field validation
 		if !isRequiredFieldSatisfied(currentRowNumber, cashFlowMapByColumn) {
 			fmt.Println("failed: row " + strconv.Itoa(currentRowNumber) + ": required field not satisfied")
 			importFailedRowNumberList = append(importFailedRowNumberList, currentRowNumber)

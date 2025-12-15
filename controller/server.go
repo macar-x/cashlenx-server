@@ -8,8 +8,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/macar-x/cashlenx-server/controller/cash_flow_controller"
 	"github.com/macar-x/cashlenx-server/controller/category_controller"
-	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/middleware"
+	"github.com/macar-x/cashlenx-server/model"
 )
 
 func StartServer(port int32) {
@@ -21,7 +21,7 @@ func StartServer(port int32) {
 	registerCategoryRoute(r)
 
 	// Apply middleware
-	handler := middleware.Logging(middleware.CORS(r))
+	handler := middleware.Logging(middleware.SchemaValidation(middleware.CORS(r)))
 
 	addr := fmt.Sprintf(":%d", port)
 	fmt.Printf("API server is running on http://localhost%s\n", addr)

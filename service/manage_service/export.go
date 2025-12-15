@@ -52,21 +52,21 @@ func isExportRequiredFiledSatisfied(fromDate, toDate time.Time, filePath string)
 
 func createExcelFile() *excelize.File {
 	file := excelize.NewFile()
-	// 創建一個工作表
+	// Create a worksheet
 	index, _ := file.NewSheet(defaultSheetName)
-	// 設置活頁簿的默認工作表
+	// Set the default worksheet of the workbook
 	file.SetActiveSheet(index)
-	// 設置存儲格的值
+	// Set the value of the cell
 	writeExcelRow(file, defaultSheetName, "A1", "Start Time")
 	writeExcelRow(file, defaultSheetName, "B1", time.Now())
-	// 刪除默認的 Sheet1 表
+	// Delete the default Sheet1 worksheet
 	_ = file.DeleteSheet("Sheet1")
 
 	return file
 }
 
 func saveExcelFile(file *excelize.File, filePath string) {
-	// 根據指定路徑保存活頁簿
+	// Save the workbook according to the specified path
 	writeExcelRow(file, defaultSheetName, "A2", "Ended Time")
 	writeExcelRow(file, defaultSheetName, "B2", time.Now())
 	if err := file.SaveAs(filePath); err != nil {
@@ -94,14 +94,14 @@ func exportData(file *excelize.File, fromDate, toDate string) {
 		queryDateCurrentInString := util.FormatDateToStringWithoutDash(queryDateCurrent)
 		util.Logger.Debugf("%s's flow is exporting.\n", queryDateCurrentInString)
 
-		// 年份有變化，則初始化新 Sheet
+		// If the year changes, initialize a new sheet
 		newYearAndMonth := queryDateCurrentInString[0:6]
 		if newYearAndMonth != currentYearAndMonth {
 			currentYearAndMonth = newYearAndMonth
 
 			_, _ = file.NewSheet(currentYearAndMonth)
 
-			// 這裏存在一個問題，若年月回溯，Index 已失效，好在是由程式控制递增。
+			// There's an issue here: if the year-month backtracks, the Index becomes invalid, but luckily it's controlled by the program to increment.
 			cashFlowRowIndex = 1
 			writeExcelRow(file, currentYearAndMonth, "A1", defaultRowTitle[0])
 			writeExcelRow(file, currentYearAndMonth, "B1", defaultRowTitle[1])

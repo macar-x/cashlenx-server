@@ -215,7 +215,7 @@ func (CategoryMongoDbMapper) CountAllCategories() int64 {
 }
 
 func convertCategoryEntity2BsonD(entity model.CategoryEntity) bson.D {
-	// 为空时自动生成新Id
+	// Generate a new Id automatically if it's empty
 	if entity.Id == primitive.NilObjectID {
 		entity.Id = primitive.NewObjectID()
 	}

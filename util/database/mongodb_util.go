@@ -106,7 +106,7 @@ func GetOneInMongoDB(filter bson.D) bson.M {
 	var resultInBson bson.M
 	err := collection.FindOne(context.TODO(), filter).Decode(&resultInBson)
 
-	// 查詢失敗處理
+	// Handle query failure
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		// Logger.Warnln("record does not exist")
 	} else if err != nil {
@@ -122,7 +122,7 @@ func GetManyInMongoDB(filter bson.D) []bson.M {
 	var resultInBsonArray []bson.M
 	cursor, err := collection.Find(context.TODO(), filter)
 
-	// 查詢失敗處理
+	// Handle query failure
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		// Logger.Warnln("record does not exist")
 	} else if err != nil {

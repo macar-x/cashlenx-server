@@ -4,44 +4,77 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/service/cash_flow_service"
 	"github.com/macar-x/cashlenx-server/util"
 )
 
-// ListAll returns paginated list of all cash flows
+// ListAll returns paginated list of all cash flows with filtering
 func ListAll(w http.ResponseWriter, r *http.Request) {
-	// Parse query parameters for pagination
+	// Parse query parameters for pagination and filtering
 	limitStr := r.URL.Query().Get("limit")
 	offsetStr := r.URL.Query().Get("offset")
-	cashType := r.URL.Query().Get("type") // Optional: INCOME or OUTCOME
+	pageStr := r.URL.Query().Get("page")
+	
+	// Filter parameters
+	cashType := r.URL.Query().Get("type") // INCOME or OUTCOME
+	categoryId := r.URL.Query().Get("category_id")
+	description := r.URL.Query().Get("description") // Fuzzy search
+	exactDescription := r.URL.Query().Get("exact_description")
+	fromDate := r.URL.Query().Get("from_date") // YYYYMMDD or YYYY-MM-DD
+	toDate := r.URL.Query().Get("to_date") // YYYYMMDD or YYYY-MM-DD
 
-	limit := 20 // Default limit
-	offset := 0 // Default offset
+	// Pagination defaults
+	limit := 20
+	offset := 0
 
 	if limitStr != "" {
-		if l, err := strconv.Atoi(limitStr); err == nil {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
 			limit = l
 		}
 	}
 
-	if offsetStr != "" {
-		if o, err := strconv.Atoi(offsetStr); err == nil {
+	if pageStr != "" {
+		// Calculate offset from page number
+		if page, err := strconv.Atoi(pageStr); err == nil && page > 0 {
+			offset = (page - 1) * limit
+		}
+	} else if offsetStr != "" {
+		// Use offset directly if provided
+		if o, err := strconv.Atoi(offsetStr); err == nil && o >= 0 {
 			offset = o
 		}
 	}
 
-	// Call service to get paginated results
-	cashFlows, totalCount, err := cash_flow_service.QueryAll(cashType, limit, offset)
+	// Call service to get paginated and filtered results
+	cashFlows, totalCount, err := cash_flow_service.QueryAll(
+		cashType,
+		categoryId,
+		description,
+		exactDescription,
+		fromDate,
+		toDate,
+		limit,
+		offset,
+	)
+
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		response := model.NewErrorResponse("INTERNAL_ERROR", err.Error())
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, response)
 		return
 	}
 
-	// Return with pagination metadata
-	util.ComposeJSONResponse(w, http.StatusOK, map[string]interface{}{
-		"data":        cashFlows,
-		"total_count": totalCount,
-		"limit":       limit,
-		"offset":      offset,
-	})
+	// Calculate current page
+	currentPage := (offset / limit) + 1
+
+	// Create meta info
+	meta := &model.MetaInfo{
+		Total: totalCount,
+		Page:  int64(currentPage),
+		Limit: int64(limit),
+	}
+
+	// Return with pagination metadata using the new response wrapper
+	response := model.NewSuccessResponseWithMeta(cashFlows, meta)
+	util.ComposeJSONResponse(w, http.StatusOK, response)
 }

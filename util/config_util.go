@@ -10,6 +10,13 @@ func init() {
 }
 
 func initDefaultValues() {
+	// Environment: dev/test/prod
+	env := os.Getenv("ENV")
+	if env == "" {
+		env = "dev"
+	}
+	configurationMap["env"] = env
+
 	// Logger configuration
 	logFolder := os.Getenv("LOG_FOLDER")
 	if logFolder == "" {
@@ -36,6 +43,18 @@ func initDefaultValues() {
 
 	// MySQL URI format: username:password@tcp(host:port)/database
 	configurationMap["db.mysql.url"] = os.Getenv("MYSQL_DB_URI")
+
+	// OpenAPI schema validation: true/false
+	schemaValidation := os.Getenv("SCHEMA_VALIDATION")
+	if schemaValidation == "" {
+		// Enable by default in dev/test environments
+		if env == "dev" || env == "test" {
+			schemaValidation = "true"
+		} else {
+			schemaValidation = "false"
+		}
+	}
+	configurationMap["api.schema.validation"] = schemaValidation
 }
 
 func GetConfigByKey(configKey string) string {

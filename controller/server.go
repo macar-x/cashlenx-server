@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/macar-x/cashlenx-server/controller/cash_flow_controller"
 	"github.com/macar-x/cashlenx-server/controller/category_controller"
+	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/middleware"
 )
 
@@ -87,7 +88,7 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 func versionInfo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"version":     "1.0.0",
+		"version":     model.Version,
 		"name":        "CashLenX API",
 		"description": "Personal finance management API",
 		"endpoints": map[string][]string{

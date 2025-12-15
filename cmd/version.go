@@ -5,10 +5,11 @@ import (
 	"runtime"
 
 	"github.com/spf13/cobra"
+	"github.com/macar-x/cashlenx-server/model"
 )
 
 var (
-	Version   = "1.0.0"
+	Version   = model.Version
 	BuildTime = "unknown"
 	GitCommit = "unknown"
 )

@@ -1,14 +1,23 @@
 # CashLenX Server
 
-Go backend providing a CLI and REST API for personal finance management.
+Go backend providing a CLI and REST API for daily expense tracking. Users can record income/expense cash flows with amount, category, date, and an optional remark. The server is designed for both self-hosted and cloud deployments and integrates with an external web UI.
 
 ## Features
-- Track income and expenses
+- Income/expense tracking with amount, category, date, remark
 - Category-based organization
 - Date range queries and summaries
-- Excel import/export
-- MongoDB and MySQL support
+- Import/export for backup and migration (Excel; CSV planned)
+- Pluggable storage via abstract persistence interface (MongoDB, MySQL)
 - Structured logging and validation
+- CLI tooling (Cobra) and REST API (Gorilla Mux)
+- Docker Compose for local/self-hosted setups
+
+## Planned
+- User management with per-user data isolation
+- OIDC authentication with local user records
+- Statistics endpoints for insights and reporting
+- OpenAPI specification and generated docs
+- Pagination/filtering across listing endpoints
 
 ## Project Structure
 ```
@@ -70,6 +79,7 @@ See `docs/api.md` for detailed endpoints.
 - `docs/api.md` — REST API reference
 - `docs/testing.md` — Testing guide
 - `docs/deployment_guide.md` — Deployment guide
+ - `docs/roadmap.md` — Versioned roadmap and task tracking
 
 ## Build and Test
 ```bash

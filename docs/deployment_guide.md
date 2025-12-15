@@ -92,7 +92,7 @@ export MONGO_DB_URI="mongodb://cashlenx:cashlenx123@localhost:27017/cashlenx?aut
 export DB_NAME=cashlenx
 
 # Optional: Log file location
-export LOG_FILE="./cashlenx.log"
+export LOG_FOLDER="./logs"
 ```
 
 ### Create a .env file (Alternative)
@@ -102,7 +102,7 @@ cat > .env <<'EOF'
 DB_TYPE=mongodb
 MONGO_DB_URI=mongodb://cashlenx:cashlenx123@localhost:27017/cashlenx?authSource=admin
 DB_NAME=cashlenx
-LOG_FILE=./cashlenx.log
+LOG_FOLDER=./logs
 EOF
 
 # Load environment

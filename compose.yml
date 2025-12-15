@@ -64,7 +64,7 @@ services:
       MONGO_DB_URI: ${MONGO_DB_URI:-mongodb://${MONGO_ROOT_USERNAME:-cashlenx}:${MONGO_ROOT_PASSWORD:-cashlenx123}@mongodb:27017/${DB_NAME:-cashlenx}?authSource=admin}
       MYSQL_DB_URI: ${MYSQL_DB_URI:-${MYSQL_USER:-cashlenx}:${MYSQL_PASSWORD:-cashlenx123}@tcp(mysql:3306)}
       DB_NAME: ${DB_NAME:-cashlenx}
-      LOG_FILE: ${LOG_FILE:-/app/logs/cashlenx.log}
+      LOG_FOLDER: ${LOG_FOLDER:-/app/logs}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       SERVER_PORT: 8080
       SERVER_HOST: ${SERVER_HOST:-0.0.0.0}

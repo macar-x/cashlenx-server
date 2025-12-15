@@ -11,11 +11,11 @@ func init() {
 
 func initDefaultValues() {
 	// Logger configuration
-	logFile := os.Getenv("LOG_FILE")
-	if logFile == "" {
-		logFile = "./cashlenx.log"
+	logFolder := os.Getenv("LOG_FOLDER")
+	if logFolder == "" {
+		logFolder = "./logs"
 	}
-	configurationMap["logger.file"] = logFile
+	configurationMap["logger.file"] = logFolder
 
 	// Database name
 	dbName := os.Getenv("DB_NAME")

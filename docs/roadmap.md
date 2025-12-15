@@ -1,7 +1,7 @@
 # CashLenX Roadmap (Versioned Todo)
 
 ## Versioning Policy
-- Current version: `v0.1.0`
+- Current version: `v0.2.0`
 - Increase minor by `+0.1` for each completed big feature
 - Optionally use patch `+0.0.1` for bugfix releases
 
@@ -27,14 +27,17 @@
 - [x] Unit tests in validation, cache, and errors #api
 
 ## v0.2.0 — Big Feature: API Contract & OpenAPI
-- [ ] Finalize OpenAPI coverage for all endpoints #api #docs
-- [ ] Auto-validate requests/responses against schema in dev/test #api
+- [x] Finalize OpenAPI coverage for core endpoints #api #docs
+- [x] Auto-validate requests/responses against schema with middleware #api
 - [ ] Publish HTML docs artifact from OpenAPI #docs #devops
+- [x] Add pagination and filtering to listing endpoints #api #performance
+- [x] Enhance interactive scripts for all commands #cli #dx
+- [x] Add cross-platform support with PowerShell scripts #devops #dx
+- [x] Improve code documentation and translate comments to English #docs
+- [x] Update dependencies and align toolchain #devops #dx
 - [ ] Introduce consistent response wrapper `{data,error,meta}` #api
 - [ ] Centralize error types and mapping #api
-- [ ] Add pagination and filtering to listing endpoints #api #performance
 - [ ] Increase unit test coverage in services and mappers #api
-- [ ] Align toolchain to Go 1.21 across `go.mod`, Docker, local builds #devops #dx
 - [ ] Set up CI (build, test, lint, Docker image) #devops
 
 ## v0.3.0 — Big Feature: User Management & Authentication

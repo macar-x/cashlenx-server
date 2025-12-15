@@ -58,19 +58,44 @@ func initConsoleLogger() *zap.Logger {
 }
 
 func createLogFile() *os.File {
-	var logFilePath string
-	if customPath := GetConfigByKey("logger.file"); customPath != "" {
-		logFilePath = customPath
-	} else {
-		// Create logs directory if it doesn't exist
-		if err := os.MkdirAll("./logs", 0755); err != nil {
-			log.Fatal("failed to create logs directory: ", err)
-		}
+	// Get the log folder from config, default to ./logs
+	logFolder := GetConfigByKey("logger.file")
 
-		// Format log filename with current date: cashlenx_20251215.log
-		currentDate := time.Now().Format("20060102")
-		logFilePath = fmt.Sprintf("./logs/cashlenx_%s.log", currentDate)
+	// Extract folder path if a full filename was provided
+	if logFolder != "" {
+		// If the path has a file extension, extract just the directory
+		if len(logFolder) > 4 && logFolder[len(logFolder)-4:] == ".log" {
+			// Check if it's just a filename without directory
+			if logFolder == "./cashlenx.log" || logFolder == "cashlenx.log" {
+				logFolder = "./logs"
+			} else {
+				// Extract directory part
+				lastSlash := -1
+				for i := len(logFolder) - 1; i >= 0; i-- {
+					if logFolder[i] == '/' || logFolder[i] == '\\' {
+						lastSlash = i
+						break
+					}
+				}
+				if lastSlash >= 0 {
+					logFolder = logFolder[:lastSlash]
+				} else {
+					logFolder = "."
+				}
+			}
+		}
+	} else {
+		logFolder = "./logs"
 	}
+
+	// Create the log folder if it doesn't exist
+	if err := os.MkdirAll(logFolder, 0755); err != nil {
+		log.Fatal("failed to create logs directory: ", err)
+	}
+
+	// Always use date-based filename in the configured folder
+	currentDate := time.Now().Format("20060102")
+	logFilePath := fmt.Sprintf("%s/cashlenx_%s.log", logFolder, currentDate)
 
 	// Open file with append mode if it exists, create if it doesn't
 	file, err := os.OpenFile(logFilePath, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0644)

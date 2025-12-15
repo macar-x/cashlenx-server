@@ -61,8 +61,8 @@ cashlenx
 
 ### Implementation Status
 
-✅ **Working**: cash income/outcome/query/delete, category create/query/delete, manage export/import, server start  
-🚧 **Pending**: cash update/list/range/summary, category update/list, manage backup/restore/init/reset/stats, db connect/seed
+✅ **Working**: cash income/outcome/query/delete/list, category create/query/delete/update/list, manage export/import/init, server start  
+🚧 **Pending**: cash update/range/summary, manage backup/restore/reset/stats, db connect/seed
 
 ## Installation
 
@@ -553,19 +553,20 @@ cashlenx category list
 - Cash income/outcome
 - Cash query (by ID, date, description)
 - Cash delete (by ID, date)
+- Cash list (with pagination and filtering)
 - Category create/query/delete
+- Category update
+- Category list (with pagination)
 - Manage export/import
+- Manage init (demo data initialization)
 - Version command
 
 ### 🚧 Pending Implementation
 - Cash update
-- Cash list
 - Cash range
 - Cash summary
-- Category update
-- Category list
 - Manage backup/restore
-- Manage init/reset/stats
+- Manage reset/stats
 - DB connect/seed
 
 All pending commands have CLI structure in place and will return helpful error messages indicating they need database integration.

@@ -16,6 +16,7 @@ var (
 	Logger               = getLogger()
 )
 
+// Initialize the logger instances if they don't exist
 func initLogger() {
 	if consoleLogger == nil {
 		consoleLogger = initConsoleLogger()
@@ -24,9 +25,11 @@ func initLogger() {
 		sugaredConsoleLogger = consoleLogger.Sugar()
 	}
 
-	consoleLogger.Debug("loggers initialize succeed")
+	consoleLogger.Debug("loggers initialized successfully")
 }
 
+// GetLogger returns the initialized sugared logger instance
+// If the logger is not initialized, it will be initialized first
 func getLogger() *zap.SugaredLogger {
 	if sugaredConsoleLogger == nil {
 		initLogger()
@@ -35,23 +38,23 @@ func getLogger() *zap.SugaredLogger {
 }
 
 func initConsoleLogger() *zap.Logger {
-	// 設定 console 輸出
+	// Set up console output
 	consoleOutput := zapcore.Lock(os.Stdout)
-	// 設定 file 輸出
+	// Set up file output
 	fileOutput := zapcore.Lock(zapcore.AddSync(createLogFile()))
 
-	// 設定日誌等級
+	// Set up log encoders
 	consoleEncoder := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
 	fileEncoder := zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
 
-	// 合併輸出和編碼器
+	// Create cores for different outputs
 	consoleCore := zapcore.NewCore(consoleEncoder, consoleOutput, zapcore.DebugLevel)
 	fileCore := zapcore.NewCore(fileEncoder, fileOutput, zapcore.InfoLevel)
 
-	// 同時使用 console 和 file 輸出
+	// Combine console and file outputs
 	logger := zap.New(zapcore.NewTee(consoleCore, fileCore), zap.AddCaller())
 
-	// 記得在程序結束時關閉 logger
+	// Note: Logger sync should be called at program exit
 	// defer consoleLogger.Sync()
 
 	return logger

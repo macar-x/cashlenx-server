@@ -7,22 +7,30 @@ import (
 
 // ResponseWrapper defines a consistent response structure for all API endpoints
 type ResponseWrapper struct {
-	Data  interface{} `json:"data,omitempty"`  // The actual data payload
-	Error *ErrorInfo  `json:"error,omitempty"` // Error information if any
-	Meta  *MetaInfo   `json:"meta,omitempty"`  // Metadata about the response
+	// Data contains the actual response payload
+	Data  interface{} `json:"data,omitempty"`
+	// Error contains error information if the request failed
+	Error *ErrorInfo  `json:"error,omitempty"`
+	// Meta contains metadata about the response
+	Meta  *MetaInfo   `json:"meta,omitempty"`
 }
 
 // ErrorInfo defines the structure for error responses
 type ErrorInfo struct {
-	Code    string `json:"code"`    // Error code for machine consumption
-	Message string `json:"message"` // Human-readable error message
+	// Code is the error code for machine consumption
+	Code    string `json:"code"`
+	// Message is the human-readable error message
+	Message string `json:"message"`
 }
 
 // MetaInfo defines metadata structure for responses
 type MetaInfo struct {
-	Total int64 `json:"total,omitempty"` // Total number of items (for pagination)
-	Page  int64 `json:"page,omitempty"`  // Current page number
-	Limit int64 `json:"limit,omitempty"` // Items per page
+	// Total is the total number of items (for pagination)
+	Total int64 `json:"total,omitempty"`
+	// Page is the current page number
+	Page  int64 `json:"page,omitempty"`
+	// Limit is the number of items per page
+	Limit int64 `json:"limit,omitempty"`
 }
 
 // ParseJSONRequest is a utility function to parse JSON requests
@@ -63,8 +71,7 @@ func ComposeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}
 		}
 	} else if errMap, ok := data.(map[string]string); ok {
 		// Check if data is an error map
-		if errMsg, hasError := errMap["error"];
-hasError {
+		if errMsg, hasError := errMap["error"]; hasError {
 			// Create error response from error map
 			response = ResponseWrapper{
 				Error: &ErrorInfo{
@@ -80,8 +87,7 @@ hasError {
 		}
 	} else if msgMap, ok := data.(map[string]interface{}); ok {
 		// Check if data is an error map interface
-		if errMsg, hasError := msgMap["error"].(string);
-hasError {
+		if errMsg, hasError := msgMap["error"].(string); hasError {
 			// Create error response from error map interface
 			response = ResponseWrapper{
 				Error: &ErrorInfo{

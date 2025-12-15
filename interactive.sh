@@ -76,7 +76,7 @@ function func_exec_delete() {
 EXEC_COMMAND="";
 
 echo "";
-echo "--- Welcome to EMM-MoneyBox Interactive Mode ---";
+echo "--- Welcome to CashLenX Interactive Mode ---";
 echo "";
 echo "Please choose one of the operation below:";
 EXEC_TYPE=$(gum choose "outcome" "query" "delete");

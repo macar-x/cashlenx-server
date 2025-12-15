@@ -1,8 +1,10 @@
 package util
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -56,14 +58,22 @@ func initConsoleLogger() *zap.Logger {
 }
 
 func createLogFile() *os.File {
-	logFilePath := GetConfigByKey("logger.file")
-	if logFilePath == "" {
-		logFilePath = "./cashlenx.log"
+	var logFilePath string
+	if customPath := GetConfigByKey("logger.file"); customPath != "" {
+		logFilePath = customPath
+	} else {
+		// Create logs directory if it doesn't exist
+		if err := os.MkdirAll("./logs", 0755); err != nil {
+			log.Fatal("failed to create logs directory: ", err)
+		}
+
+		// Format log filename with current date: cashlenx_20251215.log
+		currentDate := time.Now().Format("20060102")
+		logFilePath = fmt.Sprintf("./logs/cashlenx_%s.log", currentDate)
 	}
 
-	// create a log file, open it if already exist.
-	// file, err := os.OpenFile(logFilePath, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0)
-	file, err := os.Create(logFilePath)
+	// Open file with append mode if it exists, create if it doesn't
+	file, err := os.OpenFile(logFilePath, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		log.Fatal("failed to create log file: ", err)
 	}

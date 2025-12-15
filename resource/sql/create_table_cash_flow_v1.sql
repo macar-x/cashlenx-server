@@ -1,4 +1,4 @@
-USE `emm_moneybox`;
+USE `cashlenx`;
 
 -- -------------------
 -- Create table `cash`

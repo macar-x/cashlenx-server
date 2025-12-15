@@ -58,7 +58,7 @@ func initConsoleLogger() *zap.Logger {
 func createLogFile() *os.File {
 	logFilePath := GetConfigByKey("logger.file")
 	if logFilePath == "" {
-		logFilePath = "./emm-moneybox.log"
+		logFilePath = "./cashlenx.log"
 	}
 
 	// create a log file, open it if already exist.

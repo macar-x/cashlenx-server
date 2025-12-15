@@ -1,5 +1,5 @@
 USE
-    `emm_moneybox`;
+    `cashlenx`;
 
 -- -------------------
 -- Create table `category`

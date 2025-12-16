@@ -48,8 +48,6 @@
 - [ ] `POST /api/export` - Export to Excel
 - [ ] `POST /api/import` - Import from Excel
 - [ ] `GET /api/export/csv` - Export to CSV
-- [ ] `POST /api/backup` - Create backup
-- [ ] `POST /api/restore` - Restore from backup
 
 ## Implementation Guide
 

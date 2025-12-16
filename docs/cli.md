@@ -601,6 +601,7 @@ cashlenx category list
 - Category list (with pagination)
 - Manage export/import
 - Manage init (demo data initialization)
+- DB dump/restore
 - Version command
 
 ### 🚧 Pending Implementation

@@ -56,8 +56,10 @@ func (CategoryMongoDbMapper) GetCategoryByName(categoryName string) model.Catego
 }
 
 func (CategoryMongoDbMapper) GetCategoryByParentId(parentPlainId string) []model.CategoryEntity {
+	// Convert parentPlainId to ObjectID
+	parentObjectId := util.Convert2ObjectId(parentPlainId)
 	filter := bson.D{
-		primitive.E{Key: "parent_id", Value: parentPlainId},
+		primitive.E{Key: "parent_id", Value: parentObjectId},
 	}
 
 	database.OpenMongoDbConnection(database.CategoryTableName)

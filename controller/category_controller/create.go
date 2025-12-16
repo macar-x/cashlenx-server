@@ -22,7 +22,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	plainId, err := category_service.CreateService(requestBody.ParentName, requestBody.Name)
+	plainId, err := category_service.CreateService(requestBody.ParentId, requestBody.Name)
 	if err != nil {
 		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return

@@ -67,6 +67,18 @@ func initDefaultValues() {
 		}
 	}
 	configurationMap["api.schema.validation"] = schemaValidation
+
+	// CORS origins
+	corsOrigins := os.Getenv("CORS_ORIGINS")
+	configurationMap["cors.origins"] = corsOrigins
+
+	// Log level
+	logLevel := os.Getenv("LOG_LEVEL")
+	configurationMap["logger.level"] = logLevel
+
+	// Server configuration
+	configurationMap["server.port"] = os.Getenv("SERVER_PORT")
+	configurationMap["server.host"] = os.Getenv("SERVER_HOST")
 }
 
 func GetConfigByKey(configKey string) string {

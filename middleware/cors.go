@@ -2,15 +2,16 @@ package middleware
 
 import (
 	"net/http"
-	"os"
 	"strings"
+
+	"github.com/macar-x/cashlenx-server/util"
 )
 
 // CORS middleware to handle Cross-Origin Resource Sharing
 func CORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Get allowed origins from environment or use defaults
-		allowedOrigins := os.Getenv("CORS_ORIGINS")
+		// Get allowed origins from configuration or use defaults
+		allowedOrigins := util.GetConfigByKey("cors.origins")
 		if allowedOrigins == "" {
 			// Default allowed origins for development
 			allowedOrigins = "http://localhost:3000,http://localhost:8080,http://localhost:4000,https://localhost:3000,https://localhost:8080"

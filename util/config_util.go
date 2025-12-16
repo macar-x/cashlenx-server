@@ -1,11 +1,23 @@
 package util
 
-import "os"
+import (
+	"os"
+
+	"github.com/joho/godotenv"
+)
 
 var configurationMap map[string]string
 
 func init() {
 	configurationMap = make(map[string]string)
+
+	// Load .env file if it exists
+	err := godotenv.Load()
+	if err != nil {
+		// If .env file doesn't exist, just use environment variables
+		Logger.Debugw("No .env file found, using environment variables", "error", err)
+	}
+
 	initDefaultValues()
 }
 

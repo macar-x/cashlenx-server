@@ -270,7 +270,7 @@ curl http://localhost:8080/api/category/list
 ### Create an Expense
 
 ```bash
-curl -X POST http://localhost:8080/api/cash/outcome \
+curl -X POST http://localhost:8080/api/cash/expense \
   -H "Content-Type: application/json" \
   -d '{
     "belongs_date": "20251212",
@@ -526,7 +526,7 @@ cat categories.json | jq .
 ```bash
 # Create 10 test expenses
 for i in {1..10}; do
-  curl -X POST http://localhost:8080/api/cash/outcome \
+  curl -X POST http://localhost:8080/api/cash/expense \
     -H "Content-Type: application/json" \
     -d "{
       \"belongs_date\": \"20251212\",

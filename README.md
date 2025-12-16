@@ -56,13 +56,13 @@ export $(cat .env | xargs)
 go run main.go server start -p 8080
 
 # CLI examples
-go run main.go cash outcome -c "Food" -a 45.50 -d "Lunch"
+go run main.go cash expense -c "Food" -a 45.50 -d "Lunch"
 go run main.go cash income -c "Salary" -a 5000
 go run main.go cash summary -f 2024-01-01 -t 2024-01-31
 ```
 
 ## REST API
-- `POST /api/cash/outcome`
+- `POST /api/cash/expense`
 - `POST /api/cash/income`
 - `GET /api/cash/{id}`
 - `GET /api/cash/date/{date}`

@@ -18,7 +18,7 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "list all cash_flow records",
 	Long: `List all cash flow records with optional filtering and pagination.
-Use --type to filter by income/outcome, --limit for pagination.`,
+Use --type to filter by income/expense, --limit for pagination.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cashFlowEntityList, _, err := cash_flow_service.QueryAll(cashType, "", "", "", "", "", limit, offset)
 		if err != nil {
@@ -55,7 +55,7 @@ func init() {
 	listCmd.Flags().IntVarP(
 		&offset, "offset", "o", 0, "number of records to skip")
 	listCmd.Flags().StringVarP(
-		&cashType, "type", "t", "", "filter by type (income/outcome)")
+		&cashType, "type", "t", "", "filter by type (income/expense)")
 
 	CashCmd.AddCommand(listCmd)
 }

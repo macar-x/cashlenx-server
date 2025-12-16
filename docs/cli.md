@@ -63,7 +63,7 @@ cashlenx
 
 ### Implementation Status
 
-✅ **Working**: cash income/outcome/query/delete/list, category create/query/delete/update/list, manage export/import/init, server start, db dump/restore  
+✅ **Working**: cash income/expense/query/delete/list, category create/query/delete/update/list, manage export/import/init, server start, db dump/restore  
 🚧 **Pending**: cash update/range/summary, manage backup/restore/reset/stats, db connect/seed
 
 ## Installation
@@ -228,13 +228,13 @@ cashlenx cash list -l 20 -o 40
 
 # Filter by type
 cashlenx cash list -t income
-cashlenx cash list -t outcome
+cashlenx cash list -t expense
 ```
 
 Flags:
 - `-l, --limit` - Maximum records to return (default: 50)
 - `-o, --offset` - Number of records to skip (default: 0)
-- `-t, --type` - Filter by type (income/outcome)
+- `-t, --type` - Filter by type (income/expense)
 
 **Status**: Not yet implemented - requires database integration
 
@@ -592,7 +592,7 @@ cashlenx category list
 
 ### ✅ Implemented
 - Server start
-- Cash income/outcome
+- Cash income/expense
 - Cash query (by ID, date, description)
 - Cash delete (by ID, date)
 - Cash list (with pagination and filtering)

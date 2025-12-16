@@ -19,6 +19,8 @@
 ### Manage API
 - [x] `GET /api/manage/dump` - Download database dump
 - [x] `POST /api/manage/restore` - Restore database from dump
+- [x] `GET /api/manage/export` - Export data to Excel
+- [x] `POST /api/manage/import` - Import data from Excel
 
 ## To Implement 🚧
 

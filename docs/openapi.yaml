@@ -45,11 +45,11 @@ paths:
                 $ref: '#/components/schemas/ResponseWrapper'
 
   # Cash Flow endpoints
-  /api/cash/outcome:
+  /api/cash/expense:
     post:
-      summary: Create outcome transaction
+      summary: Create expense transaction
       description: Record a new expense transaction
-      operationId: createOutcome
+      operationId: createExpense
       requestBody:
         required: true
         content:
@@ -58,7 +58,7 @@ paths:
               $ref: '#/components/schemas/CashFlowRequest'
       responses:
         '201':
-          description: Outcome transaction created
+          description: Expense transaction created
           content:
             application/json:
               schema:
@@ -106,7 +106,7 @@ paths:
           description: Filter by transaction type
           schema:
             type: string
-            enum: [income, outcome]
+            enum: [income, expense]
         - name: category_id
           in: query
           description: Filter by category ID
@@ -360,7 +360,7 @@ paths:
           description: Filter by category type
           schema:
             type: string
-            enum: [income, outcome]
+            enum: [income, expense]
         - name: parent_id
           in: query
           description: Filter by parent category ID
@@ -506,6 +506,94 @@ paths:
               schema:
                 $ref: '#/components/schemas/ResponseWrapper'
 
+  # Manage endpoints
+  /api/manage/dump:
+    get:
+      summary: Download database dump
+      description: Export the entire database as a JSON dump file
+      operationId: dumpDatabase
+      responses:
+        '200':
+          description: Database dump file
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+
+  /api/manage/restore:
+    post:
+      summary: Restore database from dump
+      description: Restore the database from a JSON dump file
+      operationId: restoreDatabase
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Database restored successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
+  /api/manage/export:
+    get:
+      summary: Export data to Excel
+      description: Export cash flow data to an Excel file
+      operationId: exportData
+      parameters:
+        - name: from
+          in: query
+          description: Start date for export (YYYYMMDD format, optional for all data)
+          schema:
+            type: string
+            pattern: '^\d{8}$'
+        - name: to
+          in: query
+          description: End date for export (YYYYMMDD format, optional for all data)
+          schema:
+            type: string
+            pattern: '^\d{8}$'
+      responses:
+        '200':
+          description: Excel file with exported data
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+
+  /api/manage/import:
+    post:
+      summary: Import data from Excel
+      description: Import cash flow data from an Excel file
+      operationId: importData
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Excel file containing cash flow data
+              required:
+                - file
+      responses:
+        '200':
+          description: Data imported successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWrapper'
+
 components:
   schemas:
     # Response wrapper schema
@@ -591,8 +679,8 @@ components:
           description: Transaction date
         flow_type:
           type: string
-          description: Flow type (income or outcome)
-          enum: [income, outcome]
+          description: Flow type (income or expense)
+          enum: [income, expense]
         amount:
           type: number
           format: double
@@ -626,7 +714,7 @@ components:
         type:
           type: string
           description: Category type
-          enum: [income, outcome]
+          enum: [income, expense]
       required:
         - name
         - type
@@ -648,7 +736,7 @@ components:
         type:
           type: string
           description: Category type
-          enum: [income, outcome]
+          enum: [income, expense]
         create_time:
           type: string
           format: date-time

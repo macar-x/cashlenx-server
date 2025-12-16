@@ -92,6 +92,10 @@ func registerManageRoute(r *mux.Router) {
 	// Dump and restore endpoints
 	r.HandleFunc("/api/manage/dump", manage_controller.DumpDatabase).Methods("GET")
 	r.HandleFunc("/api/manage/restore", manage_controller.RestoreDatabase).Methods("POST")
+
+	// Import and export endpoints
+	r.HandleFunc("/api/manage/export", manage_controller.ExportData).Methods("GET")
+	r.HandleFunc("/api/manage/import", manage_controller.ImportData).Methods("POST")
 }
 
 // Version info endpoint
@@ -129,6 +133,8 @@ func versionInfo(w http.ResponseWriter, r *http.Request) {
 			"manage": {
 				"GET /api/manage/dump",
 				"POST /api/manage/restore",
+				"GET /api/manage/export",
+				"POST /api/manage/import",
 			},
 			"health": {
 				"GET /api/health",

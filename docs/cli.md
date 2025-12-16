@@ -56,12 +56,14 @@ cashlenx
 │   └── stats           Show statistics
 └── db                  Database operations
     ├── connect         Test connection
-    └── seed            Seed demo data
+    ├── seed            Seed demo data
+    ├── dump            Dump database contents
+    └── restore         Restore database from dump
 ```
 
 ### Implementation Status
 
-✅ **Working**: cash income/outcome/query/delete/list, category create/query/delete/update/list, manage export/import/init, server start  
+✅ **Working**: cash income/outcome/query/delete/list, category create/query/delete/update/list, manage export/import/init, server start, db dump/restore  
 🚧 **Pending**: cash update/range/summary, manage backup/restore/reset/stats, db connect/seed
 
 ## Installation
@@ -485,6 +487,46 @@ cashlenx db seed
 Alias for `manage init`.
 
 **Status**: Not yet implemented - requires database integration
+
+### db dump
+Dump database contents to JSON file
+
+```bash
+# Dump to auto-generated file
+cashlenx db dump
+
+# Dump to specific file
+cashlenx db dump -o backup.json
+
+# Dump with verbose output
+cashlenx db dump -v
+```
+
+Flags:
+- `-o, --output` - Output file path (optional, default: cashlenx_dump_TIMESTAMP.json)
+- `-v, --verbose` - Enable verbose output
+
+Output file contains:
+- Categories
+- Cash flow transactions
+- Export metadata
+
+### db restore
+Restore database from JSON dump file
+
+```bash
+# Restore from file
+cashlenx db restore -i backup.json
+
+# Restore with verbose output
+cashlenx db restore -i backup.json -v
+```
+
+Flags:
+- `-i, --input` - Input dump file path (required)
+- `-v, --verbose` - Enable verbose output
+
+⚠️ **WARNING**: This operation will replace all existing data in the database! Ensure you have a backup before proceeding.
 
 ## Advanced Configuration
 

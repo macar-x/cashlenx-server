@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/macar-x/cashlenx-server/controller/cash_flow_controller"
 	"github.com/macar-x/cashlenx-server/controller/category_controller"
+	"github.com/macar-x/cashlenx-server/controller/manage_controller"
 	"github.com/macar-x/cashlenx-server/middleware"
 	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/util"
@@ -19,6 +20,7 @@ func StartServer(port int32) {
 	registerHealthRoutes(r)
 	registerCashRoute(r)
 	registerCategoryRoute(r)
+	registerManageRoute(r)
 
 	// Apply middleware
 	handler := middleware.Logging(middleware.SchemaValidation(middleware.CORS(r)))
@@ -86,6 +88,12 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 	util.ComposeJSONResponse(w, http.StatusOK, response)
 }
 
+func registerManageRoute(r *mux.Router) {
+	// Dump and restore endpoints
+	r.HandleFunc("/api/manage/dump", manage_controller.DumpDatabase).Methods("GET")
+	r.HandleFunc("/api/manage/restore", manage_controller.RestoreDatabase).Methods("POST")
+}
+
 // Version info endpoint
 func versionInfo(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
@@ -117,6 +125,10 @@ func versionInfo(w http.ResponseWriter, r *http.Request) {
 				"GET /api/category/{parent_id}/children",
 				"PUT /api/category/{id}",
 				"DELETE /api/category/{id}",
+			},
+			"manage": {
+				"GET /api/manage/dump",
+				"POST /api/manage/restore",
 			},
 			"health": {
 				"GET /api/health",

@@ -16,6 +16,10 @@
 - [x] `DELETE /api/cash/{id}` - Delete by ID
 - [x] `DELETE /api/cash/date/{date}` - Delete by date
 
+### Manage API
+- [x] `GET /api/manage/dump` - Download database dump
+- [x] `POST /api/manage/restore` - Restore database from dump
+
 ## To Implement 🚧
 
 ### Cash Flow API Extensions

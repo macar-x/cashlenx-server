@@ -2,6 +2,7 @@ package util
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 
 	"github.com/macar-x/cashlenx-server/errors"
@@ -104,4 +105,13 @@ func ComposeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}
 
 	// Encode the response as JSON and write it to the response writer
 	json.NewEncoder(w).Encode(response)
+}
+
+// SendFile sends a file as an HTTP response
+func SendFile(w http.ResponseWriter, file io.Reader) {
+	if _, err := io.Copy(w, file); err != nil {
+		// If there's an error while sending the file, return a 500 error
+		w.WriteHeader(http.StatusInternalServerError)
+		ComposeJSONResponse(w, http.StatusInternalServerError, errors.NewInternalError("Failed to send file", err))
+	}
 }

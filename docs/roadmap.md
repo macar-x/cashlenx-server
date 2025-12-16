@@ -38,11 +38,11 @@
 - [x] Ensure consistent env var handling between CLI and API #dx
 - [x] Fix slow server startup by implementing multi-stage Docker build #devops
 - [x] Update Docker configuration to use health API for container readiness #devops #observability
-- [ ] Publish HTML docs artifact from OpenAPI #docs #devops
-- [ ] Introduce consistent response wrapper `{data,error,meta}` #api
-- [ ] Centralize error types and mapping #api
-- [ ] Increase unit test coverage in services and mappers #api
-- [ ] Set up CI (build, test, lint, Docker image) #devops
+- [x] Publish HTML docs artifact from OpenAPI #docs #devops
+- [x] Introduce consistent response wrapper `{data,error,meta}` #api
+- [x] Centralize error types and mapping #api
+- [x] Increase unit test coverage in services and mappers #api
+- [x] Set up CI (build, test, lint, Docker image) #devops
 
 ## v0.3.0 — Big Feature: User Management & Authentication
 - [ ] Optional JWT auth middleware protecting mutating endpoints #security #api

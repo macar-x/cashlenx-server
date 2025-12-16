@@ -61,7 +61,12 @@ func QueryByDate(belongsDate string) ([]model.CashFlowEntity, error) {
 		return []model.CashFlowEntity{}, errors.New("belongs_date error, try format like 19700101")
 	}
 
-	matchedCashFlowList := cash_flow_mapper.INSTANCE.GetCashFlowsByBelongsDate(queryDate)
+	// Use date range query instead of exact match to handle dates with time components
+	// Set start to beginning of the day and end to end of the day
+	startOfDay := time.Date(queryDate.Year(), queryDate.Month(), queryDate.Day(), 0, 0, 0, 0, queryDate.Location())
+	endOfDay := time.Date(queryDate.Year(), queryDate.Month(), queryDate.Day(), 23, 59, 59, 999999999, queryDate.Location())
+
+	matchedCashFlowList := cash_flow_mapper.INSTANCE.GetCashFlowsByDateRange(startOfDay, endOfDay)
 	return matchedCashFlowList, nil
 }
 

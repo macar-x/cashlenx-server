@@ -29,12 +29,16 @@
 ## v0.2.0 — Big Feature: API Contract & OpenAPI
 - [x] Finalize OpenAPI coverage for core endpoints #api #docs
 - [x] Auto-validate requests/responses against schema with middleware #api
-- [ ] Publish HTML docs artifact from OpenAPI #docs #devops
 - [x] Add pagination and filtering to listing endpoints #api #performance
 - [x] Enhance interactive scripts for all commands #cli #dx
 - [x] Add cross-platform support with PowerShell scripts #devops #dx
 - [x] Improve code documentation and translate comments to English #docs
 - [x] Update dependencies and align toolchain #devops #dx
+- [x] Fix CLI query empty response by adding .env file support with godotenv #dx #api
+- [x] Ensure consistent env var handling between CLI and API #dx
+- [x] Fix slow server startup by implementing multi-stage Docker build #devops
+- [x] Update Docker configuration to use health API for container readiness #devops #observability
+- [ ] Publish HTML docs artifact from OpenAPI #docs #devops
 - [ ] Introduce consistent response wrapper `{data,error,meta}` #api
 - [ ] Centralize error types and mapping #api
 - [ ] Increase unit test coverage in services and mappers #api

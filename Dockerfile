@@ -22,8 +22,14 @@ WORKDIR /app
 # Install curl for health checks
 RUN apk add --no-cache curl
 
+# Create necessary directories
+RUN mkdir -p docs
+
 # Copy the built binary from the build stage
 COPY --from=builder /app/cashlenx-server .
+
+# Copy the docs directory containing the OpenAPI spec
+COPY --from=builder /app/docs/openapi.yaml /app/docs/
 
 # Use the pre-built binary as entrypoint
 ENTRYPOINT ["./cashlenx-server", "server", "start"]

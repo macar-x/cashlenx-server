@@ -7,7 +7,6 @@ import (
 	"github.com/macar-x/cashlenx-server/mapper/cash_flow_mapper"
 	"github.com/macar-x/cashlenx-server/mapper/category_mapper"
 	"github.com/macar-x/cashlenx-server/model"
-	"github.com/macar-x/cashlenx-server/util"
 	"github.com/macar-x/cashlenx-server/validation"
 	"github.com/shopspring/decimal"
 )
@@ -44,9 +43,19 @@ func SaveIncome(belongsDate, categoryName string, amount float64, description st
 	}
 
 	// Optional parameter: date (default to today)
-	date := util.FormatDateFromStringWithoutDash(util.FormatDateToStringWithoutDash(time.Now()))
+	var date time.Time
 	if belongsDate != "" {
-		date = util.FormatDateFromStringWithoutDash(belongsDate)
+		// Parse the provided date
+		parsedDate, err := time.Parse("20060102", belongsDate)
+		if err != nil {
+			return model.CashFlowEntity{}, errors.New("belongs_date error, try format like 19700101")
+		}
+		// Use UTC time for consistent storage
+		date = time.Date(parsedDate.Year(), parsedDate.Month(), parsedDate.Day(), 0, 0, 0, 0, time.UTC)
+	} else {
+		// Use today's date in UTC
+		today := time.Now().UTC()
+		date = time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, time.UTC)
 	}
 
 	newCashFlowId := cash_flow_mapper.INSTANCE.InsertCashFlowByEntity(model.CashFlowEntity{

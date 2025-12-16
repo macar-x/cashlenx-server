@@ -2,12 +2,10 @@ package cash_flow_service
 
 import (
 	"errors"
-	"reflect"
 	"time"
 
 	"github.com/macar-x/cashlenx-server/mapper/cash_flow_mapper"
 	"github.com/macar-x/cashlenx-server/model"
-	"github.com/macar-x/cashlenx-server/util"
 )
 
 func IsQueryFieldsConflicted(plainId, belongsDate, exactDescription, fuzzyDescription string) bool {
@@ -56,15 +54,17 @@ func QueryById(plainId string) (model.CashFlowEntity, error) {
 }
 
 func QueryByDate(belongsDate string) ([]model.CashFlowEntity, error) {
-	queryDate := util.FormatDateFromStringWithoutDash(belongsDate)
-	if reflect.DeepEqual(queryDate, time.Time{}) {
+	// Parse the date string
+	parsedDate, err := time.Parse("20060102", belongsDate)
+	if err != nil {
 		return []model.CashFlowEntity{}, errors.New("belongs_date error, try format like 19700101")
 	}
 
-	// Use date range query instead of exact match to handle dates with time components
-	// Set start to beginning of the day and end to end of the day
-	startOfDay := time.Date(queryDate.Year(), queryDate.Month(), queryDate.Day(), 0, 0, 0, 0, queryDate.Location())
-	endOfDay := time.Date(queryDate.Year(), queryDate.Month(), queryDate.Day(), 23, 59, 59, 999999999, queryDate.Location())
+	// Use UTC time for consistent querying (MongoDB stores dates in UTC)
+	// Set start to beginning of the day in UTC
+	startOfDay := time.Date(parsedDate.Year(), parsedDate.Month(), parsedDate.Day(), 0, 0, 0, 0, time.UTC)
+	// Set end to end of the day in UTC
+	endOfDay := time.Date(parsedDate.Year(), parsedDate.Month(), parsedDate.Day(), 23, 59, 59, 999999999, time.UTC)
 
 	matchedCashFlowList := cash_flow_mapper.INSTANCE.GetCashFlowsByDateRange(startOfDay, endOfDay)
 	return matchedCashFlowList, nil

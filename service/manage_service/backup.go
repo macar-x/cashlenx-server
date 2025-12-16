@@ -4,6 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"time"
+
+	"github.com/macar-x/cashlenx-server/mapper/cash_flow_mapper"
+	"github.com/macar-x/cashlenx-server/mapper/category_mapper"
 )
 
 // BackupData represents the structure of backup data
@@ -20,18 +24,47 @@ func CreateBackup(filePath string) error {
 		return errors.New("file path cannot be empty")
 	}
 
-	// Note: To properly implement this, we need:
-	// 1. Mapper method to get all cash flows: GetAllCashFlows()
-	// 2. Mapper method to get all categories: GetAllCategories()
-	// 3. Serialize to JSON
-	// 4. Write to file
+	// Get all categories (no pagination limit - get everything)
+	categories := category_mapper.INSTANCE.GetAllCategories(0, 0)
+	
+	// Convert categories to map format for JSON serialization
+	categoryMaps := make([]map[string]interface{}, len(categories))
+	for i, cat := range categories {
+		categoryMaps[i] = map[string]interface{}{
+			"Id":         cat.Id.Hex(),
+			"Name":       cat.Name,
+			"ParentId":   cat.ParentId.Hex(),
+			"Remark":     cat.Remark,
+			"CreateTime": cat.CreateTime,
+			"ModifyTime": cat.ModifyTime,
+		}
+	}
 
-	// For now, create empty backup structure
+	// Get all cash flows (no pagination limit - get everything)
+	cashFlows := cash_flow_mapper.INSTANCE.GetAllCashFlows(0, 0)
+	
+	// Convert cash flows to map format for JSON serialization
+	cashFlowMaps := make([]map[string]interface{}, len(cashFlows))
+	for i, cf := range cashFlows {
+		cashFlowMaps[i] = map[string]interface{}{
+			"Id":          cf.Id.Hex(),
+			"CategoryId":  cf.CategoryId.Hex(),
+			"BelongsDate": cf.BelongsDate,
+			"FlowType":    cf.FlowType,
+			"Amount":      cf.Amount,
+			"Description": cf.Description,
+			"Remark":      cf.Remark,
+			"CreateTime":  cf.CreateTime,
+			"ModifyTime":  cf.ModifyTime,
+		}
+	}
+
+	// Create backup structure
 	backup := BackupData{
 		Version:    "1.0.0",
-		Timestamp:  "",
-		CashFlows:  []map[string]interface{}{},
-		Categories: []map[string]interface{}{},
+		Timestamp:  time.Now().Format(time.RFC3339),
+		CashFlows:  cashFlowMaps,
+		Categories: categoryMaps,
 	}
 
 	// Write to file
@@ -47,6 +80,5 @@ func CreateBackup(filePath string) error {
 		return err
 	}
 
-	// TODO: Implement actual data querying when mapper methods are available
-	return errors.New("backup functionality requires mapper enhancement - need GetAll methods")
+	return nil
 }

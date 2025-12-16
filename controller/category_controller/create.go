@@ -28,8 +28,17 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	util.ComposeJSONResponse(w, http.StatusCreated, map[string]string{
-		"id":      plainId,
-		"message": "category created successfully",
-	})
+	// Get the created category entity
+	createdCategory, err := category_service.QueryService(plainId, "", "")
+	if err != nil {
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	if len(createdCategory) == 0 {
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, errors.NewInternalError("failed to retrieve created category", nil))
+		return
+	}
+
+	util.ComposeJSONResponse(w, http.StatusCreated, createdCategory[0])
 }

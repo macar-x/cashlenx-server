@@ -37,5 +37,17 @@ func UpdateById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	util.ComposeJSONResponse(w, http.StatusOK, map[string]string{"message": "category updated successfully"})
+	// Get the updated category entity
+	updatedCategory, err := category_service.QueryService(plainId, "", "")
+	if err != nil {
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	if len(updatedCategory) == 0 {
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, errors.NewInternalError("failed to retrieve updated category", nil))
+		return
+	}
+
+	util.ComposeJSONResponse(w, http.StatusOK, updatedCategory[0])
 }

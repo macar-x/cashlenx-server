@@ -19,10 +19,24 @@ func DeleteById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get the category before deleting to return it
+	categoryToDelete, err := category_service.QueryService(id, "", "")
+	if err != nil {
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	if len(categoryToDelete) == 0 {
+		util.ComposeJSONResponse(w, http.StatusNotFound, errors.NewAppError(errors.ErrNotFound, "category not found", nil))
+		return
+	}
+
+	// Delete the category
 	if err := category_service.DeleteService(id, ""); err != nil {
 		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	util.ComposeJSONResponse(w, http.StatusOK, map[string]string{"message": "category deleted successfully"})
+	// Return the deleted category
+	util.ComposeJSONResponse(w, http.StatusOK, categoryToDelete[0])
 }

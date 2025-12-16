@@ -112,7 +112,7 @@ paths:
           description: Filter by category ID
           schema:
             type: string
-            format: uuid
+            pattern: '^[0-9a-fA-F]{24}$'
       responses:
         '200':
           description: List of transactions with pagination
@@ -132,7 +132,7 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
+            pattern: '^[0-9a-fA-F]{24}$'
       responses:
         '200':
           description: Transaction details
@@ -156,7 +156,7 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
+            pattern: '^[0-9a-fA-F]{24}$'
       requestBody:
         required: true
         content:
@@ -186,7 +186,7 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
+            pattern: '^[0-9a-fA-F]{24}$'
       responses:
         '200':
           description: Transaction deleted
@@ -366,7 +366,7 @@ paths:
           description: Filter by parent category ID
           schema:
             type: string
-            format: uuid
+            pattern: '^[0-9a-fA-F]{24}$'
       responses:
         '200':
           description: List of categories
@@ -386,7 +386,7 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
+            pattern: '^[0-9a-fA-F]{24}$'
       responses:
         '200':
           description: Category details
@@ -410,7 +410,7 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
+            pattern: '^[0-9a-fA-F]{24}$'
       requestBody:
         required: true
         content:
@@ -440,7 +440,7 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
+            pattern: '^[0-9a-fA-F]{24}$'
       responses:
         '200':
           description: Category deleted
@@ -491,7 +491,7 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
+            pattern: '^[0-9a-fA-F]{24}$'
       responses:
         '200':
           description: List of child categories
@@ -579,11 +579,11 @@ components:
       properties:
         id:
           type: string
-          format: uuid
+          pattern: '^[0-9a-fA-F]{24}$'
           description: Transaction ID
         category_id:
           type: string
-          format: uuid
+          pattern: '^[0-9a-fA-F]{24}$'
           description: Category ID
         belongs_date:
           type: string
@@ -621,7 +621,7 @@ components:
           description: Category name
         parent_id:
           type: string
-          format: uuid
+          pattern: '^[0-9a-fA-F]{24}$'
           description: Parent category ID (optional)
         type:
           type: string
@@ -636,14 +636,14 @@ components:
       properties:
         id:
           type: string
-          format: uuid
+          pattern: '^[0-9a-fA-F]{24}$'
           description: Category ID
         name:
           type: string
           description: Category name
         parent_id:
           type: string
-          format: uuid
+          pattern: '^[0-9a-fA-F]{24}$'
           description: Parent category ID (optional)
         type:
           type: string

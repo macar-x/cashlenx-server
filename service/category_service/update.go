@@ -7,7 +7,7 @@ import (
 )
 
 // UpdateService updates a category by ID
-func UpdateService(plainId, parentPlainId, categoryName string) error {
+func UpdateService(plainId, parentPlainId, categoryName, categoryType string) error {
 	if plainId == "" {
 		return errors.New("id cannot be empty")
 	}
@@ -33,6 +33,14 @@ func UpdateService(plainId, parentPlainId, categoryName string) error {
 
 	if categoryName != "" {
 		existingCategory.Name = categoryName
+	}
+
+	if categoryType != "" {
+		// Validate category type
+		if categoryType != "income" && categoryType != "expense" {
+			return errors.New("category type must be either 'income' or 'expense'")
+		}
+		existingCategory.Type = categoryType
 	}
 
 	// Call mapper to update the record

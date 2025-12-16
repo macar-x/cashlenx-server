@@ -78,7 +78,7 @@ func UpdateById(plainId, belongsDate, categoryName string, amount float64, descr
 	}
 
 	// Update modify time
-	existingEntity.ModifyTime = time.Now()
+	existingEntity.ModifyTime = time.Now().UTC() // Store in UTC
 
 	// Call mapper to update the record
 	updatedEntity := cash_flow_mapper.INSTANCE.UpdateCashFlowByEntity(plainId, existingEntity)

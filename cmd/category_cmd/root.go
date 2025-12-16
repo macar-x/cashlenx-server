@@ -10,6 +10,7 @@ var (
 	plainId       string
 	parentPlainId string
 	categoryName  string
+	categoryType  string
 )
 
 var CategoryCmd = &cobra.Command{

@@ -172,7 +172,7 @@ func (CashFlowMongoDbMapper) GetCashFlowsByFuzzyDesc(description string) []model
 }
 
 func (CashFlowMongoDbMapper) InsertCashFlowByEntity(newEntity model.CashFlowEntity) string {
-	operatingTime := time.Now()
+	operatingTime := time.Now().UTC() // Store in UTC
 	newEntity.CreateTime = operatingTime
 	newEntity.ModifyTime = operatingTime
 
@@ -188,7 +188,7 @@ func (CashFlowMongoDbMapper) BulkInsertCashFlows(entities []model.CashFlowEntity
 		return []string{}, nil
 	}
 
-	operatingTime := time.Now()
+	operatingTime := time.Now().UTC() // Store in UTC
 	documents := make([]interface{}, len(entities))
 
 	for i, entity := range entities {
@@ -236,7 +236,7 @@ func (CashFlowMongoDbMapper) UpdateCashFlowByEntity(plainId string, updatedEntit
 	// Update fields from updatedEntity while preserving ID and CreateTime
 	updatedEntity.Id = targetEntity.Id
 	updatedEntity.CreateTime = targetEntity.CreateTime
-	updatedEntity.ModifyTime = time.Now()
+	updatedEntity.ModifyTime = time.Now().UTC() // Store in UTC
 
 	rowsAffected := database.UpdateManyInMongoDB(filter, convertCashFlowEntity2BsonD(updatedEntity))
 	if rowsAffected != 1 {

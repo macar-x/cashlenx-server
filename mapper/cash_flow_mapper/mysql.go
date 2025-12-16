@@ -189,7 +189,7 @@ func (CashFlowMySqlMapper) CountCashFLowsByCategoryId(categoryPlainId string) in
 }
 
 func (CashFlowMySqlMapper) InsertCashFlowByEntity(newEntity model.CashFlowEntity) string {
-	operatingTime := time.Now()
+	operatingTime := time.Now().UTC() // Store in UTC
 	newEntity.CreateTime = operatingTime
 	newEntity.ModifyTime = operatingTime
 
@@ -234,7 +234,7 @@ func (CashFlowMySqlMapper) BulkInsertCashFlows(entities []model.CashFlowEntity) 
 		return []string{}, nil
 	}
 
-	operatingTime := time.Now()
+	operatingTime := time.Now().UTC() // Store in UTC
 	var sqlString bytes.Buffer
 	sqlString.WriteString("INSERT INTO ")
 	sqlString.WriteString(database.CashFlowTableName)
@@ -294,7 +294,7 @@ func (CashFlowMySqlMapper) UpdateCashFlowByEntity(plainId string, updatedEntity 
 	// Update fields from updatedEntity while preserving ID and CreateTime
 	updatedEntity.Id = targetEntity.Id
 	updatedEntity.CreateTime = targetEntity.CreateTime
-	updatedEntity.ModifyTime = time.Now()
+	updatedEntity.ModifyTime = time.Now().UTC() // Store in UTC
 
 	var sqlString bytes.Buffer
 	sqlString.WriteString("UPDATE ")

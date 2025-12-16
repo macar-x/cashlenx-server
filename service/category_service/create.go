@@ -11,10 +11,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateService(parentPlainId, categoryName string) (string, error) {
+func CreateService(parentPlainId, categoryName, categoryType string) (string, error) {
 	// Validate category name
 	if err := validation.ValidateCategoryName(categoryName); err != nil {
 		return "", err
+	}
+
+	// Validate category type
+	if categoryType != "income" && categoryType != "expense" {
+		return "", errors.New("category type must be either 'income' or 'expense'")
 	}
 
 	// Validate parent ID if provided
@@ -27,6 +32,7 @@ func CreateService(parentPlainId, categoryName string) (string, error) {
 	categoryEntity := model.CategoryEntity{
 		ParentId: primitive.NilObjectID,
 		Name:     categoryName,
+		Type:     categoryType,
 	}
 	if parentPlainId != "" {
 		categoryEntity.ParentId = util.Convert2ObjectId(parentPlainId)

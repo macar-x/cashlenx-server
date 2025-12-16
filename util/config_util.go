@@ -79,6 +79,7 @@ func initDefaultValues() {
 	// Server configuration
 	configurationMap["server.port"] = os.Getenv("SERVER_PORT")
 	configurationMap["server.host"] = os.Getenv("SERVER_HOST")
+	configurationMap["timezone"] = os.Getenv("TIMEZONE")
 }
 
 func GetConfigByKey(configKey string) string {

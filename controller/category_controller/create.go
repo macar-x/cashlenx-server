@@ -22,7 +22,12 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	plainId, err := category_service.CreateService(requestBody.ParentId, requestBody.Name)
+	if requestBody.Type == "" {
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewValidationError("category type is required"))
+		return
+	}
+
+	plainId, err := category_service.CreateService(requestBody.ParentId, requestBody.Name, requestBody.Type)
 	if err != nil {
 		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return

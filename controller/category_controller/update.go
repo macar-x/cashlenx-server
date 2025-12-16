@@ -29,9 +29,10 @@ func UpdateById(w http.ResponseWriter, r *http.Request) {
 	// Extract optional fields
 	parentPlainId, _ := requestBody["parent_id"].(string)
 	categoryName, _ := requestBody["name"].(string)
+	categoryType, _ := requestBody["type"].(string)
 
 	// Call service to update
-	err := category_service.UpdateService(plainId, parentPlainId, categoryName)
+	err := category_service.UpdateService(plainId, parentPlainId, categoryName, categoryType)
 	if err != nil {
 		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return

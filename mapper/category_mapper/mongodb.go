@@ -75,7 +75,7 @@ func (CategoryMongoDbMapper) GetCategoryByParentId(parentPlainId string) []model
 }
 
 func (CategoryMongoDbMapper) InsertCategoryByEntity(newEntity model.CategoryEntity) string {
-	operatingTime := time.Now()
+	operatingTime := time.Now().UTC() // Store in UTC
 	newEntity.CreateTime = operatingTime
 	newEntity.ModifyTime = operatingTime
 
@@ -113,7 +113,7 @@ func (CategoryMongoDbMapper) UpdateCategoryByEntity(plainId string, updatedEntit
 	// Update fields from updatedEntity while preserving ID and CreateTime
 	updatedEntity.Id = targetEntity.Id
 	updatedEntity.CreateTime = targetEntity.CreateTime
-	updatedEntity.ModifyTime = time.Now()
+	updatedEntity.ModifyTime = time.Now().UTC() // Store in UTC
 
 	rowsAffected := database.UpdateManyInMongoDB(filter, convertCategoryEntity2BsonD(updatedEntity))
 	if rowsAffected != 1 {
@@ -226,6 +226,7 @@ func convertCategoryEntity2BsonD(entity model.CategoryEntity) bson.D {
 		primitive.E{Key: "_id", Value: entity.Id},
 		primitive.E{Key: "parent_id", Value: entity.ParentId},
 		primitive.E{Key: "name", Value: entity.Name},
+		primitive.E{Key: "type", Value: entity.Type},
 		primitive.E{Key: "remark", Value: entity.Remark},
 		primitive.E{Key: "create_time", Value: entity.CreateTime},
 		primitive.E{Key: "modify_time", Value: entity.ModifyTime},

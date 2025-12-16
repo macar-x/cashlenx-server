@@ -10,10 +10,6 @@ info:
 servers:
   - url: http://localhost:8080
     description: Local development server
-  - url: http://127.0.0.1:10063
-    description: Docker container server
-  - url: /
-    description: Relative server URL for any hostname and port
 
 paths:
   # Health endpoints

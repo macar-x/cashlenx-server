@@ -37,7 +37,7 @@ func registerHealthRoutes(r *mux.Router) {
 
 func registerCashRoute(r *mux.Router) {
 	// Create
-	r.HandleFunc("/api/cash/outcome", cash_flow_controller.CreateOutcome).Methods("POST")
+	r.HandleFunc("/api/cash/expense", cash_flow_controller.CreateExpense).Methods("POST")
 	r.HandleFunc("/api/cash/income", cash_flow_controller.CreateIncome).Methods("POST")
 
 	// Read
@@ -102,7 +102,7 @@ func versionInfo(w http.ResponseWriter, r *http.Request) {
 		"description": "Personal finance management API",
 		"endpoints": map[string][]string{
 			"cash_flow": {
-				"POST /api/cash/outcome",
+				"POST /api/cash/expense",
 				"POST /api/cash/income",
 				"GET /api/cash",
 				"GET /api/cash?limit=20&offset=0&type=income",

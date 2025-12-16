@@ -22,7 +22,7 @@ var CashCmd = &cobra.Command{
 
 Available sub-commands:
   income   - Add new income transaction
-  outcome  - Add new expense transaction
+  expense  - Add new expense transaction
   update   - Update existing transaction
   delete   - Delete transaction(s)
   query    - Query transactions by filters

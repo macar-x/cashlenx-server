@@ -52,32 +52,32 @@ function Func-Exec-Cash-Income {
     }
 }
 
-function Func-Exec-Cash-Outcome {
-    $outcomeAmount = gum input --placeholder "input outcome amount here..."
+function Func-Exec-Cash-Expense {
+    $expenseAmount = gum input --placeholder "input expense amount here..."
     
     try {
-        $outcomeAmount = [decimal]$outcomeAmount
-        if ($outcomeAmount -gt 0) {
-            Write-Host "Outcome Amount: $outcomeAmount"
-            $script:ExecCommand = "$script:ExecCommand -a $outcomeAmount"
+        $expenseAmount = [decimal]$expenseAmount
+        if ($expenseAmount -gt 0) {
+            Write-Host "Expense Amount: $expenseAmount"
+            $script:ExecCommand = "$script:ExecCommand -a $expenseAmount"
             
-            $outcomeType = gum input --placeholder "input outcome type here..."
-            if ([string]::IsNullOrEmpty($outcomeType)) {
-                $outcomeType = "unknown"
+            $expenseType = gum input --placeholder "input expense type here..."
+            if ([string]::IsNullOrEmpty($expenseType)) {
+                $expenseType = "unknown"
             }
-            Write-Host "Outcome Type: $outcomeType"
-            $script:ExecCommand = "$script:ExecCommand -c $outcomeType"
+            Write-Host "Expense Type: $expenseType"
+            $script:ExecCommand = "$script:ExecCommand -c $expenseType"
             
-            $outcomeDate = gum input --placeholder "input outcome date here..."
-            if ([string]::IsNullOrEmpty($outcomeDate)) {
-                $outcomeDate = Get-Date -Format "yyyyMMdd"
+            $expenseDate = gum input --placeholder "input expense date here..."
+            if ([string]::IsNullOrEmpty($expenseDate)) {
+                $expenseDate = Get-Date -Format "yyyyMMdd"
             }
-            Write-Host "Outcome Date: $outcomeDate"
-            $script:ExecCommand = "$script:ExecCommand -b $outcomeDate"
+            Write-Host "Expense Date: $expenseDate"
+            $script:ExecCommand = "$script:ExecCommand -b $expenseDate"
             
-            $outcomeRemark = gum input --placeholder "input outcome remark here..."
-            Write-Host "Outcome Remark: $outcomeRemark"
-            $script:ExecCommand = "$script:ExecCommand -d '$outcomeRemark'"
+            $expenseRemark = gum input --placeholder "input expense remark here..."
+            Write-Host "Expense Remark: $expenseRemark"
+            $script:ExecCommand = "$script:ExecCommand -d '$expenseRemark'"
         } else {
             Write-Host "Error: Amount must be greater than 0" -ForegroundColor Red
             exit -2
@@ -237,15 +237,15 @@ function Func-Exec-Manage-Import {
 }
 
 function Func-Exec-Cash-Subcommand {
-    $cashSubtype = gum choose "income" "outcome" "update" "delete" "query" "list" "range" "summary"
+    $cashSubtype = gum choose "income" "expense" "update" "delete" "query" "list" "range" "summary"
     Write-Host "Cash Subtype: $cashSubtype"
     
     if ($cashSubtype -eq "income") {
         $script:ExecCommand = "$script:ExecCommand income"
         Func-Exec-Cash-Income
-    } elseif ($cashSubtype -eq "outcome") {
-        $script:ExecCommand = "$script:ExecCommand outcome"
-        Func-Exec-Cash-Outcome
+    } elseif ($cashSubtype -eq "expense") {
+        $script:ExecCommand = "$script:ExecCommand expense"
+        Func-Exec-Cash-Expense
     } elseif ($cashSubtype -eq "query") {
         $script:ExecCommand = "$script:ExecCommand query"
         Func-Exec-Cash-Query

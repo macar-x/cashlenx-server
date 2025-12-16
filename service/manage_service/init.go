@@ -60,7 +60,7 @@ func InitializeDemoData() error {
 
 	for _, exp := range expenses {
 		date := today.AddDate(0, 0, -exp.daysAgo).Format(model.DateFormatYYYYMMDD)
-		_, _ = cash_flow_service.SaveOutcome(date, exp.category, exp.amount, exp.description)
+		_, _ = cash_flow_service.SaveExpense(date, exp.category, exp.amount, exp.description)
 	}
 
 	return nil

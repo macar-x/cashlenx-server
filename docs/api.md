@@ -9,7 +9,7 @@
 - [x] Version info endpoint (`GET /api/version`)
 
 ### Cash Flow API
-- [x] `POST /api/cash/outcome` - Create expense
+- [x] `POST /api/cash/expense` - Create expense
 - [x] `POST /api/cash/income` - Create income
 - [x] `GET /api/cash/{id}` - Query by ID
 - [x] `GET /api/cash/date/{date}` - Query by date

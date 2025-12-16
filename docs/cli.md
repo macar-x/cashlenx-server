@@ -10,7 +10,7 @@ Command-line interface for managing personal finances with CashLenX.
 
 ```bash
 # Add expense
-cashlenx cash outcome -c "Food" -a 45.50 -d "Lunch"
+cashlenx cash expense -c "Food" -a 45.50 -d "Lunch"
 
 # Add income
 cashlenx cash income -c "Salary" -a 5000
@@ -33,7 +33,7 @@ cashlenx
 ├── server start         Start API server
 ├── cash                 Manage transactions
 │   ├── income          Add income
-│   ├── outcome         Add expense
+│   ├── expense         Add expense
 │   ├── update          Update transaction
 │   ├── delete          Delete transaction
 │   ├── query           Query transactions
@@ -144,12 +144,12 @@ Flags:
 - `-b, --date` - Transaction date (optional, default: today)
 - `-d, --description` - Description (optional)
 
-### cash outcome
+### cash expense
 Add new expense transaction
 
 ```bash
-cashlenx cash outcome -c "Food & Dining" -a 45.50 -d "Lunch"
-cashlenx cash outcome -c "Transportation" -a 20 -b 2024-01-15
+cashlenx cash expense -c "Food & Dining" -a 45.50 -d "Lunch"
+cashlenx cash expense -c "Transportation" -a 20 -b 2024-01-15
 ```
 
 Flags:
@@ -547,10 +547,10 @@ export CORS_ORIGINS="http://localhost:3000,http://localhost:4000"
 
 ```bash
 # Add morning coffee
-cashlenx cash outcome -c "Food & Dining" -a 4.50 -d "Morning coffee"
+cashlenx cash expense -c "Food & Dining" -a 4.50 -d "Morning coffee"
 
 # Add lunch
-cashlenx cash outcome -c "Food & Dining" -a 12.00 -d "Lunch"
+cashlenx cash expense -c "Food & Dining" -a 12.00 -d "Lunch"
 
 # Check today's transactions
 cashlenx cash query -b $(date +%Y-%m-%d)

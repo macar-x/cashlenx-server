@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/macar-x/cashlenx-server/errors"
 	"github.com/macar-x/cashlenx-server/service/category_service"
 	"github.com/macar-x/cashlenx-server/util"
 )
@@ -11,16 +12,15 @@ import (
 // DeleteById deletes a category by ID
 func DeleteById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	plainId := vars["id"]
+	id := vars["id"]
 
-	if plainId == "" {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": "id is required"})
+	if id == "" {
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("id is required"))
 		return
 	}
 
-	err := category_service.DeleteService(plainId, "")
-	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+	if err := category_service.DeleteService(id, ""); err != nil {
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
 	}
 

@@ -4,68 +4,69 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/macar-x/cashlenx-server/errors"
 	"github.com/macar-x/cashlenx-server/service/category_service"
 	"github.com/macar-x/cashlenx-server/util"
 )
 
-// QueryById queries a category by ID
+// QueryById retrieves a category by ID
 func QueryById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	plainId := vars["id"]
+	id := vars["id"]
 
-	if plainId == "" {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": "id is required"})
+	if id == "" {
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("id is required"))
 		return
 	}
 
-	categoryEntities, err := category_service.QueryService(plainId, "", "")
+	categories, err := category_service.QueryService(id, "", "")
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if len(categoryEntities) == 0 {
-		util.ComposeJSONResponse(w, http.StatusNotFound, map[string]string{"error": "category not found"})
+	if len(categories) == 0 {
+		util.ComposeJSONResponse(w, http.StatusNotFound, errors.NewAppError(errors.ErrNotFound, "category not found", nil))
 		return
 	}
 
-	util.ComposeJSONResponse(w, http.StatusOK, categoryEntities[0])
+	util.ComposeJSONResponse(w, http.StatusOK, categories[0])
 }
 
-// QueryByName queries categories by name
+// QueryByName retrieves categories by name (fuzzy match)
 func QueryByName(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	name := vars["name"]
 
 	if name == "" {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": "name is required"})
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("name is required"))
 		return
 	}
 
-	categoryEntities, err := category_service.QueryService("", name, "")
+	categories, err := category_service.QueryService("", "", name)
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	util.ComposeJSONResponse(w, http.StatusOK, categoryEntities)
+	util.ComposeJSONResponse(w, http.StatusOK, categories)
 }
 
-// QueryChildren queries child categories by parent ID
+// QueryChildren retrieves children categories by parent ID
 func QueryChildren(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	parentId := vars["parent_id"]
 
 	if parentId == "" {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": "parent_id is required"})
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("parent_id is required"))
 		return
 	}
 
-	categoryEntities, err := category_service.QueryService("", "", parentId)
+	categories, err := category_service.QueryService("", parentId, "")
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	util.ComposeJSONResponse(w, http.StatusOK, categoryEntities)
+	util.ComposeJSONResponse(w, http.StatusOK, categories)
 }

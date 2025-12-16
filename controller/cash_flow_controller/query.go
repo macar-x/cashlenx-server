@@ -4,33 +4,36 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/macar-x/cashlenx-server/errors"
 	"github.com/macar-x/cashlenx-server/service/cash_flow_service"
 	"github.com/macar-x/cashlenx-server/util"
 )
 
 func QueryById(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	plainId := vars["id"]
-	if plainId == "" {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": "id is empty"})
+	id := mux.Vars(r)["id"]
+	if id == "" {
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("id is required"))
+		return
 	}
-	cashFlowEntity, err := cash_flow_service.QueryById(plainId)
+
+	cashFlowEntity, err := cash_flow_service.QueryById(id)
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusOK, map[string]string{"error": err.Error()})
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
 	}
 	util.ComposeJSONResponse(w, http.StatusOK, cashFlowEntity)
 }
 
 func QueryByDate(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	belongsDate := vars["date"]
-	if belongsDate == "" {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": "date is empty"})
+	date := mux.Vars(r)["date"]
+	if date == "" {
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("date is required"))
+		return
 	}
-	cashFlowEntityList, err := cash_flow_service.QueryByDate(belongsDate)
+
+	cashFlowEntityList, err := cash_flow_service.QueryByDate(date)
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusOK, map[string]string{"error": err.Error()})
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
 	}
 	util.ComposeJSONResponse(w, http.StatusOK, cashFlowEntityList)

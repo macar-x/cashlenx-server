@@ -81,7 +81,7 @@ func SchemaValidation(next http.Handler) http.Handler {
 
 // validateRequest validates incoming request against OpenAPI schema
 func validateRequest(r *http.Request) error {
-	// Find matching route
+	// Find matching route with the full path including /api prefix
 	route, pathParams, err := routesRouter.FindRoute(r)
 	if err != nil {
 		return err

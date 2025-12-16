@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/macar-x/cashlenx-server/errors"
 	"github.com/macar-x/cashlenx-server/service/category_service"
 	"github.com/macar-x/cashlenx-server/util"
 )
@@ -14,14 +15,14 @@ func UpdateById(w http.ResponseWriter, r *http.Request) {
 	plainId := vars["id"]
 
 	if plainId == "" {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": "id is required"})
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("id is required"))
 		return
 	}
 
 	// Parse JSON body for update fields
 	var requestBody map[string]interface{}
 	if err := util.ParseJSONRequest(r, &requestBody); err != nil {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("invalid request body"))
 		return
 	}
 
@@ -32,7 +33,7 @@ func UpdateById(w http.ResponseWriter, r *http.Request) {
 	// Call service to update
 	err := category_service.UpdateService(plainId, parentPlainId, categoryName)
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
 	}
 

@@ -32,7 +32,7 @@ func ListAll(w http.ResponseWriter, r *http.Request) {
 	// Call service to get paginated results
 	categories, totalCount, err := category_service.ListAllService(limit, offset)
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
 	}
 

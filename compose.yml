@@ -70,7 +70,7 @@ services:
       SERVER_HOST: ${SERVER_HOST:-0.0.0.0}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:8080}
     volumes:
-      - ./logs:/app/logs
+      - ./logs/docker:/app/logs
     depends_on:
       mongodb:
         condition: service_healthy

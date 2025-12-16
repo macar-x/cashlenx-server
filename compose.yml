@@ -69,6 +69,7 @@ services:
       SERVER_PORT: 8080
       SERVER_HOST: ${SERVER_HOST:-0.0.0.0}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:8080}
+      TIMEZONE: ${TIMEZONE:-UTC}
     volumes:
       - ./logs/docker:/app/logs
     depends_on:

@@ -14,6 +14,11 @@ import (
 )
 
 func StartServer(port int32) {
+	// Explicitly load timezone at server startup to ensure it's configured
+	// and logged immediately
+	tz := util.GetTimezone()
+	fmt.Printf("Loaded timezone: %v\n", tz)
+
 	r := mux.NewRouter()
 
 	// Register routes

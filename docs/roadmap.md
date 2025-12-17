@@ -29,16 +29,20 @@
 ## v0.2.0 — Big Feature: API Contract & OpenAPI
 - [x] Finalize OpenAPI coverage for core endpoints #api #docs
 - [x] Auto-validate requests/responses against schema with middleware #api
-- [ ] Publish HTML docs artifact from OpenAPI #docs #devops
 - [x] Add pagination and filtering to listing endpoints #api #performance
 - [x] Enhance interactive scripts for all commands #cli #dx
 - [x] Add cross-platform support with PowerShell scripts #devops #dx
 - [x] Improve code documentation and translate comments to English #docs
 - [x] Update dependencies and align toolchain #devops #dx
-- [ ] Introduce consistent response wrapper `{data,error,meta}` #api
-- [ ] Centralize error types and mapping #api
-- [ ] Increase unit test coverage in services and mappers #api
-- [ ] Set up CI (build, test, lint, Docker image) #devops
+- [x] Fix CLI query empty response by adding .env file support with godotenv #dx #api
+- [x] Ensure consistent env var handling between CLI and API #dx
+- [x] Fix slow server startup by implementing multi-stage Docker build #devops
+- [x] Update Docker configuration to use health API for container readiness #devops #observability
+- [x] Publish HTML docs artifact from OpenAPI #docs #devops
+- [x] Introduce consistent response wrapper `{data,error,meta}` #api
+- [x] Centralize error types and mapping #api
+- [x] Increase unit test coverage in services and mappers #api
+- [x] Set up CI (build, test, lint, Docker image) #devops
 
 ## v0.3.0 — Big Feature: User Management & Authentication
 - [ ] Optional JWT auth middleware protecting mutating endpoints #security #api

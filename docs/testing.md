@@ -81,7 +81,7 @@ go build -o cashlenx main.go
 ./cashlenx cash query -b 2024-12-04
 
 # Add expense
-./cashlenx cash outcome -c "Food & Dining" -a 45.50 -d "Lunch"
+./cashlenx cash expense -c "Food & Dining" -a 45.50 -d "Lunch"
 
 # Add income
 ./cashlenx cash income -c "Salary" -a 5000
@@ -123,7 +123,7 @@ curl http://localhost:8080/api/cash/date/$(date +%Y-%m-%d)
 curl http://localhost:8080/api/cash/date/2024-12-04
 
 # Create expense
-curl -X POST http://localhost:8080/api/cash/outcome \
+curl -X POST http://localhost:8080/api/cash/expense \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 45.50,
@@ -208,8 +208,8 @@ go test -v ./...
 ./cashlenx cash income -c "Salary" -a 5000
 
 # 2. Add expenses
-./cashlenx cash outcome -c "Food & Dining" -a 45.50 -d "Lunch"
-./cashlenx cash outcome -c "Transportation" -a 20 -d "Bus fare"
+./cashlenx cash expense -c "Food & Dining" -a 45.50 -d "Lunch"
+./cashlenx cash expense -c "Transportation" -a 20 -d "Bus fare"
 
 # 3. Query today's transactions
 ./cashlenx cash query -b $(date +%Y-%m-%d)

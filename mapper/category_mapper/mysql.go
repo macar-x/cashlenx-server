@@ -16,7 +16,7 @@ type CategoryMySqlMapper struct{}
 
 func (CategoryMySqlMapper) GetCategoryByObjectId(plainId string) model.CategoryEntity {
 	var sqlString bytes.Buffer
-	sqlString.WriteString("SELECT ID, PARENT_ID, NAME FROM ")
+	sqlString.WriteString("SELECT ID, PARENT_ID, NAME, TYPE FROM ")
 	sqlString.WriteString(database.CategoryTableName)
 	sqlString.WriteString(" WHERE ID = ? ")
 
@@ -45,7 +45,7 @@ func (CategoryMySqlMapper) GetCategoryByName(categoryName string) model.Category
 
 	// Cache miss - query database
 	var sqlString bytes.Buffer
-	sqlString.WriteString("SELECT ID, PARENT_ID, NAME FROM ")
+	sqlString.WriteString("SELECT ID, PARENT_ID, NAME, TYPE FROM ")
 	sqlString.WriteString(database.CategoryTableName)
 	sqlString.WriteString(" WHERE NAME = ? ")
 
@@ -73,7 +73,7 @@ func (CategoryMySqlMapper) GetCategoryByName(categoryName string) model.Category
 
 func (CategoryMySqlMapper) GetCategoryByParentId(parentPlainId string) []model.CategoryEntity {
 	var sqlString bytes.Buffer
-	sqlString.WriteString("SELECT ID, PARENT_ID, NAME FROM ")
+	sqlString.WriteString("SELECT ID, PARENT_ID, NAME, TYPE FROM ")
 	sqlString.WriteString(database.CategoryTableName)
 	sqlString.WriteString(" WHERE PARENT_ID = ? ")
 
@@ -93,7 +93,7 @@ func (CategoryMySqlMapper) GetCategoryByParentId(parentPlainId string) []model.C
 }
 
 func (CategoryMySqlMapper) InsertCategoryByEntity(newEntity model.CategoryEntity) string {
-	operatingTime := time.Now()
+	operatingTime := time.Now().UTC() // Store in UTC
 	newEntity.CreateTime = operatingTime
 	newEntity.ModifyTime = operatingTime
 
@@ -103,6 +103,7 @@ func (CategoryMySqlMapper) InsertCategoryByEntity(newEntity model.CategoryEntity
 	sqlString.WriteString(" SET ID = ?, ")
 	sqlString.WriteString(" PARENT_ID = ?, ")
 	sqlString.WriteString(" NAME = ?, ")
+	sqlString.WriteString(" TYPE = ?, ")
 	sqlString.WriteString(" REMARK = ?, ")
 	sqlString.WriteString(" CREATE_TIME = ?, ")
 	sqlString.WriteString(" MODIFY_TIME = ? ")
@@ -117,7 +118,7 @@ func (CategoryMySqlMapper) InsertCategoryByEntity(newEntity model.CategoryEntity
 
 	newPlainId := primitive.NewObjectID().Hex()
 	result, err := statement.Exec(newPlainId, newEntity.ParentId.Hex(), newEntity.Name,
-		newEntity.Remark, operatingTime, operatingTime)
+		newEntity.Type, newEntity.Remark, operatingTime, operatingTime)
 	if err != nil {
 		util.Logger.Errorw("insert failed", "error", err)
 	}
@@ -144,13 +145,14 @@ func (CategoryMySqlMapper) UpdateCategoryByEntity(plainId string, updatedEntity 
 	// Update fields from updatedEntity while preserving ID and CreateTime
 	updatedEntity.Id = targetEntity.Id
 	updatedEntity.CreateTime = targetEntity.CreateTime
-	updatedEntity.ModifyTime = time.Now()
+	updatedEntity.ModifyTime = time.Now().UTC() // Store in UTC
 
 	var sqlString bytes.Buffer
 	sqlString.WriteString("UPDATE ")
 	sqlString.WriteString(database.CategoryTableName)
 	sqlString.WriteString(" SET PARENT_ID = ?, ")
 	sqlString.WriteString(" NAME = ?, ")
+	sqlString.WriteString(" TYPE = ?, ")
 	sqlString.WriteString(" REMARK = ?, ")
 	sqlString.WriteString(" MODIFY_TIME = ? ")
 	sqlString.WriteString(" WHERE ID = ? ")
@@ -163,7 +165,7 @@ func (CategoryMySqlMapper) UpdateCategoryByEntity(plainId string, updatedEntity 
 		util.Logger.Errorw("update failed", "error", err)
 	}
 
-	result, err := statement.Exec(updatedEntity.ParentId.Hex(), updatedEntity.Name, updatedEntity.Remark,
+	result, err := statement.Exec(updatedEntity.ParentId.Hex(), updatedEntity.Name, updatedEntity.Type, updatedEntity.Remark,
 		updatedEntity.ModifyTime, updatedEntity.Id)
 	if err != nil {
 		util.Logger.Errorw("update failed", "error", err)
@@ -281,12 +283,34 @@ func (CategoryMySqlMapper) CountAllCategories() int64 {
 	return count
 }
 
+func (CategoryMySqlMapper) TruncateCategories() error {
+	var sqlString bytes.Buffer
+	sqlString.WriteString("TRUNCATE TABLE ")
+	sqlString.WriteString(database.CategoryTableName)
+
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	_, err := connection.Exec(sqlString.String())
+	if err != nil {
+		util.Logger.Errorw("truncate categories failed", "error", err)
+		return err
+	}
+
+	// Clear cache after truncate
+	cache.GetCategoryCache().Clear()
+
+	util.Logger.Infow("Categories truncated successfully")
+	return nil
+}
+
 func convertRow2CategoryEntity(rows *sql.Rows) model.CategoryEntity {
 	var id string
 	var parentId string
 	var name string
+	var categoryType string
 
-	err := rows.Scan(&id, &parentId, &name)
+	err := rows.Scan(&id, &parentId, &name, &categoryType)
 	if err != nil {
 		util.Logger.Errorw("covert into entity failed", "error", err)
 	}
@@ -295,5 +319,6 @@ func convertRow2CategoryEntity(rows *sql.Rows) model.CategoryEntity {
 		Id:       util.Convert2ObjectId(id),
 		ParentId: util.Convert2ObjectId(parentId),
 		Name:     name,
+		Type:     categoryType,
 	}
 }

@@ -3,6 +3,7 @@ package category_controller
 import (
 	"net/http"
 
+	"github.com/macar-x/cashlenx-server/errors"
 	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/service/category_service"
 	"github.com/macar-x/cashlenx-server/util"
@@ -12,23 +13,37 @@ import (
 func Create(w http.ResponseWriter, r *http.Request) {
 	var requestBody model.CategoryDTO
 	if err := util.ParseJSONRequest(r, &requestBody); err != nil {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("invalid request body"))
 		return
 	}
 
 	if requestBody.Name == "" {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": "category name is required"})
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewValidationError("category name is required"))
 		return
 	}
 
-	plainId, err := category_service.CreateService(requestBody.ParentName, requestBody.Name)
+	if requestBody.Type == "" {
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewValidationError("category type is required"))
+		return
+	}
+
+	plainId, err := category_service.CreateService(requestBody.ParentId, requestBody.Name, requestBody.Type)
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	util.ComposeJSONResponse(w, http.StatusOK, map[string]string{
-		"id":      plainId,
-		"message": "category created successfully",
-	})
+	// Get the created category entity
+	createdCategory, err := category_service.QueryService(plainId, "", "")
+	if err != nil {
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	if len(createdCategory) == 0 {
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, errors.NewInternalError("failed to retrieve created category", nil))
+		return
+	}
+
+	util.ComposeJSONResponse(w, http.StatusCreated, createdCategory[0])
 }

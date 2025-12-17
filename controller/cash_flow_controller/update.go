@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/macar-x/cashlenx-server/errors"
 	"github.com/macar-x/cashlenx-server/service/cash_flow_service"
 	"github.com/macar-x/cashlenx-server/util"
 )
@@ -14,14 +15,14 @@ func UpdateById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	plainId := vars["id"]
 	if plainId == "" {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": "id is required"})
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("id is required"))
 		return
 	}
 
 	// Parse JSON body for update fields
 	var requestBody map[string]interface{}
 	if err := util.ParseJSONRequest(r, &requestBody); err != nil {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("invalid request body"))
 		return
 	}
 
@@ -43,7 +44,7 @@ func UpdateById(w http.ResponseWriter, r *http.Request) {
 	// Call service to update
 	updatedEntity, err := cash_flow_service.UpdateById(plainId, belongsDate, categoryName, amount, description)
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
 	}
 

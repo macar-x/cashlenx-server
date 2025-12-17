@@ -69,8 +69,9 @@ services:
       SERVER_PORT: 8080
       SERVER_HOST: ${SERVER_HOST:-0.0.0.0}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:8080}
+      TIMEZONE: ${TIMEZONE:-UTC}
     volumes:
-      - ./logs:/app/logs
+      - ./logs/docker:/app/logs
     depends_on:
       mongodb:
         condition: service_healthy
@@ -78,6 +79,12 @@ services:
       mysql:
         condition: service_healthy
         required: false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       - cashlenx-network
     profiles:

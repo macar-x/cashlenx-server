@@ -1,7 +1,6 @@
 package validation
 
 import (
-	"fmt"
 	"regexp"
 	"time"
 
@@ -11,10 +10,10 @@ import (
 
 // NewValidationError creates a new validation error
 func NewValidationError(field, message string) error {
-	return errors.NewValidationError(fmt.Sprintf("%s: %s", field, message))
+	return errors.NewFieldValidationError(field, message)
 }
 
-// ValidateDate validates date string format (YYYYMMDD or YYYY-MM-DD)
+// ValidateDate validates date string format (YYYYMMDD, YYYY-MM-DD, or YYYY/MM/DD)
 func ValidateDate(dateStr string) error {
 	if dateStr == "" {
 		return NewValidationError("date", "cannot be empty")
@@ -25,7 +24,7 @@ func ValidateDate(dateStr string) error {
 		// Parse to verify it's a valid date
 		_, err := time.Parse("20060102", dateStr)
 		if err != nil {
-			return NewValidationError("date", "invalid date format, use YYYYMMDD or YYYY-MM-DD")
+			return NewValidationError("date", "invalid date format, use YYYYMMDD, YYYY-MM-DD, or YYYY/MM/DD")
 		}
 		return nil
 	}
@@ -34,12 +33,21 @@ func ValidateDate(dateStr string) error {
 	if matched, _ := regexp.MatchString(`^\d{4}-\d{2}-\d{2}$`, dateStr); matched {
 		_, err := time.Parse("2006-01-02", dateStr)
 		if err != nil {
-			return NewValidationError("date", "invalid date format, use YYYYMMDD or YYYY-MM-DD")
+			return NewValidationError("date", "invalid date format, use YYYYMMDD, YYYY-MM-DD, or YYYY/MM/DD")
 		}
 		return nil
 	}
 
-	return NewValidationError("date", "invalid date format, use YYYYMMDD or YYYY-MM-DD")
+	// Check format YYYY/MM/DD
+	if matched, _ := regexp.MatchString(`^\d{4}/\d{2}/\d{2}$`, dateStr); matched {
+		_, err := time.Parse("2006/01/02", dateStr)
+		if err != nil {
+			return NewValidationError("date", "invalid date format, use YYYYMMDD, YYYY-MM-DD, or YYYY/MM/DD")
+		}
+		return nil
+	}
+
+	return NewValidationError("date", "invalid date format, use YYYYMMDD, YYYY-MM-DD, or YYYY/MM/DD")
 }
 
 // ValidateDateRange validates a date range (from must be before or equal to to)
@@ -56,8 +64,11 @@ func ValidateDateRange(fromStr, toStr string) error {
 	var from, to time.Time
 	var err error
 
+	// Parse from date
 	if len(fromStr) == 8 {
 		from, err = time.Parse("20060102", fromStr)
+	} else if matched, _ := regexp.MatchString(`^\d{4}/\d{2}/\d{2}$`, fromStr); matched {
+		from, err = time.Parse("2006/01/02", fromStr)
 	} else {
 		from, err = time.Parse("2006-01-02", fromStr)
 	}
@@ -65,8 +76,11 @@ func ValidateDateRange(fromStr, toStr string) error {
 		return NewValidationError("from_date", "failed to parse date")
 	}
 
+	// Parse to date
 	if len(toStr) == 8 {
 		to, err = time.Parse("20060102", toStr)
+	} else if matched, _ := regexp.MatchString(`^\d{4}/\d{2}/\d{2}$`, toStr); matched {
+		to, err = time.Parse("2006/01/02", toStr)
 	} else {
 		to, err = time.Parse("2006-01-02", toStr)
 	}

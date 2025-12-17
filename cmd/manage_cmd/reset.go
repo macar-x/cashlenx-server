@@ -33,12 +33,15 @@ WARNING: This operation cannot be undone. Create a backup first!`,
 			}
 		}
 
-		err := manage_service.ResetDatabase()
+		stats, err := manage_service.ResetDatabase()
 		if err != nil {
 			return err
 		}
 
 		fmt.Println("✅ Database reset successfully - all data cleared")
+		fmt.Println("\nStatistics:")
+		fmt.Printf("  Categories: %d success, %d failed\n", stats.Categories.Success, stats.Categories.Failed)
+		fmt.Printf("  Cash Flows: %d success, %d failed\n", stats.CashFlows.Success, stats.CashFlows.Failed)
 		return nil
 	},
 }

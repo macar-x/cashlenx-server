@@ -68,13 +68,16 @@ func ListAll(w http.ResponseWriter, r *http.Request) {
 	currentPage := (offset / limit) + 1
 
 	// Create meta info
-	meta := &model.MetaInfo{
-		Total: totalCount,
-		Page:  int64(currentPage),
-		Limit: int64(limit),
+	meta := map[string]interface{}{
+		"total": totalCount,
+		"page":  int64(currentPage),
+		"limit": int64(limit),
 	}
 
-	// Return with pagination metadata using the new response wrapper
-	response := model.NewSuccessResponseWithMeta(cashFlows, meta)
+	// Return with pagination metadata
+	response := map[string]interface{}{
+		"data": cashFlows,
+		"meta": meta,
+	}
 	util.ComposeJSONResponse(w, http.StatusOK, response)
 }

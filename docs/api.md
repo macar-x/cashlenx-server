@@ -9,12 +9,18 @@
 - [x] Version info endpoint (`GET /api/version`)
 
 ### Cash Flow API
-- [x] `POST /api/cash/outcome` - Create expense
+- [x] `POST /api/cash/expense` - Create expense
 - [x] `POST /api/cash/income` - Create income
 - [x] `GET /api/cash/{id}` - Query by ID
 - [x] `GET /api/cash/date/{date}` - Query by date
 - [x] `DELETE /api/cash/{id}` - Delete by ID
 - [x] `DELETE /api/cash/date/{date}` - Delete by date
+
+### Manage API
+- [x] `GET /api/manage/dump` - Download database dump
+- [x] `POST /api/manage/restore` - Restore database from dump
+- [x] `GET /api/manage/export` - Export data to Excel
+- [x] `POST /api/manage/import` - Import data from Excel
 
 ## To Implement 🚧
 
@@ -44,8 +50,6 @@
 - [ ] `POST /api/export` - Export to Excel
 - [ ] `POST /api/import` - Import from Excel
 - [ ] `GET /api/export/csv` - Export to CSV
-- [ ] `POST /api/backup` - Create backup
-- [ ] `POST /api/restore` - Restore from backup
 
 ## Implementation Guide
 

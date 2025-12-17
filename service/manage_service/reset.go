@@ -1,21 +1,42 @@
 package manage_service
 
 import (
-	"errors"
+	"github.com/macar-x/cashlenx-server/mapper/cash_flow_mapper"
+	"github.com/macar-x/cashlenx-server/mapper/category_mapper"
 )
 
 // ResetDatabase clears all data from the database
-func ResetDatabase() error {
-	// Note: To properly implement this, we need:
-	// 1. Mapper method to delete all cash flows: DeleteAllCashFlows()
-	// 2. Mapper method to delete all categories: DeleteAllCategories()
+func ResetDatabase() (OperationStats, error) {
+	stats := OperationStats{
+		CashFlows:  EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
+		Categories: EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
+	}
+	
+	// Count items before truncation to provide accurate statistics
+	stats.CashFlows.Success = int(cash_flow_mapper.INSTANCE.CountAllCashFlows())
+	stats.Categories.Success = int(category_mapper.INSTANCE.CountAllCategories())
+	
+	// This is a dangerous operation - truncate all data
+	// First truncate cash flows (dependent data)
+	if err := cash_flow_mapper.INSTANCE.TruncateCashFlows(); err != nil {
+		// If truncation fails, set success to 0 and failed to the counted items
+		stats.CashFlows.Failed = stats.CashFlows.Success
+		stats.CashFlows.Success = 0
+		return stats, err
+	}
 
-	// This is a dangerous operation and should be implemented carefully
-	// with proper transaction support and confirmation
+	// Then truncate categories (parent data)
+	if err := category_mapper.INSTANCE.TruncateCategories(); err != nil {
+		// If truncation fails, set success to 0 and failed to the counted items
+		stats.Categories.Failed = stats.Categories.Success
+		stats.Categories.Success = 0
+		return stats, err
+	}
 
-	// TODO: Add to mapper interfaces:
-	//   - DeleteAllCashFlows() int64
-	//   - DeleteAllCategories() int64
+	return stats, nil
+}
 
-	return errors.New("database reset requires mapper enhancement - need DeleteAll methods")
+// TruncateDatabase is an alias for ResetDatabase - clears all data from the database
+func TruncateDatabase() (OperationStats, error) {
+	return ResetDatabase()
 }

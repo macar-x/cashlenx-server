@@ -10,7 +10,7 @@ Command-line interface for managing personal finances with CashLenX.
 
 ```bash
 # Add expense
-cashlenx cash outcome -c "Food" -a 45.50 -d "Lunch"
+cashlenx cash expense -c "Food" -a 45.50 -d "Lunch"
 
 # Add income
 cashlenx cash income -c "Salary" -a 5000
@@ -33,7 +33,7 @@ cashlenx
 ├── server start         Start API server
 ├── cash                 Manage transactions
 │   ├── income          Add income
-│   ├── outcome         Add expense
+│   ├── expense         Add expense
 │   ├── update          Update transaction
 │   ├── delete          Delete transaction
 │   ├── query           Query transactions
@@ -56,12 +56,14 @@ cashlenx
 │   └── stats           Show statistics
 └── db                  Database operations
     ├── connect         Test connection
-    └── seed            Seed demo data
+    ├── seed            Seed demo data
+    ├── dump            Dump database contents
+    └── restore         Restore database from dump
 ```
 
 ### Implementation Status
 
-✅ **Working**: cash income/outcome/query/delete/list, category create/query/delete/update/list, manage export/import/init, server start  
+✅ **Working**: cash income/expense/query/delete/list, category create/query/delete/update/list, manage export/import/init, server start, db dump/restore  
 🚧 **Pending**: cash update/range/summary, manage backup/restore/reset/stats, db connect/seed
 
 ## Installation
@@ -142,12 +144,12 @@ Flags:
 - `-b, --date` - Transaction date (optional, default: today)
 - `-d, --description` - Description (optional)
 
-### cash outcome
+### cash expense
 Add new expense transaction
 
 ```bash
-cashlenx cash outcome -c "Food & Dining" -a 45.50 -d "Lunch"
-cashlenx cash outcome -c "Transportation" -a 20 -b 2024-01-15
+cashlenx cash expense -c "Food & Dining" -a 45.50 -d "Lunch"
+cashlenx cash expense -c "Transportation" -a 20 -b 2024-01-15
 ```
 
 Flags:
@@ -226,13 +228,13 @@ cashlenx cash list -l 20 -o 40
 
 # Filter by type
 cashlenx cash list -t income
-cashlenx cash list -t outcome
+cashlenx cash list -t expense
 ```
 
 Flags:
 - `-l, --limit` - Maximum records to return (default: 50)
 - `-o, --offset` - Number of records to skip (default: 0)
-- `-t, --type` - Filter by type (income/outcome)
+- `-t, --type` - Filter by type (income/expense)
 
 **Status**: Not yet implemented - requires database integration
 
@@ -486,6 +488,46 @@ Alias for `manage init`.
 
 **Status**: Not yet implemented - requires database integration
 
+### db dump
+Dump database contents to JSON file
+
+```bash
+# Dump to auto-generated file
+cashlenx db dump
+
+# Dump to specific file
+cashlenx db dump -o backup.json
+
+# Dump with verbose output
+cashlenx db dump -v
+```
+
+Flags:
+- `-o, --output` - Output file path (optional, default: cashlenx_dump_TIMESTAMP.json)
+- `-v, --verbose` - Enable verbose output
+
+Output file contains:
+- Categories
+- Cash flow transactions
+- Export metadata
+
+### db restore
+Restore database from JSON dump file
+
+```bash
+# Restore from file
+cashlenx db restore -i backup.json
+
+# Restore with verbose output
+cashlenx db restore -i backup.json -v
+```
+
+Flags:
+- `-i, --input` - Input dump file path (required)
+- `-v, --verbose` - Enable verbose output
+
+⚠️ **WARNING**: This operation will replace all existing data in the database! Ensure you have a backup before proceeding.
+
 ## Advanced Configuration
 
 ### Optional Environment Variables
@@ -505,10 +547,10 @@ export CORS_ORIGINS="http://localhost:3000,http://localhost:4000"
 
 ```bash
 # Add morning coffee
-cashlenx cash outcome -c "Food & Dining" -a 4.50 -d "Morning coffee"
+cashlenx cash expense -c "Food & Dining" -a 4.50 -d "Morning coffee"
 
 # Add lunch
-cashlenx cash outcome -c "Food & Dining" -a 12.00 -d "Lunch"
+cashlenx cash expense -c "Food & Dining" -a 12.00 -d "Lunch"
 
 # Check today's transactions
 cashlenx cash query -b $(date +%Y-%m-%d)
@@ -550,7 +592,7 @@ cashlenx category list
 
 ### ✅ Implemented
 - Server start
-- Cash income/outcome
+- Cash income/expense
 - Cash query (by ID, date, description)
 - Cash delete (by ID, date)
 - Cash list (with pagination and filtering)
@@ -559,6 +601,7 @@ cashlenx category list
 - Category list (with pagination)
 - Manage export/import
 - Manage init (demo data initialization)
+- DB dump/restore
 - Version command
 
 ### 🚧 Pending Implementation

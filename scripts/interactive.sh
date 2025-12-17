@@ -32,31 +32,31 @@ function func_exec_cash_income() {
   fi
 }
 
-function func_exec_cash_outcome() {
-  OUTCOME_AMOUNT=$(gum input --placeholder "input outcome amount here...");
+function func_exec_cash_expense() {
+  EXPENSE_AMOUNT=$(gum input --placeholder "input expense amount here...");
   
-  if [ "$OUTCOME_AMOUNT" -gt 0 ]; then
-    echo "Outcome Amount: $OUTCOME_AMOUNT";
-    EXEC_COMMAND="$EXEC_COMMAND -a $OUTCOME_AMOUNT";
+  if [ "$EXPENSE_AMOUNT" -gt 0 ]; then
+    echo "Expense Amount: $EXPENSE_AMOUNT";
+    EXEC_COMMAND="$EXEC_COMMAND -a $EXPENSE_AMOUNT";
     
-    OUTCOME_TYPE=$(gum input --placeholder "input outcome type here...");
-    if [ -z "$OUTCOME_TYPE" ]; then
-      OUTCOME_TYPE="unknown";
+    EXPENSE_TYPE=$(gum input --placeholder "input expense type here...");
+    if [ -z "$EXPENSE_TYPE" ]; then
+      EXPENSE_TYPE="unknown";
     fi
-    echo "Outcome Type: $OUTCOME_TYPE";
-    EXEC_COMMAND="$EXEC_COMMAND -c $OUTCOME_TYPE";
+    echo "Expense Type: $EXPENSE_TYPE";
+    EXEC_COMMAND="$EXEC_COMMAND -c $EXPENSE_TYPE";
     
-    OUTCOME_DATE=$(gum input --placeholder "input outcome date here...");
-    if [ -z "$OUTCOME_DATE" ]; then
-      OUTCOME_DATE=$(date +%Y%m%d);
+    EXPENSE_DATE=$(gum input --placeholder "input expense date here...");
+    if [ -z "$EXPENSE_DATE" ]; then
+      EXPENSE_DATE=$(date +%Y%m%d);
     fi
-    echo "Outcome Date: $OUTCOME_DATE";
-    EXEC_COMMAND="$EXEC_COMMAND -b $OUTCOME_DATE";
+    echo "Expense Date: $EXPENSE_DATE";
+    EXEC_COMMAND="$EXEC_COMMAND -b $EXPENSE_DATE";
     
-    OUTCOME_REMARK=$(gum input --placeholder "input outcome remark here...");
-    echo "Outcome Remark: $OUTCOME_REMARK";
+    EXPENSE_REMARK=$(gum input --placeholder "input expense remark here...");
+    echo "Expense Remark: $EXPENSE_REMARK";
     # Has some problems when there is a blankspace in remark.
-    EXEC_COMMAND="$EXEC_COMMAND -d '$OUTCOME_REMARK'";
+    EXEC_COMMAND="$EXEC_COMMAND -d '$EXPENSE_REMARK'";
   else
     echo "Error occur...";
     exit -2;
@@ -212,15 +212,15 @@ function func_exec_manage_import() {
 }
 
 function func_exec_cash_subcommand() {
-  CASH_SUBTYPE=$(gum choose "income" "outcome" "update" "delete" "query" "list" "range" "summary");
+  CASH_SUBTYPE=$(gum choose "income" "expense" "update" "delete" "query" "list" "range" "summary");
   echo "Cash Subtype: $CASH_SUBTYPE";
   
   if [ "$CASH_SUBTYPE" = "income" ]; then
     EXEC_COMMAND="$EXEC_COMMAND income";
     func_exec_cash_income;
-  elif [ "$CASH_SUBTYPE" = "outcome" ]; then
-    EXEC_COMMAND="$EXEC_COMMAND outcome";
-    func_exec_cash_outcome;
+  elif [ "$CASH_SUBTYPE" = "expense" ]; then
+    EXEC_COMMAND="$EXEC_COMMAND expense";
+    func_exec_cash_expense;
   elif [ "$CASH_SUBTYPE" = "query" ]; then
     EXEC_COMMAND="$EXEC_COMMAND query";
     func_exec_cash_query;

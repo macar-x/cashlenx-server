@@ -1,4 +1,5 @@
 # Binaries Files
+cashlenx
 *.exe
 *.exe~
 *.dll
@@ -13,56 +14,11 @@
 *.xlsx
 
 # IDE Files
-/**/.idea
-.vscode/
+.idea
+.vscode
 *.swp
 *.swo
 .DS_Store
 
 # Config Files
 .env
-
-# Ona Session Notes
-session.md
-
-# Flutter/Dart
-flutter/.dart_tool/
-flutter/.flutter-plugins
-flutter/.flutter-plugins-dependencies
-flutter/.packages
-flutter/build/
-flutter/pubspec.lock
-flutter/**/*.g.dart
-flutter/**/*.freezed.dart
-flutter/.metadata
-
-# Android
-flutter/android/app/debug
-flutter/android/app/profile
-flutter/android/app/release
-flutter/android/.gradle/
-flutter/android/captures/
-flutter/android/local.properties
-flutter/android/gradlew
-flutter/android/gradlew.bat
-flutter/android/key.properties
-
-# iOS
-flutter/ios/Pods/
-flutter/ios/.symlinks/
-flutter/ios/Flutter/Flutter.framework
-flutter/ios/Flutter/Flutter.podspec
-flutter/ios/Flutter/Generated.xcconfig
-flutter/ios/Flutter/app.flx
-flutter/ios/Flutter/app.zip
-flutter/ios/Flutter/flutter_assets/
-flutter/ios/ServiceDefinitions.json
-flutter/ios/Runner/GeneratedPluginRegistrant.*
-
-# Web
-flutter/web/flutter_service_worker.js
-flutter/web/manifest.json
-flutter/web/version.json
-
-# Coverage
-flutter/coverage/

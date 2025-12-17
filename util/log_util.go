@@ -38,6 +38,21 @@ func getLogger() *zap.SugaredLogger {
 }
 
 func initConsoleLogger() *zap.Logger {
+	// Get log level from config, default to info
+	logLevelStr := GetConfigByKey("logger.level")
+	if logLevelStr == "" {
+		logLevelStr = "info"
+	}
+
+	// Convert string to zapcore.Level
+	var logLevel zapcore.Level
+	err := logLevel.Set(logLevelStr)
+	if err != nil {
+		// Fallback to info level if invalid
+		log.Printf("Invalid log level '%s', falling back to info", logLevelStr)
+		logLevel = zapcore.InfoLevel
+	}
+
 	// Set up console output
 	consoleOutput := zapcore.Lock(os.Stdout)
 	// Set up file output
@@ -48,8 +63,8 @@ func initConsoleLogger() *zap.Logger {
 	fileEncoder := zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
 
 	// Create cores for different outputs
-	consoleCore := zapcore.NewCore(consoleEncoder, consoleOutput, zapcore.DebugLevel)
-	fileCore := zapcore.NewCore(fileEncoder, fileOutput, zapcore.InfoLevel)
+	consoleCore := zapcore.NewCore(consoleEncoder, consoleOutput, logLevel)
+	fileCore := zapcore.NewCore(fileEncoder, fileOutput, logLevel)
 
 	// Combine console and file outputs
 	logger := zap.New(zapcore.NewTee(consoleCore, fileCore), zap.AddCaller())

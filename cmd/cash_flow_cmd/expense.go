@@ -8,14 +8,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var outcomeCmd = &cobra.Command{
-	Use:   "outcome",
-	Short: "add new outcome cash_flow",
+var expenseCmd = &cobra.Command{
+	Use:   "expense",
+	Short: "add new expense cash_flow",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if !cash_flow_service.IsOutcomeRequiredFiledSatisfied(categoryName, amount) {
+		if !cash_flow_service.IsExpenseRequiredFiledSatisfied(categoryName, amount) {
 			return errors.New("some required fields are empty")
 		}
-		cashFlowEntity, err := cash_flow_service.SaveOutcome(belongsDate, categoryName, amount, descriptionExact)
+		cashFlowEntity, err := cash_flow_service.SaveExpense(belongsDate, categoryName, amount, descriptionExact)
 		if err != nil {
 			return err
 		}
@@ -25,13 +25,13 @@ var outcomeCmd = &cobra.Command{
 }
 
 func init() {
-	outcomeCmd.Flags().StringVarP(
+	expenseCmd.Flags().StringVarP(
 		&belongsDate, "date", "b", "", "flow's belongs-date (optional, blank for today)")
-	outcomeCmd.Flags().StringVarP(
+	expenseCmd.Flags().StringVarP(
 		&categoryName, "category", "c", "", "flow's category name (required)")
-	outcomeCmd.Flags().Float64VarP(
+	expenseCmd.Flags().Float64VarP(
 		&amount, "amount", "a", 0.00, "flow's amount (required)")
-	outcomeCmd.Flags().StringVarP(
+	expenseCmd.Flags().StringVarP(
 		&descriptionExact, "description", "d", "", "flow's description (optional, could be blank)")
-	CashCmd.AddCommand(outcomeCmd)
+	CashCmd.AddCommand(expenseCmd)
 }

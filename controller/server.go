@@ -1,24 +1,31 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/macar-x/cashlenx-server/controller/cash_flow_controller"
 	"github.com/macar-x/cashlenx-server/controller/category_controller"
+	"github.com/macar-x/cashlenx-server/controller/manage_controller"
 	"github.com/macar-x/cashlenx-server/middleware"
 	"github.com/macar-x/cashlenx-server/model"
+	"github.com/macar-x/cashlenx-server/util"
 )
 
 func StartServer(port int32) {
+	// Explicitly load timezone at server startup to ensure it's configured
+	// and logged immediately
+	tz := util.GetTimezone()
+	fmt.Printf("Loaded timezone: %v\n", tz)
+
 	r := mux.NewRouter()
 
 	// Register routes
 	registerHealthRoutes(r)
 	registerCashRoute(r)
 	registerCategoryRoute(r)
+	registerManageRoute(r)
 
 	// Apply middleware
 	handler := middleware.Logging(middleware.SchemaValidation(middleware.CORS(r)))
@@ -35,11 +42,11 @@ func registerHealthRoutes(r *mux.Router) {
 
 func registerCashRoute(r *mux.Router) {
 	// Create
-	r.HandleFunc("/api/cash/outcome", cash_flow_controller.CreateOutcome).Methods("POST")
+	r.HandleFunc("/api/cash/expense", cash_flow_controller.CreateExpense).Methods("POST")
 	r.HandleFunc("/api/cash/income", cash_flow_controller.CreateIncome).Methods("POST")
 
 	// Read
-	r.HandleFunc("/api/cash/list", cash_flow_controller.ListAll).Methods("GET")
+	r.HandleFunc("/api/cash", cash_flow_controller.ListAll).Methods("GET")
 	r.HandleFunc("/api/cash/{id}", cash_flow_controller.QueryById).Methods("GET")
 	r.HandleFunc("/api/cash/date/{date}", cash_flow_controller.QueryByDate).Methods("GET")
 	r.HandleFunc("/api/cash/range", cash_flow_controller.QueryByDateRange).Methods("GET")
@@ -60,12 +67,16 @@ func registerCashRoute(r *mux.Router) {
 func registerCategoryRoute(r *mux.Router) {
 	// Create
 	r.HandleFunc("/api/category", category_controller.Create).Methods("POST")
-
-	// Read
-	r.HandleFunc("/api/category/list", category_controller.ListAll).Methods("GET")
+	// Read all categories with filtering
+	r.HandleFunc("/api/category", category_controller.ListAll).Methods("GET")
+	// Read specific category
 	r.HandleFunc("/api/category/{id}", category_controller.QueryById).Methods("GET")
+	// Read by name
 	r.HandleFunc("/api/category/name/{name}", category_controller.QueryByName).Methods("GET")
-	r.HandleFunc("/api/category/children/{parent_id}", category_controller.QueryChildren).Methods("GET")
+	// Read children categories - RESTful design: parent/{id}/children
+	r.HandleFunc("/api/category/{parent_id}/children", category_controller.QueryChildren).Methods("GET")
+	// Read category tree structure
+	r.HandleFunc("/api/category/tree", category_controller.Tree).Methods("GET")
 
 	// Update
 	r.HandleFunc("/api/category/{id}", category_controller.UpdateById).Methods("PUT")
@@ -76,27 +87,36 @@ func registerCategoryRoute(r *mux.Router) {
 
 // Health check endpoint
 func healthCheck(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	response := model.NewSuccessResponse(map[string]interface{}{
+	response := map[string]interface{}{
 		"status":  "healthy",
 		"service": "cashlenx-api",
 		"message": "API is running",
-	})
-	json.NewEncoder(w).Encode(response)
+	}
+	util.ComposeJSONResponse(w, http.StatusOK, response)
+}
+
+func registerManageRoute(r *mux.Router) {
+	// Dump and restore endpoints
+	r.HandleFunc("/api/manage/dump", manage_controller.DumpDatabase).Methods("GET")
+	r.HandleFunc("/api/manage/restore", manage_controller.RestoreDatabase).Methods("POST")
+
+	// Import and export endpoints
+	r.HandleFunc("/api/manage/export", manage_controller.ExportData).Methods("GET")
+	r.HandleFunc("/api/manage/import", manage_controller.ImportData).Methods("POST")
 }
 
 // Version info endpoint
 func versionInfo(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	response := model.NewSuccessResponse(map[string]interface{}{
+	response := map[string]interface{}{
 		"version":     model.Version,
 		"name":        "CashLenX API",
 		"description": "Personal finance management API",
 		"endpoints": map[string][]string{
 			"cash_flow": {
-				"POST /api/cash/outcome",
+				"POST /api/cash/expense",
 				"POST /api/cash/income",
-				"GET /api/cash/list",
+				"GET /api/cash",
+				"GET /api/cash?limit=20&offset=0&type=income",
 				"GET /api/cash/{id}",
 				"GET /api/cash/date/{date}",
 				"GET /api/cash/range?from=YYYYMMDD&to=YYYYMMDD",
@@ -109,18 +129,25 @@ func versionInfo(w http.ResponseWriter, r *http.Request) {
 			},
 			"category": {
 				"POST /api/category",
-				"GET /api/category/list",
+				"GET /api/category",
+				"GET /api/category?type=income&parent_id=XXX",
 				"GET /api/category/{id}",
 				"GET /api/category/name/{name}",
-				"GET /api/category/children/{parent_id}",
+				"GET /api/category/{parent_id}/children",
 				"PUT /api/category/{id}",
 				"DELETE /api/category/{id}",
+			},
+			"manage": {
+				"GET /api/manage/dump",
+				"POST /api/manage/restore",
+				"GET /api/manage/export",
+				"POST /api/manage/import",
 			},
 			"health": {
 				"GET /api/health",
 				"GET /api/version",
 			},
 		},
-	})
-	json.NewEncoder(w).Encode(response)
+	}
+	util.ComposeJSONResponse(w, http.StatusOK, response)
 }

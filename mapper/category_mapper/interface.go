@@ -16,6 +16,7 @@ type CategoryMapper interface {
 	GetAllCategories(limit, offset int) []model.CategoryEntity
 	CountAllCategories() int64
 	DeleteCategoryByObjectId(plainId string) model.CategoryEntity
+	TruncateCategories() error
 }
 
 func init() {

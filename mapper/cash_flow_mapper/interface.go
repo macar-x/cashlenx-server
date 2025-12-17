@@ -25,6 +25,7 @@ type CashFlowMapper interface {
 	CountAllCashFlows() int64
 	DeleteCashFlowByObjectId(plainId string) model.CashFlowEntity
 	DeleteCashFlowByBelongsDate(belongsDate time.Time) []model.CashFlowEntity
+	TruncateCashFlows() error
 }
 
 func init() {

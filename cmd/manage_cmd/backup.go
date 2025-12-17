@@ -20,12 +20,15 @@ If no path is specified, creates backup in current directory with timestamp.`,
 			backupPath = fmt.Sprintf("cashlenx_backup_%s.json", time.Now().Format("20060102_150405"))
 		}
 
-		err := manage_service.CreateBackup(backupPath)
+		stats, err := manage_service.CreateBackup(backupPath)
 		if err != nil {
 			return err
 		}
 
 		fmt.Printf("Backup created successfully: %s\n", backupPath)
+		fmt.Println("\nStatistics:")
+		fmt.Printf("  Categories: %d success, %d failed\n", stats.Categories.Success, stats.Categories.Failed)
+		fmt.Printf("  Cash Flows: %d success, %d failed\n", stats.CashFlows.Success, stats.CashFlows.Failed)
 		return nil
 	},
 }

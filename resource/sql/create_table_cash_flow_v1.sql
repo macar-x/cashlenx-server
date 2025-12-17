@@ -3,8 +3,8 @@ USE `cashlenx`;
 -- -------------------
 -- Create table `cash`
 -- -------------------
-DROP TABLE IF EXISTS cash_flow;
-CREATE TABLE `cash_flow`
+DROP TABLE IF EXISTS cash_flows;
+CREATE TABLE `cash_flows`
 (
     `id`           VARCHAR(24)  NOT NULL,
     `category_id`  VARCHAR(24)  NOT NULL,
@@ -20,6 +20,6 @@ CREATE TABLE `cash_flow`
   DEFAULT CHARSET = UTF8MB4
     COMMENT ='Cash Flow Table';
 
-CREATE INDEX cash_flow_category_id_index ON cash_flow (category_id);
-CREATE INDEX cash_flow_belongs_date_index ON cash_flow (belongs_date);
-CREATE INDEX cash_flow_flow_type_index ON cash_flow (flow_type);
+CREATE INDEX cash_flows_category_id_index ON cash_flows (category_id);
+CREATE INDEX cash_flows_belongs_date_index ON cash_flows (belongs_date);
+CREATE INDEX cash_flows_flow_type_index ON cash_flows (flow_type);

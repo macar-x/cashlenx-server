@@ -189,7 +189,7 @@ func (CashFlowMySqlMapper) CountCashFLowsByCategoryId(categoryPlainId string) in
 }
 
 func (CashFlowMySqlMapper) InsertCashFlowByEntity(newEntity model.CashFlowEntity) string {
-	operatingTime := time.Now()
+	operatingTime := time.Now().UTC() // Store in UTC
 	newEntity.CreateTime = operatingTime
 	newEntity.ModifyTime = operatingTime
 
@@ -234,7 +234,7 @@ func (CashFlowMySqlMapper) BulkInsertCashFlows(entities []model.CashFlowEntity) 
 		return []string{}, nil
 	}
 
-	operatingTime := time.Now()
+	operatingTime := time.Now().UTC() // Store in UTC
 	var sqlString bytes.Buffer
 	sqlString.WriteString("INSERT INTO ")
 	sqlString.WriteString(database.CashFlowTableName)
@@ -294,7 +294,7 @@ func (CashFlowMySqlMapper) UpdateCashFlowByEntity(plainId string, updatedEntity 
 	// Update fields from updatedEntity while preserving ID and CreateTime
 	updatedEntity.Id = targetEntity.Id
 	updatedEntity.CreateTime = targetEntity.CreateTime
-	updatedEntity.ModifyTime = time.Now()
+	updatedEntity.ModifyTime = time.Now().UTC() // Store in UTC
 
 	var sqlString bytes.Buffer
 	sqlString.WriteString("UPDATE ")
@@ -451,6 +451,24 @@ func (CashFlowMySqlMapper) CountAllCashFlows() int64 {
 		return 0
 	}
 	return count
+}
+
+func (CashFlowMySqlMapper) TruncateCashFlows() error {
+	var sqlString bytes.Buffer
+	sqlString.WriteString("TRUNCATE TABLE ")
+	sqlString.WriteString(database.CashFlowTableName)
+
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	_, err := connection.Exec(sqlString.String())
+	if err != nil {
+		util.Logger.Errorw("truncate cash flows failed", "error", err)
+		return err
+	}
+
+	util.Logger.Infow("Cash flows truncated successfully")
+	return nil
 }
 
 func convertRow2CashFlowEntity(rows *sql.Rows) model.CashFlowEntity {

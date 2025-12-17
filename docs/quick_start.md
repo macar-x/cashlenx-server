@@ -100,7 +100,7 @@ curl -X DELETE http://localhost:8080/api/category/{id}
 ### Transaction Management
 ```bash
 # Create expense
-curl -X POST http://localhost:8080/api/cash/outcome \
+curl -X POST http://localhost:8080/api/cash/expense \
   -H "Content-Type: application/json" \
   -d '{
     "belongs_date": "20251212",
@@ -161,7 +161,7 @@ curl http://localhost:8080/api/cash/summary/yearly/2025
 
 # Cash flow operations
 ./cashlenx cash income -c "Salary" -a 5000 -d "20251212" -e "Salary"
-./cashlenx cash outcome -c "Food" -a 45.50 -d "20251212" -e "Lunch"
+./cashlenx cash expense -c "Food" -a 45.50 -d "20251212" -e "Lunch"
 ./cashlenx cash query -d "20251212"
 ./cashlenx cash range -f "20251201" -t "20251231"
 ./cashlenx cash summary --type daily -d "20251212"
@@ -201,7 +201,7 @@ echo ""
 
 # Create expense
 echo "3. Create Expense"
-EXPENSE=$(curl -s -X POST $API/cash/outcome \
+EXPENSE=$(curl -s -X POST $API/cash/expense \
   -H "Content-Type: application/json" \
   -d '{
     "belongs_date":"20251212",

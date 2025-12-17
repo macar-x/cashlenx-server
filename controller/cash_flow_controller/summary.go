@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/macar-x/cashlenx-server/errors"
 	"github.com/macar-x/cashlenx-server/service/cash_flow_service"
 	"github.com/macar-x/cashlenx-server/util"
 )
@@ -14,13 +15,13 @@ func GetDailySummary(w http.ResponseWriter, r *http.Request) {
 	date := vars["date"]
 
 	if date == "" {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": "date is required"})
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("date is required"))
 		return
 	}
 
 	summary, err := cash_flow_service.GetSummary("daily", date)
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -33,13 +34,13 @@ func GetMonthlySummary(w http.ResponseWriter, r *http.Request) {
 	month := vars["month"]
 
 	if month == "" {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": "month is required (YYYYMM format)"})
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("month is required (YYYYMM format)"))
 		return
 	}
 
 	summary, err := cash_flow_service.GetSummary("monthly", month)
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -52,13 +53,13 @@ func GetYearlySummary(w http.ResponseWriter, r *http.Request) {
 	year := vars["year"]
 
 	if year == "" {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": "year is required (YYYY format)"})
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("year is required (YYYY format)"))
 		return
 	}
 
 	summary, err := cash_flow_service.GetSummary("yearly", year)
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
 	}
 

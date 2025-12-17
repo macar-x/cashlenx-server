@@ -1,11 +1,23 @@
 package util
 
-import "os"
+import (
+	"os"
+
+	"github.com/joho/godotenv"
+)
 
 var configurationMap map[string]string
 
 func init() {
 	configurationMap = make(map[string]string)
+
+	// Load .env file if it exists
+	err := godotenv.Load()
+	if err != nil {
+		// If .env file doesn't exist, just use environment variables
+		Logger.Debugw("No .env file found, using environment variables", "error", err)
+	}
+
 	initDefaultValues()
 }
 
@@ -55,6 +67,19 @@ func initDefaultValues() {
 		}
 	}
 	configurationMap["api.schema.validation"] = schemaValidation
+
+	// CORS origins
+	corsOrigins := os.Getenv("CORS_ORIGINS")
+	configurationMap["cors.origins"] = corsOrigins
+
+	// Log level
+	logLevel := os.Getenv("LOG_LEVEL")
+	configurationMap["logger.level"] = logLevel
+
+	// Server configuration
+	configurationMap["server.port"] = os.Getenv("SERVER_PORT")
+	configurationMap["server.host"] = os.Getenv("SERVER_HOST")
+	configurationMap["timezone"] = os.Getenv("TIMEZONE")
 }
 
 func GetConfigByKey(configKey string) string {

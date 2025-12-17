@@ -56,8 +56,10 @@ func (CategoryMongoDbMapper) GetCategoryByName(categoryName string) model.Catego
 }
 
 func (CategoryMongoDbMapper) GetCategoryByParentId(parentPlainId string) []model.CategoryEntity {
+	// Convert parentPlainId to ObjectID
+	parentObjectId := util.Convert2ObjectId(parentPlainId)
 	filter := bson.D{
-		primitive.E{Key: "parent_id", Value: parentPlainId},
+		primitive.E{Key: "parent_id", Value: parentObjectId},
 	}
 
 	database.OpenMongoDbConnection(database.CategoryTableName)
@@ -73,7 +75,7 @@ func (CategoryMongoDbMapper) GetCategoryByParentId(parentPlainId string) []model
 }
 
 func (CategoryMongoDbMapper) InsertCategoryByEntity(newEntity model.CategoryEntity) string {
-	operatingTime := time.Now()
+	operatingTime := time.Now().UTC() // Store in UTC
 	newEntity.CreateTime = operatingTime
 	newEntity.ModifyTime = operatingTime
 
@@ -111,7 +113,7 @@ func (CategoryMongoDbMapper) UpdateCategoryByEntity(plainId string, updatedEntit
 	// Update fields from updatedEntity while preserving ID and CreateTime
 	updatedEntity.Id = targetEntity.Id
 	updatedEntity.CreateTime = targetEntity.CreateTime
-	updatedEntity.ModifyTime = time.Now()
+	updatedEntity.ModifyTime = time.Now().UTC() // Store in UTC
 
 	rowsAffected := database.UpdateManyInMongoDB(filter, convertCategoryEntity2BsonD(updatedEntity))
 	if rowsAffected != 1 {
@@ -214,6 +216,24 @@ func (CategoryMongoDbMapper) CountAllCategories() int64 {
 	return database.CountInMongoDB(filter)
 }
 
+func (CategoryMongoDbMapper) TruncateCategories() error {
+	// Open database connection
+	database.OpenMongoDbConnection(database.CategoryTableName)
+	defer database.CloseMongoDbConnection()
+
+	// Empty filter to delete all documents
+	filter := bson.D{}
+
+	// Delete all documents
+	deletedCount := database.DeleteManyInMongoDB(filter)
+	
+	// Clear cache after truncate
+	cache.GetCategoryCache().Clear()
+
+	util.Logger.Infow("Categories truncated successfully", "deleted_count", deletedCount)
+	return nil
+}
+
 func convertCategoryEntity2BsonD(entity model.CategoryEntity) bson.D {
 	// Generate a new Id automatically if it's empty
 	if entity.Id == primitive.NilObjectID {
@@ -224,6 +244,7 @@ func convertCategoryEntity2BsonD(entity model.CategoryEntity) bson.D {
 		primitive.E{Key: "_id", Value: entity.Id},
 		primitive.E{Key: "parent_id", Value: entity.ParentId},
 		primitive.E{Key: "name", Value: entity.Name},
+		primitive.E{Key: "type", Value: entity.Type},
 		primitive.E{Key: "remark", Value: entity.Remark},
 		primitive.E{Key: "create_time", Value: entity.CreateTime},
 		primitive.E{Key: "modify_time", Value: entity.ModifyTime},

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -66,4 +67,27 @@ func (entity CashFlowEntity) Build(fieldMap map[string]string) CashFlowEntity {
 		}
 	}
 	return newEntity
+}
+
+// MarshalJSON customizes JSON marshaling for CashFlowEntity
+// Converts timestamps to the configured timezone for display
+func (entity CashFlowEntity) MarshalJSON() ([]byte, error) {
+	// Convert timestamps to configured timezone for display
+	localBelongsDate := util.ToTimezone(entity.BelongsDate)
+	localCreateTime := util.ToTimezone(entity.CreateTime)
+	localModifyTime := util.ToTimezone(entity.ModifyTime)
+
+	// Create a temporary struct with local timezone timestamps
+	type Alias CashFlowEntity
+	return json.Marshal(&struct {
+		BelongsDate time.Time `json:"belongs_date"`
+		CreateTime  time.Time `json:"create_time"`
+		ModifyTime  time.Time `json:"modify_time"`
+		*Alias
+	}{
+		BelongsDate: localBelongsDate,
+		CreateTime:  localCreateTime,
+		ModifyTime:  localModifyTime,
+		Alias:       (*Alias)(&entity),
+	})
 }

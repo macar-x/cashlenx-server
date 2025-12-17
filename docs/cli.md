@@ -58,13 +58,14 @@ cashlenx
     ├── connect         Test connection
     ├── seed            Seed demo data
     ├── dump            Dump database contents
-    └── restore         Restore database from dump
+    ├── restore         Restore database from dump
+    └── truncate        Clear all database data
 ```
 
 ### Implementation Status
 
-✅ **Working**: cash income/expense/query/delete/list, category create/query/delete/update/list, manage export/import/init, server start, db dump/restore  
-🚧 **Pending**: cash update/range/summary, manage backup/restore/reset/stats, db connect/seed
+✅ **Working**: cash income/expense/query/delete/list, category create/query/delete/update/list, manage export/import/init/backup/restore/reset, server start, db dump/restore/truncate  
+🚧 **Pending**: cash update/range/summary, manage stats, db connect/seed
 
 ## Installation
 
@@ -528,6 +529,22 @@ Flags:
 
 ⚠️ **WARNING**: This operation will replace all existing data in the database! Ensure you have a backup before proceeding.
 
+### db truncate
+Truncate all data from the database
+
+```bash
+# Truncate with confirmation
+cashlenx db truncate
+
+# Truncate with force flag (dangerous!)
+cashlenx db truncate -f
+```
+
+Flags:
+- `-f, --force` - Skip confirmation prompt
+
+⚠️ **WARNING**: This operation will permanently delete ALL data from the database! Ensure you have a backup before proceeding.
+
 ## Advanced Configuration
 
 ### Optional Environment Variables
@@ -601,15 +618,17 @@ cashlenx category list
 - Category list (with pagination)
 - Manage export/import
 - Manage init (demo data initialization)
-- DB dump/restore
+- Manage backup
+- Manage restore
+- Manage reset
+- DB dump/restore/truncate
 - Version command
 
 ### 🚧 Pending Implementation
 - Cash update
 - Cash range
 - Cash summary
-- Manage backup/restore
-- Manage reset/stats
+- Manage stats
 - DB connect/seed
 
 All pending commands have CLI structure in place and will return helpful error messages indicating they need database integration.

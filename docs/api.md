@@ -17,8 +17,9 @@
 - [x] `DELETE /api/cash/date/{date}` - Delete by date
 
 ### Manage API
-- [x] `GET /api/manage/dump` - Download database dump
-- [x] `POST /api/manage/restore` - Restore database from dump
+- [x] `GET /api/manage/dump` - Download database dump (requires ADMIN_TOKEN)
+- [x] `POST /api/manage/restore` - Restore database from dump (requires ADMIN_TOKEN)
+- [x] `POST /api/manage/truncate` - Truncate database (requires ADMIN_TOKEN)
 - [x] `GET /api/manage/export` - Export data to Excel
 - [x] `POST /api/manage/import` - Import data from Excel
 
@@ -32,11 +33,11 @@
 - [ ] `GET /api/cash/summary/yearly?year={year}` - Yearly summary
 
 ### Category API
-- [ ] `POST /api/category` - Create category
-- [ ] `GET /api/category` - List all categories
-- [ ] `GET /api/category/{id}` - Get category by ID
-- [ ] `PUT /api/category/{id}` - Update category
-- [ ] `DELETE /api/category/{id}` - Delete category
+- [x] `POST /api/category` - Create category
+- [x] `GET /api/category` - List all categories
+- [x] `GET /api/category/{id}` - Get category by ID
+- [x] `PUT /api/category/{id}` - Update category
+- [x] `DELETE /api/category/{id}` - Delete category
 - [ ] `GET /api/category/{id}/stats` - Category statistics
 
 ### Statistics API

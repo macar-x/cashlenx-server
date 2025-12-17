@@ -42,6 +42,9 @@
 - [x] Introduce consistent response wrapper `{data,error,meta}` #api
 - [x] Centralize error types and mapping #api
 - [x] Increase unit test coverage in services and mappers #api
+- [x] Implement ADMIN_TOKEN verification for sensitive endpoints #security #api
+- [x] Add truncate database functionality #data #security
+- [x] Enhance backup/restore operations with statistics reporting #data #observability
 - [x] Set up CI (build, test, lint, Docker image) #devops
 
 ## v0.3.0 — Big Feature: User Management & Authentication
@@ -63,9 +66,9 @@
 - [ ] Bulk import validation with partial success reporting #api
 - [ ] Schema versioning for exports #data #docs
 - [ ] User-scoped exports/imports with ownership checks #security #data
-- [ ] Add batchInsert() method to mappers for efficient bulk data processing #data #performance
-- [ ] Add DeleteAllCashFlows() and DeleteAllCategories() methods to mapper interfaces #data
-- [ ] Implement data backup and restoration functionality #data #devops
+- [x] Add batchInsert() method to mappers for efficient bulk data processing #data #performance
+- [x] Add DeleteAllCashFlows() and DeleteAllCategories() methods to mapper interfaces #data
+- [x] Implement data backup and restoration functionality #data #devops
 
 ## v0.6.0 — Big Feature: Migration Tooling
 - [ ] Introduce MySQL migration tooling and track schema changes #data #devops

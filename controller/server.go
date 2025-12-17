@@ -49,6 +49,7 @@ func registerSystemRoutes(r *mux.Router) {
 
 func registerUserRoute(r *mux.Router) {
 	// User management routes
+	r.HandleFunc("/api/user", user_controller.Create).Methods("POST")
 	r.HandleFunc("/api/user", user_controller.ListAll).Methods("GET")
 	r.HandleFunc("/api/user/{id}", user_controller.Get).Methods("GET")
 	r.HandleFunc("/api/user/{id}", user_controller.Update).Methods("PUT")

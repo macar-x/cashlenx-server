@@ -13,7 +13,7 @@ servers:
 
 paths:
   # Health endpoints
-  /api/health:
+  /api/system/health:
     get:
       summary: Health check
       description: Check if the API is running
@@ -31,7 +31,7 @@ paths:
                   service: cashlenx-api
                   message: API is running
 
-  /api/version:
+  /api/system/version:
     get:
       summary: Version information
       description: Get API version and information
@@ -106,7 +106,7 @@ paths:
           description: Filter by transaction type
           schema:
             type: string
-            enum: [income, expense]
+            enum: [INCOME, OUTCOME]
         - name: category_id
           in: query
           description: Filter by category ID
@@ -887,8 +887,8 @@ components:
           description: Transaction date
         flow_type:
           type: string
-          description: Flow type (income or expense)
-          enum: [income, expense]
+          description: Flow type (INCOME or OUTCOME)
+          enum: [INCOME, OUTCOME]
         amount:
           type: number
           format: double

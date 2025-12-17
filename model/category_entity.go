@@ -50,3 +50,21 @@ func (entity CategoryEntity) MarshalJSON() ([]byte, error) {
 		Alias:      (*Alias)(&entity),
 	})
 }
+
+// CategoryTreeNode represents a category in a tree structure with its children
+// This is used for tree view representation of categories with controlled depth
+// Each node contains the full category information plus its direct children
+// The tree can be built with a specified maximum depth to control nesting level
+// This structure enables efficient traversal and display of category hierarchies
+type CategoryTreeNode struct {
+	CategoryEntity `json:",inline"`
+	Children       []CategoryTreeNode `json:"children"`
+}
+
+// NewCategoryTreeNode creates a new CategoryTreeNode from a CategoryEntity
+func NewCategoryTreeNode(entity CategoryEntity) CategoryTreeNode {
+	return CategoryTreeNode{
+		CategoryEntity: entity,
+		Children:       []CategoryTreeNode{},
+	}
+}

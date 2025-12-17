@@ -75,6 +75,8 @@ func registerCategoryRoute(r *mux.Router) {
 	r.HandleFunc("/api/category/name/{name}", category_controller.QueryByName).Methods("GET")
 	// Read children categories - RESTful design: parent/{id}/children
 	r.HandleFunc("/api/category/{parent_id}/children", category_controller.QueryChildren).Methods("GET")
+	// Read category tree structure
+	r.HandleFunc("/api/category/tree", category_controller.Tree).Methods("GET")
 
 	// Update
 	r.HandleFunc("/api/category/{id}", category_controller.UpdateById).Methods("PUT")

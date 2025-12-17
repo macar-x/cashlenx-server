@@ -86,8 +86,8 @@ func Auth(next http.Handler) http.Handler {
 		ctx = context.WithValue(ctx, "role", claims.Role)
 		r = r.WithContext(ctx)
 
-		// Check if admin role is required for manage routes
-		if strings.HasPrefix(path, "/api/manage/") {
+		// Check if admin role is required for admin-only routes
+		if strings.HasPrefix(path, "/api/manage/") || strings.HasPrefix(path, "/api/user") {
 			if claims.Role != "admin" {
 				util.ComposeJSONResponse(w, http.StatusForbidden, errors.NewForbiddenError("admin role required"))
 				return

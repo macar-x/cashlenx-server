@@ -46,12 +46,17 @@ WARNING: This will replace all existing data!`,
 			}
 		}
 
-		err := manage_service.RestoreBackup(dbRestorePath)
+		stats, err := manage_service.RestoreBackup(dbRestorePath)
 		if err != nil {
-			return err
+			fmt.Printf("Restore failed: %v\n", err)
+			// Still show statistics even if there's an error
+		} else {
+			fmt.Printf("Database restored successfully from: %s\n", dbRestorePath)
 		}
 
-		fmt.Printf("Database restored successfully from: %s\n", dbRestorePath)
+		fmt.Println("\nStatistics:")
+		fmt.Printf("  Categories: %d success, %d failed\n", stats.Categories.Success, stats.Categories.Failed)
+		fmt.Printf("  Cash Flows: %d success, %d failed\n", stats.CashFlows.Success, stats.CashFlows.Failed)
 		return nil
 	},
 }

@@ -37,12 +37,15 @@ WARNING: This will delete all cash flows and categories permanently!`,
 			}
 		}
 
-		err := manage_service.TruncateDatabase()
+		stats, err := manage_service.TruncateDatabase()
 		if err != nil {
 			return err
 		}
 
 		fmt.Println("Database truncated successfully - all data has been cleared")
+		fmt.Println("\nStatistics:")
+		fmt.Printf("  Categories: %d success, %d failed\n", stats.Categories.Success, stats.Categories.Failed)
+		fmt.Printf("  Cash Flows: %d success, %d failed\n", stats.CashFlows.Success, stats.CashFlows.Failed)
 		return nil
 	},
 }

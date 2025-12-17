@@ -18,14 +18,33 @@ type BackupData struct {
 	Categories []map[string]interface{} `json:"categories"`
 }
 
+// EntityStats represents statistics for a single entity type (cash_flows or categories)
+type EntityStats struct {
+	Success    int      `json:"success"`
+	Failed     int      `json:"failed"`
+	FailedList []string `json:"failed_list,omitempty"`
+}
+
+// OperationStats represents comprehensive statistics for an operation (backup/restore/truncate)
+type OperationStats struct {
+	CashFlows  EntityStats `json:"cash_flows"`
+	Categories EntityStats `json:"categories"`
+}
+
 // CreateBackup creates a backup of all database data
-func CreateBackup(filePath string) error {
+func CreateBackup(filePath string) (OperationStats, error) {
+	stats := OperationStats{
+		CashFlows:  EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
+		Categories: EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
+	}
+	
 	if filePath == "" {
-		return errors.New("file path cannot be empty")
+		return stats, errors.New("file path cannot be empty")
 	}
 
 	// Get all categories (no pagination limit - get everything)
 	categories := category_mapper.INSTANCE.GetAllCategories(0, 0)
+	stats.Categories.Success = len(categories)
 	
 	// Convert categories to map format for JSON serialization
 	categoryMaps := make([]map[string]interface{}, len(categories))
@@ -42,6 +61,7 @@ func CreateBackup(filePath string) error {
 
 	// Get all cash flows (no pagination limit - get everything)
 	cashFlows := cash_flow_mapper.INSTANCE.GetAllCashFlows(0, 0)
+	stats.CashFlows.Success = len(cashFlows)
 	
 	// Convert cash flows to map format for JSON serialization
 	cashFlowMaps := make([]map[string]interface{}, len(cashFlows))
@@ -70,15 +90,15 @@ func CreateBackup(filePath string) error {
 	// Write to file
 	file, err := os.Create(filePath)
 	if err != nil {
-		return err
+		return stats, err
 	}
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(backup); err != nil {
-		return err
+		return stats, err
 	}
 
-	return nil
+	return stats, nil
 }

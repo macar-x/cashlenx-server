@@ -48,14 +48,20 @@ func RestoreDatabase(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Restore from the temporary file
-	err = manage_service.RestoreBackup(tempFile.Name())
+	stats, err := manage_service.RestoreBackup(tempFile.Name())
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
+		// Return error along with statistics
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
+			"error":    err.Error(),
+			"stats":    stats,
+			"message": "Database restore failed",
+		})
 		return
 	}
 
-	// Return success response
+	// Return success response with statistics
 	util.ComposeJSONResponse(w, http.StatusOK, map[string]interface{}{
 		"message": "Database restored successfully from file: " + handler.Filename,
+		"stats":    stats,
 	})
 }

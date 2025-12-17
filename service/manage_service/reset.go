@@ -6,22 +6,37 @@ import (
 )
 
 // ResetDatabase clears all data from the database
-func ResetDatabase() error {
+func ResetDatabase() (OperationStats, error) {
+	stats := OperationStats{
+		CashFlows:  EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
+		Categories: EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
+	}
+	
+	// Count items before truncation to provide accurate statistics
+	stats.CashFlows.Success = int(cash_flow_mapper.INSTANCE.CountAllCashFlows())
+	stats.Categories.Success = int(category_mapper.INSTANCE.CountAllCategories())
+	
 	// This is a dangerous operation - truncate all data
 	// First truncate cash flows (dependent data)
 	if err := cash_flow_mapper.INSTANCE.TruncateCashFlows(); err != nil {
-		return err
+		// If truncation fails, set success to 0 and failed to the counted items
+		stats.CashFlows.Failed = stats.CashFlows.Success
+		stats.CashFlows.Success = 0
+		return stats, err
 	}
 
 	// Then truncate categories (parent data)
 	if err := category_mapper.INSTANCE.TruncateCategories(); err != nil {
-		return err
+		// If truncation fails, set success to 0 and failed to the counted items
+		stats.Categories.Failed = stats.Categories.Success
+		stats.Categories.Success = 0
+		return stats, err
 	}
 
-	return nil
+	return stats, nil
 }
 
 // TruncateDatabase is an alias for ResetDatabase - clears all data from the database
-func TruncateDatabase() error {
+func TruncateDatabase() (OperationStats, error) {
 	return ResetDatabase()
 }

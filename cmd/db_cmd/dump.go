@@ -26,12 +26,15 @@ If no path is specified, creates dump in current directory with timestamp.`,
 			dumpPath = fmt.Sprintf("cashlenx_dump_%s.json", time.Now().Format("20060102_150405"))
 		}
 
-		err := manage_service.CreateBackup(dumpPath)
+		stats, err := manage_service.CreateBackup(dumpPath)
 		if err != nil {
 			return err
 		}
 
 		fmt.Printf("Database dump created successfully: %s\n", dumpPath)
+		fmt.Println("\nStatistics:")
+		fmt.Printf("  Categories: %d success, %d failed\n", stats.Categories.Success, stats.Categories.Failed)
+		fmt.Printf("  Cash Flows: %d success, %d failed\n", stats.CashFlows.Success, stats.CashFlows.Failed)
 		return nil
 	},
 }

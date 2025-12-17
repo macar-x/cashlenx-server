@@ -21,7 +21,7 @@ func DumpDatabase(w http.ResponseWriter, r *http.Request) {
 	defer os.Remove(filePath) // Clean up after response
 
 	// Create the dump
-	err := manage_service.CreateBackup(filePath)
+	_, err := manage_service.CreateBackup(filePath)
 	if err != nil {
 		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return

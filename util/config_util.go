@@ -68,6 +68,20 @@ func initDefaultValues() {
 	}
 	configurationMap["api.schema.validation"] = schemaValidation
 
+	// Authentication configuration
+	authEnabled := os.Getenv("AUTH_ENABLED")
+	if authEnabled == "" {
+		authEnabled = "false" // Disable by default for backward compatibility
+	}
+	configurationMap["auth.enabled"] = authEnabled
+
+	// JWT Secret for token signing
+	jwtSecret := os.Getenv("JWT_SECRET")
+	configurationMap["auth.jwt.secret"] = jwtSecret
+
+	// Admin token for sensitive operations
+	configurationMap["ADMIN_TOKEN"] = os.Getenv("ADMIN_TOKEN")
+
 	// CORS origins
 	corsOrigins := os.Getenv("CORS_ORIGINS")
 	configurationMap["cors.origins"] = corsOrigins

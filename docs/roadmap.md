@@ -1,7 +1,7 @@
 # CashLenX Roadmap (Versioned Todo)
 
 ## Versioning Policy
-- Current version: `v0.2.0`
+- Current version: `v0.3.0`
 - Increase minor by `+0.1` for each completed big feature
 - Optionally use patch `+0.0.1` for bugfix releases
 

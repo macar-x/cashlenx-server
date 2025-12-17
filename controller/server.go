@@ -5,9 +5,11 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/macar-x/cashlenx-server/controller/auth_controller"
 	"github.com/macar-x/cashlenx-server/controller/cash_flow_controller"
 	"github.com/macar-x/cashlenx-server/controller/category_controller"
 	"github.com/macar-x/cashlenx-server/controller/manage_controller"
+	"github.com/macar-x/cashlenx-server/controller/user_controller"
 	"github.com/macar-x/cashlenx-server/middleware"
 	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/util"
@@ -23,12 +25,13 @@ func StartServer(port int32) {
 
 	// Register routes
 	registerHealthRoutes(r)
+	registerUserRoute(r)
 	registerCashRoute(r)
 	registerCategoryRoute(r)
 	registerManageRoute(r)
 
 	// Apply middleware
-	handler := middleware.Logging(middleware.SchemaValidation(middleware.CORS(r)))
+	handler := middleware.Logging(middleware.Auth(middleware.SchemaValidation(middleware.CORS(r))))
 
 	addr := fmt.Sprintf(":%d", port)
 	fmt.Printf("API server is running on http://localhost%s\n", addr)
@@ -38,6 +41,19 @@ func StartServer(port int32) {
 func registerHealthRoutes(r *mux.Router) {
 	r.HandleFunc("/api/health", healthCheck).Methods("GET")
 	r.HandleFunc("/api/version", versionInfo).Methods("GET")
+}
+
+func registerUserRoute(r *mux.Router) {
+	// User management routes
+	r.HandleFunc("/api/user", user_controller.Create).Methods("POST")
+	r.HandleFunc("/api/user", user_controller.ListAll).Methods("GET")
+	r.HandleFunc("/api/user/{id}", user_controller.Get).Methods("GET")
+	r.HandleFunc("/api/user/{id}", user_controller.Update).Methods("PUT")
+	r.HandleFunc("/api/user/{id}", user_controller.Delete).Methods("DELETE")
+
+	// Authentication routes
+	r.HandleFunc("/api/auth/login", auth_controller.Login).Methods("POST")
+	r.HandleFunc("/api/auth/register", auth_controller.Register).Methods("POST")
 }
 
 func registerCashRoute(r *mux.Router) {
@@ -142,6 +158,17 @@ func versionInfo(w http.ResponseWriter, r *http.Request) {
 				"POST /api/manage/restore",
 				"GET /api/manage/export",
 				"POST /api/manage/import",
+			},
+			"user": {
+				"POST /api/user",
+				"GET /api/user",
+				"GET /api/user/{id}",
+				"PUT /api/user/{id}",
+				"DELETE /api/user/{id}",
+			},
+			"auth": {
+				"POST /api/auth/login",
+				"POST /api/auth/register",
 			},
 			"health": {
 				"GET /api/health",

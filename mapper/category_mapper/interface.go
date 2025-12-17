@@ -8,14 +8,14 @@ import (
 var INSTANCE CategoryMapper
 
 type CategoryMapper interface {
-	GetCategoryByObjectId(plainId string) model.CategoryEntity
-	GetCategoryByName(categoryName string) model.CategoryEntity
-	GetCategoryByParentId(parentPlainId string) []model.CategoryEntity
+	GetCategoryByObjectId(userId, plainId string) model.CategoryEntity
+	GetCategoryByName(userId, categoryName string) model.CategoryEntity
+	GetCategoryByParentId(userId, parentPlainId string) []model.CategoryEntity
 	InsertCategoryByEntity(newEntity model.CategoryEntity) string
-	UpdateCategoryByEntity(plainId string, updatedEntity model.CategoryEntity) model.CategoryEntity
-	GetAllCategories(limit, offset int) []model.CategoryEntity
-	CountAllCategories() int64
-	DeleteCategoryByObjectId(plainId string) model.CategoryEntity
+	UpdateCategoryByEntity(userId, plainId string, updatedEntity model.CategoryEntity) model.CategoryEntity
+	GetAllCategories(userId string, limit, offset int) []model.CategoryEntity
+	CountAllCategories(userId string) int64
+	DeleteCategoryByObjectId(userId, plainId string) model.CategoryEntity
 	TruncateCategories() error
 }
 

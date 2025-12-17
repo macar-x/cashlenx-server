@@ -217,3 +217,8 @@ func ParseDate(dateStr string) (time.Time, error) {
 	// All formats failed
 	return time.Time{}, err
 }
+
+// GetCurrentTime returns the current time in UTC for storage purposes
+func GetCurrentTime() time.Time {
+	return time.Now().UTC()
+}

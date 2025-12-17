@@ -14,6 +14,7 @@ import (
 
 type CashFlowEntity struct {
 	Id          primitive.ObjectID `bson:"_id,omitempty"`
+	UserId      primitive.ObjectID `json:"user_id" bson:"user_id"`
 	CategoryId  primitive.ObjectID `json:"category_id" bson:"category_id"`
 	BelongsDate time.Time          `json:"belongs_date" bson:"belongs_date"`
 	FlowType    string             `json:"flow_type" bson:"flow_type"`
@@ -48,6 +49,8 @@ func (entity CashFlowEntity) Build(fieldMap map[string]string) CashFlowEntity {
 				util.Logger.Warnln("build cash failed with err: " + err.Error())
 			}
 			newEntity.Id = objectId
+		case "UserId":
+			newEntity.UserId = util.Convert2ObjectId(value)
 		case "CategoryId":
 			newEntity.CategoryId = util.Convert2ObjectId(value)
 		case "BelongsDate":

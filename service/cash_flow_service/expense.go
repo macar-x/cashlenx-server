@@ -60,7 +60,7 @@ func SaveExpense(belongsDate, categoryName string, amount float64, description s
 	newCashFlowId := cash_flow_mapper.INSTANCE.InsertCashFlowByEntity(model.CashFlowEntity{
 		CategoryId:  categoryEntity.Id,
 		BelongsDate: date,
-		FlowType:    "EXPENSE",
+		FlowType:    model.FlowTypeOutcome,
 		Amount:      amount,
 		Description: description,
 	})

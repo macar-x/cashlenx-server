@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/macar-x/cashlenx-server/errors"
+	"github.com/macar-x/cashlenx-server/model"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -155,7 +156,7 @@ func ValidateDescription(desc string) error {
 
 // ValidateFlowType validates flow type (INCOME or OUTCOME)
 func ValidateFlowType(flowType string) error {
-	if flowType != "INCOME" && flowType != "OUTCOME" {
+	if flowType != model.FlowTypeIncome && flowType != model.FlowTypeOutcome {
 		return NewValidationError("flow_type", "must be INCOME or OUTCOME")
 	}
 

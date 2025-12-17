@@ -11,6 +11,7 @@ import (
 
 type CategoryEntity struct {
 	Id         primitive.ObjectID `bson:"_id,omitempty"`
+	UserId     primitive.ObjectID `json:"user_id" bson:"user_id"`
 	ParentId   primitive.ObjectID `json:"parent_id" bson:"parent_id"`
 	Name       string             `json:"name" bson:"name"`
 	Type       string             `json:"type" bson:"type"`

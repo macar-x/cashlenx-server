@@ -15,7 +15,7 @@ var (
 )
 
 var (
-	CashFlowTableName = "cash_flow"
+	CashFlowTableName = "cash_flows"
 	CategoryTableName = "categories"
 )
 

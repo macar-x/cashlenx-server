@@ -105,6 +105,14 @@ func NewAlreadyExistsError(message string) *AppError {
 	}
 }
 
+// NewUnauthorizedError creates an UNAUTHORIZED error
+func NewUnauthorizedError(message string) *AppError {
+	return &AppError{
+		Code:    ErrUnauthorized,
+		Message: message,
+	}
+}
+
 // NewInternalError creates an INTERNAL_ERROR
 func NewInternalError(message string, cause error) *AppError {
 	return &AppError{

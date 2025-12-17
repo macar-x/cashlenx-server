@@ -1,9 +1,8 @@
 package middleware
 
 import (
-	"errors"
+	std_errors "errors"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -61,7 +60,7 @@ func Auth(next http.Handler) http.Handler {
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			// Validate signing algorithm
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, errors.New("unexpected signing method")
+				return nil, std_errors.New("unexpected signing method")
 			}
 			return []byte(jwtSecret), nil
 		})
@@ -90,7 +89,7 @@ func Auth(next http.Handler) http.Handler {
 func GenerateToken(userID, username, role string) (string, error) {
 	jwtSecret := util.GetConfigByKey("auth.jwt.secret")
 	if jwtSecret == "" {
-		return "", errors.New("JWT_SECRET is not configured")
+		return "", std_errors.New("JWT_SECRET is not configured")
 	}
 
 	// Set token expiration time

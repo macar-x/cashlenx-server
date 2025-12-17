@@ -17,6 +17,7 @@ var (
 var (
 	CashFlowTableName = "cash_flows"
 	CategoryTableName = "categories"
+	UserTableName     = "users"
 )
 
 func initMongoDbConnection() {

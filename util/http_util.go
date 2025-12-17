@@ -16,8 +16,11 @@ func ParseJSONRequest(r *http.Request, v interface{}) error {
 
 // ErrorInfo defines the structure for error responses
 type ErrorInfo struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Code      string `json:"code"`
+	Message   string `json:"message"`
+	Details   string `json:"details,omitempty"`
+	Field     string `json:"field,omitempty"`
+	RequestID string `json:"request_id,omitempty"`
 }
 
 // MetaInfo defines metadata structure for responses
@@ -48,15 +51,23 @@ func ComposeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}
 	if err, ok := data.(error); ok {
 		// Check if it's an AppError from errors package
 		if appErr, ok := err.(*errors.AppError); ok {
-			// Create error response from AppError
+			// Create detailed error response from AppError
+			errorInfo := &ErrorInfo{
+				Code:    string(appErr.Code),
+				Message: appErr.Message,
+				Field:   appErr.Field,
+			}
+			
+			// Add cause details if available
+			if appErr.Cause != nil {
+				errorInfo.Details = appErr.Cause.Error()
+			}
+			
 			response = ResponseWrapper{
-				Error: &ErrorInfo{
-					Code:    string(appErr.Code),
-					Message: appErr.Message,
-				},
+				Error: errorInfo,
 			}
 		} else {
-			// Create generic error response
+			// Create generic error response for standard errors
 			response = ResponseWrapper{
 				Error: &ErrorInfo{
 					Code:    "INTERNAL_ERROR",
@@ -82,14 +93,20 @@ func ComposeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}
 		}
 	} else if msgMap, ok := data.(map[string]interface{}); ok {
 		// Check if data is an error map interface
-		if errMsg, hasError := msgMap["error"].(string); hasError {
-			// Create error response from error map interface
-			response = ResponseWrapper{
-				Error: &ErrorInfo{
-					Code:    "BAD_REQUEST",
-					Message: errMsg,
-				},
+		if errObj, hasError := msgMap["error"].(map[string]interface{}); hasError {
+			// Create detailed error response from error map
+			errorInfo := &ErrorInfo{
+				Code:    errObj["code"].(string),
+				Message: errObj["message"].(string),
 			}
+			// Add optional fields if present
+			if details, ok := errObj["details"].(string); ok {
+				errorInfo.Details = details
+			}
+			if field, ok := errObj["field"].(string); ok {
+				errorInfo.Field = field
+			}
+			response = ResponseWrapper{Error: errorInfo}
 		} else {
 			// Create success response with data map
 			response = ResponseWrapper{

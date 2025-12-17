@@ -1,7 +1,6 @@
 package validation
 
 import (
-	"fmt"
 	"regexp"
 	"time"
 
@@ -11,7 +10,7 @@ import (
 
 // NewValidationError creates a new validation error
 func NewValidationError(field, message string) error {
-	return errors.NewValidationError(fmt.Sprintf("%s: %s", field, message))
+	return errors.NewFieldValidationError(field, message)
 }
 
 // ValidateDate validates date string format (YYYYMMDD, YYYY-MM-DD, or YYYY/MM/DD)

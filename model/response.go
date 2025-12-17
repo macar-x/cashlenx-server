@@ -21,7 +21,7 @@ func NewSuccessResponseWithMeta(data interface{}, meta map[string]interface{}) m
 // NewErrorResponse creates an error response
 func NewErrorResponse(code, message string) map[string]interface{} {
 	return map[string]interface{}{
-		"error": map[string]string{
+		"error": map[string]interface{}{
 			"code":    code,
 			"message": message,
 		},
@@ -31,9 +31,32 @@ func NewErrorResponse(code, message string) map[string]interface{} {
 // NewErrorResponseWithDetails creates an error response with additional details
 func NewErrorResponseWithDetails(code, message, details string) map[string]interface{} {
 	return map[string]interface{}{
-		"error": map[string]string{
+		"error": map[string]interface{}{
 			"code":    code,
 			"message": message,
+			"details": details,
+		},
+	}
+}
+
+// NewFieldErrorResponse creates an error response for field validation
+func NewFieldErrorResponse(code, message, field string) map[string]interface{} {
+	return map[string]interface{}{
+		"error": map[string]interface{}{
+			"code":    code,
+			"message": message,
+			"field":   field,
+		},
+	}
+}
+
+// NewFieldErrorResponseWithDetails creates an error response for field validation with details
+func NewFieldErrorResponseWithDetails(code, message, field, details string) map[string]interface{} {
+	return map[string]interface{}{
+		"error": map[string]interface{}{
+			"code":    code,
+			"message": message,
+			"field":   field,
 			"details": details,
 		},
 	}

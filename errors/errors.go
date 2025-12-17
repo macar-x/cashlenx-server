@@ -21,6 +21,7 @@ type AppError struct {
 	Code    ErrorCode
 	Message string
 	Cause   error
+	Field   string
 }
 
 func (e *AppError) Error() string {
@@ -84,6 +85,15 @@ func NewValidationError(message string) *AppError {
 	return &AppError{
 		Code:    ErrValidation,
 		Message: message,
+	}
+}
+
+// NewFieldValidationError creates a VALIDATION_ERROR with field information
+func NewFieldValidationError(field, message string) *AppError {
+	return &AppError{
+		Code:    ErrValidation,
+		Message: message,
+		Field:   field,
 	}
 }
 

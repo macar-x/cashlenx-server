@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"os"
 	"strings"
@@ -11,7 +10,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/getkin/kin-openapi/routers"
 	"github.com/getkin/kin-openapi/routers/gorillamux"
-	"github.com/macar-x/cashlenx-server/model"
+	"github.com/macar-x/cashlenx-server/errors"
 	"github.com/macar-x/cashlenx-server/util"
 )
 
@@ -68,18 +67,8 @@ func SchemaValidation(next http.Handler) http.Handler {
 
 		// Validate request against schema
 		if err := validateRequest(r); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			
-			// Create a clean error response
-			errMsg := "Invalid request body"
-			if err != nil {
-				// Extract a cleaner error message from the raw error
-				errMsg = "Request body validation failed. Please check your input format."
-				// Optionally, you can add more parsing here to extract specific validation errors
-			}
-			
-			response := model.NewErrorResponse("VALIDATION_ERROR", errMsg)
-			json.NewEncoder(w).Encode(response)
+			// Use ComposeJSONResponse for consistent error formatting
+			util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewValidationError("Request body validation failed. Please check your input format."))
 			return
 		}
 

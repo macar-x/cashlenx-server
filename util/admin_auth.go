@@ -13,20 +13,20 @@ var AdminTokenError = errors.New("invalid or missing ADMIN_TOKEN")
 func VerifyAdminToken(token string) error {
 	// Get configured ADMIN_TOKEN from environment
 	adminToken := GetConfigByKey("ADMIN_TOKEN")
-	
+
 	// If no ADMIN_TOKEN is configured, we allow the operation for backward compatibility
 	// but log a warning
 	if adminToken == "" {
 		Logger.Warn("ADMIN_TOKEN is not configured, allowing dangerous operation without authentication")
 		return nil
 	}
-	
+
 	// Check if provided token matches configured token
 	if token == "" || token != adminToken {
 		Logger.Errorw("Invalid ADMIN_TOKEN provided", "provided_token", token)
 		return AdminTokenError
 	}
-	
+
 	Logger.Info("ADMIN_TOKEN verified successfully")
 	return nil
 }
@@ -41,17 +41,17 @@ func ExtractAdminTokenFromRequest(r *http.Request) string {
 			return parts[1]
 		}
 	}
-	
+
 	// Check X-Admin-Token header
 	if adminToken := r.Header.Get("X-Admin-Token"); adminToken != "" {
 		return adminToken
 	}
-	
+
 	// Check admin_token query parameter
 	if adminToken := r.URL.Query().Get("admin_token"); adminToken != "" {
 		return adminToken
 	}
-	
+
 	return ""
 }
 

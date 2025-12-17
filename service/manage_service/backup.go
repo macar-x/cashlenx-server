@@ -37,7 +37,7 @@ func CreateBackup(filePath string) (OperationStats, error) {
 		CashFlows:  EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
 		Categories: EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
 	}
-	
+
 	if filePath == "" {
 		return stats, errors.New("file path cannot be empty")
 	}
@@ -45,7 +45,7 @@ func CreateBackup(filePath string) (OperationStats, error) {
 	// Get all categories (no pagination limit - get everything)
 	categories := category_mapper.INSTANCE.GetAllCategories(0, 0)
 	stats.Categories.Success = len(categories)
-	
+
 	// Convert categories to map format for JSON serialization
 	categoryMaps := make([]map[string]interface{}, len(categories))
 	for i, cat := range categories {
@@ -62,7 +62,7 @@ func CreateBackup(filePath string) (OperationStats, error) {
 	// Get all cash flows (no pagination limit - get everything)
 	cashFlows := cash_flow_mapper.INSTANCE.GetAllCashFlows(0, 0)
 	stats.CashFlows.Success = len(cashFlows)
-	
+
 	// Convert cash flows to map format for JSON serialization
 	cashFlowMaps := make([]map[string]interface{}, len(cashFlows))
 	for i, cf := range cashFlows {

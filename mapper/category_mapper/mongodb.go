@@ -226,7 +226,7 @@ func (CategoryMongoDbMapper) TruncateCategories() error {
 
 	// Delete all documents
 	deletedCount := database.DeleteManyInMongoDB(filter)
-	
+
 	// Clear cache after truncate
 	cache.GetCategoryCache().Clear()
 

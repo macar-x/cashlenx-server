@@ -6,10 +6,10 @@ import (
 	"os"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"github.com/macar-x/cashlenx-server/mapper/cash_flow_mapper"
 	"github.com/macar-x/cashlenx-server/mapper/category_mapper"
 	"github.com/macar-x/cashlenx-server/model"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // RestoreBackup restores database from a backup file
@@ -18,7 +18,7 @@ func RestoreBackup(filePath string) (OperationStats, error) {
 		CashFlows:  EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
 		Categories: EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
 	}
-	
+
 	if filePath == "" {
 		return stats, errors.New("file path cannot be empty")
 	}
@@ -36,7 +36,7 @@ func RestoreBackup(filePath string) (OperationStats, error) {
 	if err := decoder.Decode(&backup); err != nil {
 		return stats, err
 	}
-	
+
 	// Update total counts for stats
 	totalCategories := len(backup.Categories)
 	totalCashFlows := len(backup.CashFlows)
@@ -52,8 +52,8 @@ func RestoreBackup(filePath string) (OperationStats, error) {
 	for _, catMap := range backup.Categories {
 		// Create category entity from backup data
 		catEntity := model.CategoryEntity{
-			Name:     catMap["Name"].(string),
-			Remark:   catMap["Remark"].(string),
+			Name:   catMap["Name"].(string),
+			Remark: catMap["Remark"].(string),
 		}
 
 		// Insert category
@@ -68,10 +68,10 @@ func RestoreBackup(filePath string) (OperationStats, error) {
 	for i, cfMap := range backup.CashFlows {
 		// Parse belongs_date string to time.Time
 		belongsDate, _ := time.Parse(time.RFC3339, cfMap["BelongsDate"].(string))
-		
+
 		// Parse CategoryId from backup data
 		categoryId, _ := primitive.ObjectIDFromHex(cfMap["CategoryId"].(string))
-		
+
 		// Create cash flow entity from backup data
 		cfEntity := model.CashFlowEntity{
 			CategoryId:  categoryId,

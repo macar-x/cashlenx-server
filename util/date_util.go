@@ -127,7 +127,7 @@ func FormatDateFromStringWithoutDash(dateString string) time.Time {
 	if err == nil {
 		return date
 	}
-	
+
 	// Try other formats
 	return parseAnyDateFormat(dateString)
 }
@@ -138,7 +138,7 @@ func FormatDateFromStringWithDash(dateString string) time.Time {
 	if err == nil {
 		return date
 	}
-	
+
 	// Try other formats
 	return parseAnyDateFormat(dateString)
 }
@@ -150,19 +150,19 @@ func parseAnyDateFormat(dateString string) time.Time {
 	if err == nil {
 		return date
 	}
-	
+
 	// Try YYYY-MM-DD
 	date, err = time.Parse(dateFormatInStringWithDash, dateString)
 	if err == nil {
 		return date
 	}
-	
+
 	// Try YYYY/MM/DD
 	date, err = time.Parse("2006/01/02", dateString)
 	if err == nil {
 		return date
 	}
-	
+
 	Logger.Errorw("Failed to parse date", "date", dateString, "error", err)
 	return time.Time{}
 }

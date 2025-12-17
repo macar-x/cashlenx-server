@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/spf13/cobra"
 	"github.com/macar-x/cashlenx-server/model"
+	"github.com/spf13/cobra"
 )
 
 var (

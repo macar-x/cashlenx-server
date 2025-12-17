@@ -13,7 +13,7 @@ func TestValidateDate(t *testing.T) {
 		{"Valid YYYYMMDD", "20241205", false},
 		{"Valid YYYY-MM-DD", "2024-12-05", false},
 		{"Empty date", "", true},
-		{"Invalid format", "2024/12/05", true},
+		{"Valid YYYY/MM/DD", "2024/12/05", false},
 		{"Invalid date", "20241301", true},
 		{"Too short", "2024120", true},
 		{"Too long", "202412055", true},

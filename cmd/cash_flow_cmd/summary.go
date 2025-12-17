@@ -16,7 +16,7 @@ var (
 var summaryCmd = &cobra.Command{
 	Use:   "summary",
 	Short: "show cash_flow summary",
-Long: `Show summary of cash flows for different periods.
+	Long: `Show summary of cash flows for different periods.
 Periods: daily, monthly, yearly
 Examples:
   cashlenx cash summary --period daily --date 2024-01-15

@@ -27,7 +27,7 @@ WARNING: This will replace all existing data!`,
 		if err := util.VerifyAdminToken(adminToken); err != nil {
 			return err
 		}
-		
+
 		if dbRestorePath == "" {
 			return errors.New("dump file path is required")
 		}

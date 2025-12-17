@@ -6,12 +6,19 @@ import (
 	"github.com/macar-x/cashlenx-server/mapper/user_mapper"
 	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/util"
+	"github.com/macar-x/cashlenx-server/validation"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // CreateService creates a new user with the provided details
 func CreateService(requestBody model.UserDTO) (string, error) {
+	// Validate password
+	err := validation.ValidatePassword(requestBody.Password)
+	if err != nil {
+		return "", err
+	}
+
 	// Check if username is already taken
 	existingUser := user_mapper.INSTANCE.GetUserByUsername(requestBody.Username)
 	if !existingUser.Id.IsZero() {

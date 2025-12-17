@@ -67,8 +67,10 @@ func SchemaValidation(next http.Handler) http.Handler {
 
 		// Validate request against schema
 		if err := validateRequest(r); err != nil {
-			// Use ComposeJSONResponse for consistent error formatting
-			util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewValidationError("Request body validation failed. Please check your input format."))
+			// Log the detailed error for debugging
+			util.Logger.Errorw("Schema validation failed", "error", err, "path", r.URL.Path, "method", r.Method)
+			// Return detailed error to client for debugging
+			util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewValidationError("Request body validation failed: " + err.Error()))
 			return
 		}
 

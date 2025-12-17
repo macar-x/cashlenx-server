@@ -8,6 +8,7 @@ import (
 	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/service/user_service"
 	"github.com/macar-x/cashlenx-server/util"
+	"github.com/macar-x/cashlenx-server/validation"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -50,9 +51,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	// Return user info with token (without password hash)
 	response := map[string]interface{}{
 		"user": map[string]interface{}{
-			"id":       user.Id.Hex(),
-			"username": user.Username,
-			"role":     user.Role,
+			"id":         user.Id.Hex(),
+			"username":   user.Username,
+			"role":       user.Role,
 			"created_at": user.CreatedAt,
 			"updated_at": user.UpdatedAt,
 		},
@@ -78,8 +79,18 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate required fields
-	if registerRequest.Username == "" || registerRequest.Password == "" {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewValidationError("username and password are required"))
+	if registerRequest.Username == "" {
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewValidationError("username is required"))
+		return
+	}
+	if registerRequest.Password == "" {
+		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewValidationError("password is required"))
+		return
+	}
+
+	// Validate password requirements
+	if err := validation.ValidatePassword(registerRequest.Password); err != nil {
+		util.ComposeJSONResponse(w, http.StatusBadRequest, err)
 		return
 	}
 

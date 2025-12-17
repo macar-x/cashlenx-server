@@ -171,3 +171,20 @@ func ValidateRequired(field, value string) error {
 
 	return nil
 }
+
+// ValidatePassword validates password requirements
+func ValidatePassword(password string) error {
+	if password == "" {
+		return NewValidationError("password", "is required")
+	}
+
+	if len(password) < 6 {
+		return NewValidationError("password", "must be 6 characters or more")
+	}
+
+	if len(password) > 100 {
+		return NewValidationError("password", "must be 100 characters or less")
+	}
+
+	return nil
+}

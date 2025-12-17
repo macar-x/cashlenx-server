@@ -6,6 +6,7 @@ import (
 	"github.com/macar-x/cashlenx-server/mapper/user_mapper"
 	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/util"
+	"github.com/macar-x/cashlenx-server/validation"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -28,6 +29,11 @@ func UpdateService(userId string, requestBody model.UserDTO) error {
 
 	// Update password if provided
 	if requestBody.Password != "" {
+		// Validate password
+		err := validation.ValidatePassword(requestBody.Password)
+		if err != nil {
+			return err
+		}
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(requestBody.Password), bcrypt.DefaultCost)
 		if err != nil {
 			return errors.New("failed to hash password")

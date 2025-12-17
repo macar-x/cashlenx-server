@@ -69,7 +69,16 @@ func SchemaValidation(next http.Handler) http.Handler {
 		// Validate request against schema
 		if err := validateRequest(r); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			response := model.NewErrorResponse("VALIDATION_ERROR", err.Error())
+			
+			// Create a clean error response
+			errMsg := "Invalid request body"
+			if err != nil {
+				// Extract a cleaner error message from the raw error
+				errMsg = "Request body validation failed. Please check your input format."
+				// Optionally, you can add more parsing here to extract specific validation errors
+			}
+			
+			response := model.NewErrorResponse("VALIDATION_ERROR", errMsg)
 			json.NewEncoder(w).Encode(response)
 			return
 		}

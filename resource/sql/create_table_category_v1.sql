@@ -2,10 +2,10 @@ USE
     `cashlenx`;
 
 -- -------------------
--- Create table `category`
+-- Create table `categories`
 -- -------------------
-DROP TABLE IF EXISTS category;
-CREATE TABLE `category`
+DROP TABLE IF EXISTS categories;
+CREATE TABLE `categories`
 (
     `id`          VARCHAR(24)  NOT NULL,
     `parent_id`   VARCHAR(24)           DEFAULT NULL,
@@ -19,4 +19,4 @@ CREATE TABLE `category`
   DEFAULT CHARSET = UTF8MB4
     COMMENT ='Category Table';
 
-CREATE UNIQUE INDEX category_name_unique_index ON category (name);
+CREATE UNIQUE INDEX category_name_unique_index ON categories (name);

@@ -17,5 +17,5 @@ const (
 // Database table names
 const (
 	TableCashFlow = "cash_flow"
-	TableCategory = "category"
+	TableCategory = "categories"
 )

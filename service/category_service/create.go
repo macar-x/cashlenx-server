@@ -27,6 +27,17 @@ func CreateService(parentPlainId, categoryName, categoryType string) (string, er
 		if err := validation.ValidateID(parentPlainId); err != nil {
 			return "", err
 		}
+		
+		// Check if parent category exists and has the same type
+		parentCategory := category_mapper.INSTANCE.GetCategoryByObjectId(parentPlainId)
+		if parentCategory.IsEmpty() {
+			return "", errors.New("parent category not found")
+		}
+		
+		// Ensure parent and child categories have the same type
+		if parentCategory.Type != categoryType {
+			return "", errors.New("parent and child categories must have the same type")
+		}
 	}
 
 	categoryEntity := model.CategoryEntity{

@@ -217,3 +217,23 @@ func (m UserMongoDbMapper) TruncateUsers() error {
 	util.Logger.Infow("Truncated users collection")
 	return nil
 }
+
+// GetUsersByRole retrieves all users with a specific role from MongoDB
+func (m UserMongoDbMapper) GetUsersByRole(role string) []model.UserEntity {
+	// Create a filter to find users by role
+	filter := bson.D{
+		primitive.E{Key: "role", Value: role},
+	}
+
+	database.OpenMongoDbConnection(database.UserTableName)
+	defer database.CloseMongoDbConnection()
+
+	// Get the user documents from the database
+	var users []model.UserEntity
+	queryResultList := database.GetManyInMongoDB(filter)
+	for _, queryResult := range queryResultList {
+		users = append(users, convertBsonM2UserEntity(queryResult))
+	}
+
+	return users
+}

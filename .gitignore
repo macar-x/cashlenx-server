@@ -22,3 +22,11 @@ cashlenx
 
 # Config Files
 .env
+
+# Node.js Files
+node_modules/
+package-lock.json
+package.json
+
+# Generated Docs
+docs/html/

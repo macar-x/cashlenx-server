@@ -1,4 +1,4 @@
-package cmd
+package system_cmd
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ var (
 	GitCommit = "unknown"
 )
 
-var versionCmd = &cobra.Command{
+var VersionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show version information",
 	Long:  `Display version, build time, and git commit information`,
@@ -25,8 +25,4 @@ var versionCmd = &cobra.Command{
 		fmt.Printf("Go Version: %s\n", runtime.Version())
 		fmt.Printf("OS/Arch: %s/%s\n", runtime.GOOS, runtime.GOARCH)
 	},
-}
-
-func init() {
-	rootCmd.AddCommand(versionCmd)
 }

@@ -68,16 +68,32 @@ func initDefaultValues() {
 	}
 	configurationMap["api.schema.validation"] = schemaValidation
 
-	// Authentication configuration
-	authEnabled := os.Getenv("AUTH_ENABLED")
-	if authEnabled == "" {
-		authEnabled = "false" // Disable by default for backward compatibility
-	}
-	configurationMap["auth.enabled"] = authEnabled
-
 	// JWT Secret for token signing
 	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "your-secret-key-here-change-in-production" // Default secret (change in production!)
+	}
 	configurationMap["auth.jwt.secret"] = jwtSecret
+
+	// Registration enabled
+	registerEnabled := os.Getenv("AUTH_REGISTRATION_ENABLED")
+	if registerEnabled == "" {
+		registerEnabled = "true" // Enable registration by default
+	}
+	configurationMap["auth.registration.enabled"] = registerEnabled
+
+	// Admin credentials
+	adminUsername := os.Getenv("ADMIN_USERNAME")
+	if adminUsername == "" {
+		adminUsername = "admin"
+	}
+	configurationMap["admin.username"] = adminUsername
+
+	adminPassword := os.Getenv("ADMIN_PASSWORD")
+	if adminPassword == "" {
+		adminPassword = "admin"
+	}
+	configurationMap["admin.password"] = adminPassword
 
 	// Admin token for sensitive operations
 	configurationMap["ADMIN_TOKEN"] = os.Getenv("ADMIN_TOKEN")

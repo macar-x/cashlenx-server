@@ -24,6 +24,9 @@ type UserMapper interface {
 	// GetAllUsers retrieves all users with pagination
 	GetAllUsers(limit, offset int) []model.UserEntity
 	
+	// GetUsersByRole retrieves all users with a specific role
+	GetUsersByRole(role string) []model.UserEntity
+	
 	// CountAllUsers returns the total number of users
 	CountAllUsers() int64
 	

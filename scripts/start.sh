@@ -171,7 +171,11 @@ start_services() {
         profile_flags="$profile_flags --profile $profile"
     done
 
-    # Start services
+    # Stop existing services first
+    print_info "Stopping existing services..."
+    $COMPOSE_CMD $profile_flags down
+
+    # Start services with fresh build
     print_info "Starting services with Docker Compose..."
     $COMPOSE_CMD $profile_flags up -d --build
 

@@ -311,3 +311,53 @@ func (m UserMySqlMapper) TruncateUsers() error {
 	util.Logger.Infow("Truncated users table")
 	return nil
 }
+
+// GetUsersByRole retrieves all users with a specific role from MySQL
+func (m UserMySqlMapper) GetUsersByRole(role string) []model.UserEntity {
+	// Create the SQL query
+	query := `SELECT id, username, password_hash, is_active, role, created_at, updated_at FROM ` + database.UserTableName + ` WHERE role = ?`
+
+	// Get database connection
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	// Execute the query
+	rows, err := connection.Query(query, role)
+	if err != nil {
+		util.Logger.Errorw("Failed to get users by role", "error", err, "role", role)
+		return []model.UserEntity{}
+	}
+	defer rows.Close()
+
+	// Scan the results into a slice of UserEntity
+	var users []model.UserEntity
+
+	for rows.Next() {
+		var user model.UserEntity
+		var createdAt, updatedAt time.Time
+		var id string
+
+		err := rows.Scan(&id, &user.Username, &user.PasswordHash, &user.IsActive, &user.Role, &createdAt, &updatedAt)
+		if err != nil {
+			util.Logger.Errorw("Failed to scan user", "error", err)
+			continue
+		}
+
+		// Parse the ID string to ObjectID
+		objectId, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			util.Logger.Errorw("Invalid ObjectID", "error", err, "id", id)
+			continue
+		}
+
+		// Set the parsed ID and timestamps
+		user.Id = objectId
+		user.CreatedAt = createdAt
+		user.UpdatedAt = updatedAt
+
+		// Add the user to the slice
+		users = append(users, user)
+	}
+
+	return users
+}

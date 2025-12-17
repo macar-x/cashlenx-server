@@ -60,7 +60,7 @@ func SchemaValidation(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Skip health and version endpoints
-		if strings.HasPrefix(r.URL.Path, "/api/health") || strings.HasPrefix(r.URL.Path, "/api/version") {
+		if strings.HasPrefix(r.URL.Path, "/api/health") || strings.HasPrefix(r.URL.Path, "/api/version") || strings.HasPrefix(r.URL.Path, "/api/system/health") || strings.HasPrefix(r.URL.Path, "/api/system/version") {
 			next.ServeHTTP(w, r)
 			return
 		}

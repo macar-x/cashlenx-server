@@ -14,6 +14,7 @@ const (
 	ErrInternal         ErrorCode = "INTERNAL_ERROR"
 	ErrValidation       ErrorCode = "VALIDATION_ERROR"
 	ErrConnectionFailed ErrorCode = "CONNECTION_FAILED"
+	ErrForbidden        ErrorCode = "FORBIDDEN"
 )
 
 // AppError represents a standardized application error
@@ -109,6 +110,14 @@ func NewAlreadyExistsError(message string) *AppError {
 func NewUnauthorizedError(message string) *AppError {
 	return &AppError{
 		Code:    ErrUnauthorized,
+		Message: message,
+	}
+}
+
+// NewForbiddenError creates a FORBIDDEN error
+func NewForbiddenError(message string) *AppError {
+	return &AppError{
+		Code:    ErrForbidden,
 		Message: message,
 	}
 }

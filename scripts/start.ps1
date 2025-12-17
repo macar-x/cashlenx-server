@@ -193,7 +193,11 @@ function Start-Services {
         $profileFlags += " --profile $profile"
     }
 
-    # Start services
+    # Stop existing services first
+    Print-Info "Stopping existing services..."
+    Invoke-Expression "$composeCmd$profileFlags down"
+
+    # Start services with fresh build
     Print-Info "Starting services with Docker Compose..."
     Invoke-Expression "$composeCmd$profileFlags up -d --build"
 

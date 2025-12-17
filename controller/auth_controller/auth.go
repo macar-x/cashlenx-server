@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/macar-x/cashlenx-server/errors"
+	"github.com/macar-x/cashlenx-server/middleware"
 	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/service/user_service"
 	"github.com/macar-x/cashlenx-server/util"
@@ -38,14 +39,38 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Generate JWT token
+	// Generate JWT token
+	token, err := middleware.GenerateToken(user.Id.Hex(), user.Username, user.Role)
+	if err != nil {
+		util.Logger.Errorw("Failed to generate JWT token", "error", err)
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, errors.NewInternalError("failed to generate authentication token", nil))
+		return
+	}
 
-	// Return user info (without password hash)
-	util.ComposeJSONResponse(w, http.StatusOK, user)
+	// Return user info with token (without password hash)
+	response := map[string]interface{}{
+		"user": map[string]interface{}{
+			"id":       user.Id.Hex(),
+			"username": user.Username,
+			"role":     user.Role,
+			"created_at": user.CreatedAt,
+			"updated_at": user.UpdatedAt,
+		},
+		"token": token,
+	}
+
+	util.ComposeJSONResponse(w, http.StatusOK, response)
 }
 
 // Register handles user registration requests
 func Register(w http.ResponseWriter, r *http.Request) {
+	// Check if registration is enabled
+	registerEnabled := util.GetConfigByKey("auth.registration.enabled")
+	if registerEnabled != "true" {
+		util.ComposeJSONResponse(w, http.StatusForbidden, errors.NewForbiddenError("user registration is disabled"))
+		return
+	}
+
 	var registerRequest model.UserRegistrationRequest
 	if err := util.ParseJSONRequest(r, &registerRequest); err != nil {
 		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("invalid request body"))

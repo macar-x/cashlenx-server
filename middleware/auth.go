@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	std_errors "errors"
 	"net/http"
 	"strings"
@@ -20,13 +21,14 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
-// Auth middleware that handles JWT authentication
+// Auth middleware that handles JWT authentication and role-based access control
 func Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Check if authentication is enabled
-		authEnabled := util.GetConfigByKey("auth.enabled")
-		if authEnabled == "false" {
-			// Skip authentication if disabled
+		// Authentication is always enabled
+
+		// Skip authentication for public endpoints
+		path := r.URL.Path
+		if path == "/api/auth/login" || path == "/api/auth/register" || path == "/api/system/health" || path == "/api/system/version" {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -78,7 +80,19 @@ func Auth(next http.Handler) http.Handler {
 		}
 
 		// Add user information to request context
-		r = r.WithContext(r.Context())
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, "user_id", claims.UserID)
+		ctx = context.WithValue(ctx, "username", claims.Username)
+		ctx = context.WithValue(ctx, "role", claims.Role)
+		r = r.WithContext(ctx)
+
+		// Check if admin role is required for manage routes
+		if strings.HasPrefix(path, "/api/manage/") {
+			if claims.Role != "admin" {
+				util.ComposeJSONResponse(w, http.StatusForbidden, errors.NewForbiddenError("admin role required"))
+				return
+			}
+		}
 
 		// Call next handler
 		next.ServeHTTP(w, r)
@@ -117,4 +131,27 @@ func GenerateToken(userID, username, role string) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+// Admin middleware that checks if the user has admin role
+func Admin(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Authentication is always enabled
+
+		// Get user role from context (set by Auth middleware)
+		roleValue := r.Context().Value("role")
+		if roleValue == nil {
+			util.ComposeJSONResponse(w, http.StatusUnauthorized, errors.NewUnauthorizedError("user role not found in context"))
+			return
+		}
+
+		role, ok := roleValue.(string)
+		if !ok || role != "admin" {
+			util.ComposeJSONResponse(w, http.StatusForbidden, errors.NewForbiddenError("admin role required"))
+			return
+		}
+
+		// Call next handler
+		next.ServeHTTP(w, r)
+	})
 }

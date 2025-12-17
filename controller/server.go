@@ -12,6 +12,7 @@ import (
 	"github.com/macar-x/cashlenx-server/controller/user_controller"
 	"github.com/macar-x/cashlenx-server/middleware"
 	"github.com/macar-x/cashlenx-server/model"
+	"github.com/macar-x/cashlenx-server/service/user_service"
 	"github.com/macar-x/cashlenx-server/util"
 )
 
@@ -21,10 +22,13 @@ func StartServer(port int32) {
 	tz := util.GetTimezone()
 	fmt.Printf("Loaded timezone: %v\n", tz)
 
+	// Initialize admin user if needed
+	user_service.InitAdminUser()
+
 	r := mux.NewRouter()
 
 	// Register routes
-	registerHealthRoutes(r)
+	registerSystemRoutes(r)
 	registerUserRoute(r)
 	registerCashRoute(r)
 	registerCategoryRoute(r)
@@ -38,14 +42,13 @@ func StartServer(port int32) {
 	http.ListenAndServe(addr, handler)
 }
 
-func registerHealthRoutes(r *mux.Router) {
-	r.HandleFunc("/api/health", healthCheck).Methods("GET")
-	r.HandleFunc("/api/version", versionInfo).Methods("GET")
+func registerSystemRoutes(r *mux.Router) {
+	r.HandleFunc("/api/system/health", healthCheck).Methods("GET")
+	r.HandleFunc("/api/system/version", versionInfo).Methods("GET")
 }
 
 func registerUserRoute(r *mux.Router) {
 	// User management routes
-	r.HandleFunc("/api/user", user_controller.Create).Methods("POST")
 	r.HandleFunc("/api/user", user_controller.ListAll).Methods("GET")
 	r.HandleFunc("/api/user/{id}", user_controller.Get).Methods("GET")
 	r.HandleFunc("/api/user/{id}", user_controller.Update).Methods("PUT")

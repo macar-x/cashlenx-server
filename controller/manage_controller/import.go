@@ -16,7 +16,7 @@ func ImportData(w http.ResponseWriter, r *http.Request) {
 		util.ComposeJSONResponse(w, http.StatusUnauthorized, err)
 		return
 	}
-	
+
 	// Parse the multipart form with a 10 MB file size limit
 	err := r.ParseMultipartForm(10 << 20) // 10 MB
 	if err != nil {

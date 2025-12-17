@@ -15,7 +15,7 @@ func DumpDatabase(w http.ResponseWriter, r *http.Request) {
 		util.ComposeJSONResponse(w, http.StatusUnauthorized, err)
 		return
 	}
-	
+
 	// Create a temporary file for the dump
 	filePath := "temp_dump.json"
 	defer os.Remove(filePath) // Clean up after response

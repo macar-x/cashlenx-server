@@ -17,7 +17,7 @@ func RestoreDatabase(w http.ResponseWriter, r *http.Request) {
 		util.ComposeJSONResponse(w, http.StatusUnauthorized, err)
 		return
 	}
-	
+
 	// Parse multipart form data
 	if err := r.ParseMultipartForm(10 << 20); err != nil { // 10MB max file size
 		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("Failed to parse form data"))
@@ -52,8 +52,8 @@ func RestoreDatabase(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// Return error along with statistics
 		util.ComposeJSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
-			"error":    err.Error(),
-			"stats":    stats,
+			"error":   err.Error(),
+			"stats":   stats,
 			"message": "Database restore failed",
 		})
 		return
@@ -62,6 +62,6 @@ func RestoreDatabase(w http.ResponseWriter, r *http.Request) {
 	// Return success response with statistics
 	util.ComposeJSONResponse(w, http.StatusOK, map[string]interface{}{
 		"message": "Database restored successfully from file: " + handler.Filename,
-		"stats":    stats,
+		"stats":   stats,
 	})
 }

@@ -13,7 +13,7 @@ import (
 func InitializeDemoData() error {
 	// Create default categories with their types
 	categories := []struct {
-		name string
+		name  string
 		type_ string
 	}{
 		{"Salary", "income"},

@@ -82,7 +82,7 @@ func validateRequest(r *http.Request) error {
 	// Create a copy of the request with modified URL to match OpenAPI server URL
 	// This ensures validation works regardless of the actual hostname/port
 	rCopy := r.Clone(context.Background())
-	
+
 	// Use the first server URL from the spec or default to http://localhost:8080
 	var serverURL string
 	if len(openapi.Servers) > 0 {
@@ -90,18 +90,18 @@ func validateRequest(r *http.Request) error {
 	} else {
 		serverURL = "http://localhost:8080"
 	}
-	
+
 	// Parse the server URL
 	server, err := r.URL.Parse(serverURL)
 	if err != nil {
 		return err
 	}
-	
+
 	// Keep the original path, query, fragment, etc.
 	rCopy.URL.Scheme = server.Scheme
 	rCopy.URL.Host = server.Host
 	// Don't change the path, query, fragment, etc.
-	
+
 	// Find matching route using the modified URL
 	route, pathParams, err := routesRouter.FindRoute(rCopy)
 	if err != nil {

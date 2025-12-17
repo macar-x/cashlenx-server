@@ -11,11 +11,11 @@ func ResetDatabase() (OperationStats, error) {
 		CashFlows:  EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
 		Categories: EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
 	}
-	
+
 	// Count items before truncation to provide accurate statistics
 	stats.CashFlows.Success = int(cash_flow_mapper.INSTANCE.CountAllCashFlows())
 	stats.Categories.Success = int(category_mapper.INSTANCE.CountAllCategories())
-	
+
 	// This is a dangerous operation - truncate all data
 	// First truncate cash flows (dependent data)
 	if err := cash_flow_mapper.INSTANCE.TruncateCashFlows(); err != nil {

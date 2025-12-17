@@ -21,7 +21,7 @@ If no path is specified, creates dump in current directory with timestamp.`,
 		if err := util.VerifyAdminToken(adminToken); err != nil {
 			return err
 		}
-		
+
 		if dumpPath == "" {
 			dumpPath = fmt.Sprintf("cashlenx_dump_%s.json", time.Now().Format("20060102_150405"))
 		}

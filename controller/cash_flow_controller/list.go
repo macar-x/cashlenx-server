@@ -15,14 +15,14 @@ func ListAll(w http.ResponseWriter, r *http.Request) {
 	limitStr := r.URL.Query().Get("limit")
 	offsetStr := r.URL.Query().Get("offset")
 	pageStr := r.URL.Query().Get("page")
-	
+
 	// Filter parameters
 	cashType := r.URL.Query().Get("type") // INCOME or OUTCOME
 	categoryId := r.URL.Query().Get("category_id")
 	description := r.URL.Query().Get("description") // Fuzzy search
 	exactDescription := r.URL.Query().Get("exact_description")
 	fromDate := r.URL.Query().Get("from_date") // YYYYMMDD or YYYY-MM-DD
-	toDate := r.URL.Query().Get("to_date") // YYYYMMDD or YYYY-MM-DD
+	toDate := r.URL.Query().Get("to_date")     // YYYYMMDD or YYYY-MM-DD
 
 	// Pagination defaults
 	limit := 20

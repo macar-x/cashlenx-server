@@ -356,7 +356,7 @@ func (CashFlowMongoDbMapper) TruncateCashFlows() error {
 
 	// Delete all documents
 	deletedCount := database.DeleteManyInMongoDB(filter)
-	
+
 	util.Logger.Infow("Cash flows truncated successfully", "deleted_count", deletedCount)
 	return nil
 }

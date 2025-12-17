@@ -57,12 +57,12 @@ func ComposeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}
 				Message: appErr.Message,
 				Field:   appErr.Field,
 			}
-			
+
 			// Add cause details if available
 			if appErr.Cause != nil {
 				errorInfo.Details = appErr.Cause.Error()
 			}
-			
+
 			response = ResponseWrapper{
 				Error: errorInfo,
 			}

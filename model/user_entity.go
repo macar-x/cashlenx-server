@@ -17,6 +17,11 @@ type UserEntity struct {
 	Role         string             `bson:"role" json:"role"` // Default: "user", can be "admin"
 }
 
+// IsEmpty checks if the user entity is empty
+func (u UserEntity) IsEmpty() bool {
+	return u.Id == primitive.NilObjectID && u.Username == ""
+}
+
 // UserDTO represents a user for API requests/responses
 type UserDTO struct {
 	Id        string `json:"id,omitempty"`

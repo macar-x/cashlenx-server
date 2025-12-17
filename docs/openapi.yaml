@@ -996,7 +996,7 @@ components:
           maxLength: 100
         role:
           type: string
-          description: User role (optional, default: user)
+          description: "User role (optional, default: user)"
           enum: [user, admin]
       required:
         - username

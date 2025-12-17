@@ -6,6 +6,7 @@ import (
 
 	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/util"
+	"github.com/macar-x/cashlenx-server/util/database"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -15,10 +16,14 @@ type UserMySqlMapper struct{}
 // GetUserByObjectId retrieves a user by their ID from MySQL
 func (m UserMySqlMapper) GetUserByObjectId(plainId string) model.UserEntity {
 	// Create the SQL query
-	query := `SELECT id, username, password_hash, is_active, role, created_at, updated_at FROM users WHERE id = ?`
+	query := `SELECT id, username, password_hash, is_active, role, created_at, updated_at FROM ` + database.UserTableName + ` WHERE id = ?`
+
+	// Get database connection
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
 
 	// Execute the query
-	row := util.database.MySqlClient.QueryRow(query, plainId)
+	row := connection.QueryRow(query, plainId)
 
 	// Scan the result into a UserEntity
 	var user model.UserEntity
@@ -53,10 +58,14 @@ func (m UserMySqlMapper) GetUserByObjectId(plainId string) model.UserEntity {
 // GetUserByUsername retrieves a user by their username from MySQL
 func (m UserMySqlMapper) GetUserByUsername(username string) model.UserEntity {
 	// Create the SQL query
-	query := `SELECT id, username, password_hash, is_active, role, created_at, updated_at FROM users WHERE username = ?`
+	query := `SELECT id, username, password_hash, is_active, role, created_at, updated_at FROM ` + database.UserTableName + ` WHERE username = ?`
+
+	// Get database connection
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
 
 	// Execute the query
-	row := util.database.MySqlClient.QueryRow(query, username)
+	row := connection.QueryRow(query, username)
 
 	// Scan the result into a UserEntity
 	var user model.UserEntity
@@ -110,10 +119,14 @@ func (m UserMySqlMapper) InsertUserByEntity(newEntity model.UserEntity) string {
 	}
 
 	// Create the SQL query
-	query := `INSERT INTO users (id, username, password_hash, is_active, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`
+	query := `INSERT INTO ` + database.UserTableName + ` (id, username, password_hash, is_active, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`
+
+	// Get database connection
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
 
 	// Execute the query
-	result, err := util.database.MySqlClient.Exec(
+	result, err := connection.Exec(
 		query,
 		newEntity.Id.Hex(),
 		newEntity.Username,
@@ -145,10 +158,14 @@ func (m UserMySqlMapper) UpdateUserByEntity(plainId string, updatedEntity model.
 	updatedEntity.UpdatedAt = time.Now()
 
 	// Create the SQL query
-	query := `UPDATE users SET username = ?, password_hash = ?, is_active = ?, role = ?, updated_at = ? WHERE id = ?`
+	query := `UPDATE ` + database.UserTableName + ` SET username = ?, password_hash = ?, is_active = ?, role = ?, updated_at = ? WHERE id = ?`
+
+	// Get database connection
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
 
 	// Execute the query
-	result, err := util.database.MySqlClient.Exec(
+	result, err := connection.Exec(
 		query,
 		updatedEntity.Username,
 		updatedEntity.PasswordHash,
@@ -176,10 +193,14 @@ func (m UserMySqlMapper) UpdateUserByEntity(plainId string, updatedEntity model.
 // GetAllUsers retrieves all users with pagination from MySQL
 func (m UserMySqlMapper) GetAllUsers(limit, offset int) []model.UserEntity {
 	// Create the SQL query with pagination
-	query := `SELECT id, username, password_hash, is_active, role, created_at, updated_at FROM users LIMIT ? OFFSET ?`
+	query := `SELECT id, username, password_hash, is_active, role, created_at, updated_at FROM ` + database.UserTableName + ` LIMIT ? OFFSET ?`
+
+	// Get database connection
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
 
 	// Execute the query
-	rows, err := util.database.MySqlClient.Query(query, limit, offset)
+	rows, err := connection.Query(query, limit, offset)
 	if err != nil {
 		util.Logger.Errorw("Failed to get all users", "error", err)
 		return []model.UserEntity{}
@@ -222,11 +243,15 @@ func (m UserMySqlMapper) GetAllUsers(limit, offset int) []model.UserEntity {
 // CountAllUsers returns the total number of users from MySQL
 func (m UserMySqlMapper) CountAllUsers() int64 {
 	// Create the SQL query
-	query := `SELECT COUNT(*) FROM users`
+	query := `SELECT COUNT(*) FROM ` + database.UserTableName
+
+	// Get database connection
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
 
 	// Execute the query
 	var count int64
-	err := util.database.MySqlClient.QueryRow(query).Scan(&count)
+	err := connection.QueryRow(query).Scan(&count)
 	if err != nil {
 		util.Logger.Errorw("Failed to count users", "error", err)
 		return 0
@@ -239,15 +264,19 @@ func (m UserMySqlMapper) CountAllUsers() int64 {
 func (m UserMySqlMapper) DeleteUserByObjectId(plainId string) model.UserEntity {
 	// First, get the user to return it
 	user := m.GetUserByObjectId(plainId)
-	if user.Id.IsZero() {
+	if user.IsEmpty() {
 		return model.UserEntity{}
 	}
 
 	// Create the SQL query
-	query := `DELETE FROM users WHERE id = ?`
+	query := `DELETE FROM ` + database.UserTableName + ` WHERE id = ?`
+
+	// Get database connection
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
 
 	// Execute the query
-	result, err := util.database.MySqlClient.Exec(query, plainId)
+	result, err := connection.Exec(query, plainId)
 	if err != nil {
 		util.Logger.Errorw("Failed to delete user", "error", err, "userId", plainId)
 		return model.UserEntity{}
@@ -266,10 +295,14 @@ func (m UserMySqlMapper) DeleteUserByObjectId(plainId string) model.UserEntity {
 // TruncateUsers deletes all users from MySQL
 func (m UserMySqlMapper) TruncateUsers() error {
 	// Create the SQL query
-	query := `TRUNCATE TABLE users`
+	query := `TRUNCATE TABLE ` + database.UserTableName
+
+	// Get database connection
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
 
 	// Execute the query
-	result, err := util.database.MySqlClient.Exec(query)
+	_, err := connection.Exec(query)
 	if err != nil {
 		util.Logger.Errorw("Failed to truncate users", "error", err)
 		return err

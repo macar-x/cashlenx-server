@@ -6,6 +6,7 @@ import (
 	"github.com/macar-x/cashlenx-server/errors"
 	"github.com/macar-x/cashlenx-server/mapper/cash_flow_mapper"
 	"github.com/macar-x/cashlenx-server/model"
+	"github.com/macar-x/cashlenx-server/util"
 )
 
 func IsQueryFieldsConflicted(plainId, belongsDate, exactDescription, fuzzyDescription string) bool {
@@ -54,10 +55,10 @@ func QueryById(plainId string) (model.CashFlowEntity, error) {
 }
 
 func QueryByDate(belongsDate string) ([]model.CashFlowEntity, error) {
-	// Parse the date string
-	parsedDate, err := time.Parse("20060102", belongsDate)
+	// Parse the date string using our multi-format parser
+	parsedDate, err := util.ParseDate(belongsDate)
 	if err != nil {
-		return []model.CashFlowEntity{}, errors.NewInvalidInputError("belongs_date error, try format like 19700101")
+		return []model.CashFlowEntity{}, errors.NewInvalidInputError("belongs_date error, try format like 19700101, 1970-01-01, or 1970/01/01")
 	}
 
 	// Use UTC time for consistent querying (MongoDB stores dates in UTC)

@@ -7,6 +7,7 @@ import (
 	"github.com/macar-x/cashlenx-server/mapper/cash_flow_mapper"
 	"github.com/macar-x/cashlenx-server/mapper/category_mapper"
 	"github.com/macar-x/cashlenx-server/model"
+	"github.com/macar-x/cashlenx-server/util"
 	"github.com/macar-x/cashlenx-server/validation"
 	"github.com/shopspring/decimal"
 )
@@ -43,10 +44,10 @@ func SaveExpense(belongsDate, categoryName string, amount float64, description s
 	// Optional parameter: date (default to today)
 	var date time.Time
 	if belongsDate != "" {
-		// Parse the provided date
-		parsedDate, err := time.Parse("20060102", belongsDate)
+		// Parse the provided date using our multi-format parser
+		parsedDate, err := util.ParseDate(belongsDate)
 		if err != nil {
-			return model.CashFlowEntity{}, errors.New("belongs_date error, try format like 19700101")
+			return model.CashFlowEntity{}, errors.New("belongs_date error, try format like 19700101, 1970-01-01, or 1970/01/01")
 		}
 		// Use UTC time for consistent storage
 		date = time.Date(parsedDate.Year(), parsedDate.Month(), parsedDate.Day(), 0, 0, 0, 0, time.UTC)

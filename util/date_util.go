@@ -122,17 +122,57 @@ func ToTimezone(t time.Time) time.Time {
 }
 
 func FormatDateFromStringWithoutDash(dateString string) time.Time {
-	return formatDateFromString(dateString, defaultDateFormatInString)
+	// Try to parse with the specified format first
+	date, err := time.Parse(defaultDateFormatInString, dateString)
+	if err == nil {
+		return date
+	}
+	
+	// Try other formats
+	return parseAnyDateFormat(dateString)
 }
 
 func FormatDateFromStringWithDash(dateString string) time.Time {
-	return formatDateFromString(dateString, dateFormatInStringWithDash)
+	// Try to parse with the specified format first
+	date, err := time.Parse(dateFormatInStringWithDash, dateString)
+	if err == nil {
+		return date
+	}
+	
+	// Try other formats
+	return parseAnyDateFormat(dateString)
+}
+
+// parseAnyDateFormat tries to parse a date string in any supported format
+func parseAnyDateFormat(dateString string) time.Time {
+	// Try YYYYMMDD
+	date, err := time.Parse(defaultDateFormatInString, dateString)
+	if err == nil {
+		return date
+	}
+	
+	// Try YYYY-MM-DD
+	date, err = time.Parse(dateFormatInStringWithDash, dateString)
+	if err == nil {
+		return date
+	}
+	
+	// Try YYYY/MM/DD
+	date, err = time.Parse("2006/01/02", dateString)
+	if err == nil {
+		return date
+	}
+	
+	Logger.Errorw("Failed to parse date", "date", dateString, "error", err)
+	return time.Time{}
 }
 
 func formatDateFromString(dateString, format string) time.Time {
 	date, err := time.Parse(format, dateString)
 	if err != nil {
 		Logger.Errorln(err)
+		// Try other formats if the specified one fails
+		return parseAnyDateFormat(dateString)
 	}
 	return date
 }
@@ -153,7 +193,7 @@ func IsDateTimeEmpty(dateTime time.Time) bool {
 	return reflect.DeepEqual(dateTime, time.Time{})
 }
 
-// ParseDate parses a date string in either YYYYMMDD or YYYY-MM-DD format and returns a time.Time
+// ParseDate parses a date string in YYYYMMDD, YYYY-MM-DD, or YYYY/MM/DD format and returns a time.Time
 // Returns an error if the date string is invalid
 func ParseDate(dateStr string) (time.Time, error) {
 	// Try parsing without dash first (YYYYMMDD)
@@ -168,6 +208,12 @@ func ParseDate(dateStr string) (time.Time, error) {
 		return date, nil
 	}
 
-	// Both formats failed
+	// Try parsing with slash (YYYY/MM/DD)
+	date, err = time.Parse("2006/01/02", dateStr)
+	if err == nil {
+		return date, nil
+	}
+
+	// All formats failed
 	return time.Time{}, err
 }

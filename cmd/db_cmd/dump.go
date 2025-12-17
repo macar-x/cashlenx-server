@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/macar-x/cashlenx-server/service/manage_service"
+	"github.com/macar-x/cashlenx-server/util"
 	"github.com/spf13/cobra"
 )
 
@@ -16,6 +17,11 @@ var dumpCmd = &cobra.Command{
 	Long: `Create a dump of all database data.
 If no path is specified, creates dump in current directory with timestamp.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// Verify ADMIN_TOKEN for dangerous operation
+		if err := util.VerifyAdminToken(adminToken); err != nil {
+			return err
+		}
+		
 		if dumpPath == "" {
 			dumpPath = fmt.Sprintf("cashlenx_dump_%s.json", time.Now().Format("20060102_150405"))
 		}

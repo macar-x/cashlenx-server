@@ -453,6 +453,24 @@ func (CashFlowMySqlMapper) CountAllCashFlows() int64 {
 	return count
 }
 
+func (CashFlowMySqlMapper) TruncateCashFlows() error {
+	var sqlString bytes.Buffer
+	sqlString.WriteString("TRUNCATE TABLE ")
+	sqlString.WriteString(database.CashFlowTableName)
+
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	_, err := connection.Exec(sqlString.String())
+	if err != nil {
+		util.Logger.Errorw("truncate cash flows failed", "error", err)
+		return err
+	}
+
+	util.Logger.Infow("Cash flows truncated successfully")
+	return nil
+}
+
 func convertRow2CashFlowEntity(rows *sql.Rows) model.CashFlowEntity {
 	var id string
 	var categoryId string

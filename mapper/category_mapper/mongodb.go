@@ -216,6 +216,24 @@ func (CategoryMongoDbMapper) CountAllCategories() int64 {
 	return database.CountInMongoDB(filter)
 }
 
+func (CategoryMongoDbMapper) TruncateCategories() error {
+	// Open database connection
+	database.OpenMongoDbConnection(database.CategoryTableName)
+	defer database.CloseMongoDbConnection()
+
+	// Empty filter to delete all documents
+	filter := bson.D{}
+
+	// Delete all documents
+	deletedCount := database.DeleteManyInMongoDB(filter)
+	
+	// Clear cache after truncate
+	cache.GetCategoryCache().Clear()
+
+	util.Logger.Infow("Categories truncated successfully", "deleted_count", deletedCount)
+	return nil
+}
+
 func convertCategoryEntity2BsonD(entity model.CategoryEntity) bson.D {
 	// Generate a new Id automatically if it's empty
 	if entity.Id == primitive.NilObjectID {

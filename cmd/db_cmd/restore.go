@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/macar-x/cashlenx-server/service/manage_service"
+	"github.com/macar-x/cashlenx-server/util"
 	"github.com/spf13/cobra"
 )
 
@@ -22,6 +23,11 @@ var restoreCmd = &cobra.Command{
 	Long: `Restore database from a dump file.
 WARNING: This will replace all existing data!`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// Verify ADMIN_TOKEN for dangerous operation
+		if err := util.VerifyAdminToken(adminToken); err != nil {
+			return err
+		}
+		
 		if dbRestorePath == "" {
 			return errors.New("dump file path is required")
 		}

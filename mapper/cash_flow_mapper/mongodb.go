@@ -346,6 +346,21 @@ func (CashFlowMongoDbMapper) CountAllCashFlows() int64 {
 	return database.CountInMongoDB(filter)
 }
 
+func (CashFlowMongoDbMapper) TruncateCashFlows() error {
+	// Open database connection
+	database.OpenMongoDbConnection(database.CashFlowTableName)
+	defer database.CloseMongoDbConnection()
+
+	// Empty filter to delete all documents
+	filter := bson.D{}
+
+	// Delete all documents
+	deletedCount := database.DeleteManyInMongoDB(filter)
+	
+	util.Logger.Infow("Cash flows truncated successfully", "deleted_count", deletedCount)
+	return nil
+}
+
 func convertCashFlowEntity2BsonD(entity model.CashFlowEntity) bson.D {
 	// Generate a new Id automatically if it's empty
 	if entity.Id == primitive.NilObjectID {

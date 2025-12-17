@@ -283,6 +283,27 @@ func (CategoryMySqlMapper) CountAllCategories() int64 {
 	return count
 }
 
+func (CategoryMySqlMapper) TruncateCategories() error {
+	var sqlString bytes.Buffer
+	sqlString.WriteString("TRUNCATE TABLE ")
+	sqlString.WriteString(database.CategoryTableName)
+
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	_, err := connection.Exec(sqlString.String())
+	if err != nil {
+		util.Logger.Errorw("truncate categories failed", "error", err)
+		return err
+	}
+
+	// Clear cache after truncate
+	cache.GetCategoryCache().Clear()
+
+	util.Logger.Infow("Categories truncated successfully")
+	return nil
+}
+
 func convertRow2CategoryEntity(rows *sql.Rows) model.CategoryEntity {
 	var id string
 	var parentId string

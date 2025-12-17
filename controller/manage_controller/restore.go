@@ -12,6 +12,12 @@ import (
 
 // RestoreDatabase restores database from a dump file uploaded via multipart form
 func RestoreDatabase(w http.ResponseWriter, r *http.Request) {
+	// Verify ADMIN_TOKEN for dangerous operation
+	if err := util.VerifyAdminTokenFromRequest(r); err != nil {
+		util.ComposeJSONResponse(w, http.StatusUnauthorized, err)
+		return
+	}
+	
 	// Parse multipart form data
 	if err := r.ParseMultipartForm(10 << 20); err != nil { // 10MB max file size
 		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("Failed to parse form data"))

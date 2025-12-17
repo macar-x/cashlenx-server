@@ -1,21 +1,27 @@
 package manage_service
 
 import (
-	"errors"
+	"github.com/macar-x/cashlenx-server/mapper/cash_flow_mapper"
+	"github.com/macar-x/cashlenx-server/mapper/category_mapper"
 )
 
 // ResetDatabase clears all data from the database
 func ResetDatabase() error {
-	// Note: To properly implement this, we need:
-	// 1. Mapper method to delete all cash flows: DeleteAllCashFlows()
-	// 2. Mapper method to delete all categories: DeleteAllCategories()
+	// This is a dangerous operation - truncate all data
+	// First truncate cash flows (dependent data)
+	if err := cash_flow_mapper.INSTANCE.TruncateCashFlows(); err != nil {
+		return err
+	}
 
-	// This is a dangerous operation and should be implemented carefully
-	// with proper transaction support and confirmation
+	// Then truncate categories (parent data)
+	if err := category_mapper.INSTANCE.TruncateCategories(); err != nil {
+		return err
+	}
 
-	// TODO: Add to mapper interfaces:
-	//   - DeleteAllCashFlows() int64
-	//   - DeleteAllCategories() int64
+	return nil
+}
 
-	return errors.New("database reset requires mapper enhancement - need DeleteAll methods")
+// TruncateDatabase is an alias for ResetDatabase - clears all data from the database
+func TruncateDatabase() error {
+	return ResetDatabase()
 }

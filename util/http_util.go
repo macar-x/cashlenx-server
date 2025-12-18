@@ -14,109 +14,66 @@ func ParseJSONRequest(r *http.Request, v interface{}) error {
 	return err
 }
 
-// ErrorInfo defines the structure for error responses
-type ErrorInfo struct {
-	Code      string `json:"code"`
-	Message   string `json:"message"`
-	Details   string `json:"details,omitempty"`
-	Field     string `json:"field,omitempty"`
-	RequestID string `json:"request_id,omitempty"`
+// Response defines the unified structure for all API responses
+type Response struct {
+	Code    string                 `json:"code"`
+	Message string                 `json:"message"`
+	Data    interface{}            `json:"data"`
+	Errors  map[string]string      `json:"errors,omitempty"`
 }
 
-// MetaInfo defines metadata structure for responses
-type MetaInfo struct {
-	Total        int64  `json:"total,omitempty"`
-	Page         int64  `json:"page,omitempty"`
-	Limit        int64  `json:"limit,omitempty"`
-	Available    bool   `json:"available,omitempty"`
-	RequestID    string `json:"request_id,omitempty"`
-	ResponseTime int64  `json:"response_time,omitempty"`
-}
-
-// ResponseWrapper defines a consistent response structure for all API endpoints
-type ResponseWrapper struct {
-	Data  interface{} `json:"data,omitempty"`
-	Error *ErrorInfo  `json:"error,omitempty"`
-	Meta  *MetaInfo   `json:"meta,omitempty"`
-}
-
-// ComposeJSONResponse is a utility function to write JSON responses with consistent wrapper
+// ComposeJSONResponse is a utility function to write JSON responses with consistent format
 func ComposeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
-	var response ResponseWrapper
+	var response Response
+
+	// Initialize default values
+	response.Code = "OK"
+	response.Message = ""
+	response.Data = nil
 
 	// Check if data is an error
 	if err, ok := data.(error); ok {
 		// Check if it's an AppError from errors package
 		if appErr, ok := err.(*errors.AppError); ok {
-			// Create detailed error response from AppError
-			errorInfo := &ErrorInfo{
-				Code:    string(appErr.Code),
-				Message: appErr.Message,
-				Field:   appErr.Field,
-			}
-
-			// Add cause details if available
-			if appErr.Cause != nil {
-				errorInfo.Details = appErr.Cause.Error()
-			}
-
-			response = ResponseWrapper{
-				Error: errorInfo,
+			// Set error code and message
+			response.Code = string(appErr.Code)
+			response.Message = "Validation failed"
+			
+			// Initialize errors map
+			response.Errors = make(map[string]string)
+			
+			// Add field error
+			if appErr.Field != "" {
+				response.Errors[appErr.Field] = appErr.Message
+			} else {
+				// Generic error if no field specified
+				response.Message = appErr.Message
 			}
 		} else {
 			// Create generic error response for standard errors
-			response = ResponseWrapper{
-				Error: &ErrorInfo{
-					Code:    "INTERNAL_ERROR",
-					Message: err.Error(),
-				},
-			}
-		}
-	} else if errMap, ok := data.(map[string]string); ok {
-		// Check if data is an error map
-		if errMsg, hasError := errMap["error"]; hasError {
-			// Create error response from error map
-			response = ResponseWrapper{
-				Error: &ErrorInfo{
-					Code:    "BAD_REQUEST",
-					Message: errMsg,
-				},
-			}
-		} else {
-			// Create success response with message map
-			response = ResponseWrapper{
-				Data: errMap,
-			}
-		}
-	} else if msgMap, ok := data.(map[string]interface{}); ok {
-		// Check if data is an error map interface
-		if errObj, hasError := msgMap["error"].(map[string]interface{}); hasError {
-			// Create detailed error response from error map
-			errorInfo := &ErrorInfo{
-				Code:    errObj["code"].(string),
-				Message: errObj["message"].(string),
-			}
-			// Add optional fields if present
-			if details, ok := errObj["details"].(string); ok {
-				errorInfo.Details = details
-			}
-			if field, ok := errObj["field"].(string); ok {
-				errorInfo.Field = field
-			}
-			response = ResponseWrapper{Error: errorInfo}
-		} else {
-			// Create success response with data map
-			response = ResponseWrapper{
-				Data: msgMap,
-			}
+			response.Code = "INTERNAL_ERROR"
+			response.Message = err.Error()
 		}
 	} else {
-		// Create success response with raw data
-		response = ResponseWrapper{
-			Data: data,
+		// Success response
+		response.Data = data
+		
+		// Set appropriate message based on data type
+		if user, ok := data.(map[string]interface{}); ok {
+			if username, ok := user["username"].(string); ok {
+				response.Message = "user " + username + " created"
+			}
+		} else if users, ok := data.([]interface{}); ok {
+			if len(users) > 0 {
+				response.Message = "users retrieved successfully"
+			} else {
+				response.Message = "no users found"
+			}
+		} else {
+			response.Message = "operation successful"
 		}
 	}
 

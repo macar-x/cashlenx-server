@@ -69,8 +69,8 @@ func SchemaValidation(next http.Handler) http.Handler {
 		if err := validateRequest(r); err != nil {
 			// Log the detailed error for debugging
 			util.Logger.Errorw("Schema validation failed", "error", err, "path", r.URL.Path, "method", r.Method)
-			// Return detailed error to client for debugging
-			util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewValidationError("Request body validation failed: " + err.Error()))
+			// Return simple validation error
+			util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewValidationError("Request validation failed"))
 			return
 		}
 

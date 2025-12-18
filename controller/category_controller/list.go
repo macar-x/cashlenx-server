@@ -38,9 +38,11 @@ func ListAll(w http.ResponseWriter, r *http.Request) {
 
 	// Return with pagination metadata
 	util.ComposeJSONResponse(w, http.StatusOK, map[string]interface{}{
-		"data":        categories,
-		"total_count": totalCount,
-		"limit":       limit,
-		"offset":      offset,
+		"data": categories,
+		"meta": map[string]interface{}{
+			"total_count": totalCount,
+			"limit":       limit,
+			"offset":      offset,
+		},
 	})
 }

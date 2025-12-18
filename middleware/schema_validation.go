@@ -2,15 +2,20 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
+	"path/filepath"
+	"regexp"
+	"runtime"
+	"sort"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/getkin/kin-openapi/routers"
 	"github.com/getkin/kin-openapi/routers/gorillamux"
-	"github.com/macar-x/cashlenx-server/errors"
+	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/util"
 )
 
@@ -25,29 +30,44 @@ func init() {
 		return
 	}
 
-	// Load OpenAPI spec from file
+	_, currentFile, _, ok := runtime.Caller(0)
 	specPath := "docs/openapi.yaml"
+	if ok {
+		baseDir := filepath.Dir(currentFile)
+		specPath = filepath.Clean(filepath.Join(baseDir, "..", "docs", "openapi.yaml"))
+	}
+
 	data, err := os.ReadFile(specPath)
 	if err != nil {
-		panic("Failed to load OpenAPI spec: " + err.Error())
+		util.Logger.Errorw("Failed to load OpenAPI spec", "error", err, "path", specPath)
+		util.SetConfigByKey("api.schema.validation", "false")
+		return
 	}
 
 	// Parse OpenAPI spec
 	spec, err := openapi3.NewLoader().LoadFromData(data)
 	if err != nil {
-		panic("Failed to parse OpenAPI spec: " + err.Error())
+		util.Logger.Errorw("Failed to parse OpenAPI spec", "error", err)
+		util.SetConfigByKey("api.schema.validation", "false")
+		return
 	}
 
 	// Validate OpenAPI spec
 	if err := spec.Validate(context.Background()); err != nil {
-		panic("Invalid OpenAPI spec: " + err.Error())
+		util.Logger.Errorw("Invalid OpenAPI spec", "error", err)
+		util.SetConfigByKey("api.schema.validation", "false")
+		return
 	}
 
 	// Create router for path matching
 	openapi = spec
 	routesRouter, err = gorillamux.NewRouter(openapi)
 	if err != nil {
-		panic("Failed to create OpenAPI router: " + err.Error())
+		util.Logger.Errorw("Failed to create OpenAPI router", "error", err)
+		util.SetConfigByKey("api.schema.validation", "false")
+		openapi = nil
+		routesRouter = nil
+		return
 	}
 }
 
@@ -55,6 +75,9 @@ func init() {
 func SchemaValidation(next http.Handler) http.Handler {
 	// Return original handler if schema validation is disabled
 	if util.GetConfigByKey("api.schema.validation") != "true" {
+		return next
+	}
+	if openapi == nil || routesRouter == nil {
 		return next
 	}
 
@@ -69,18 +92,162 @@ func SchemaValidation(next http.Handler) http.Handler {
 		if err := validateRequest(r); err != nil {
 			// Log the detailed error for debugging
 			util.Logger.Errorw("Schema validation failed", "error", err, "path", r.URL.Path, "method", r.Method)
-			
-			// Create an AppError with validation code
-			appErr := errors.NewValidationError("Request validation failed")
-			
-			// Use ComposeJSONResponse to handle the error with the standard response structure
-			util.ComposeJSONResponse(w, http.StatusBadRequest, appErr)
+
+			validationErrors := parseOpenAPIValidationErrors(err)
+
+			response := model.NewValidationErrorResponse("VALIDATION_ERROR", "Request validation failed", validationErrors)
+			util.ComposeJSONResponse(w, http.StatusBadRequest, response)
 			return
 		}
 
 		// Call next handler
 		next.ServeHTTP(w, r)
 	})
+}
+
+var (
+	reErrorAt = regexp.MustCompile(`Error at "([^"]+)":\s*([^\n]+)`)
+	reParam   = regexp.MustCompile(`parameter\s+([^\s]+)\s+in\s+(query|path|header|cookie)\s+has an error:\s*([^\n]+)`)
+)
+
+func parseOpenAPIValidationErrors(err error) []map[string]string {
+	result := map[string]string{}
+
+	errs := []error{err}
+	var multiErr openapi3.MultiError
+	if errors.As(err, &multiErr) {
+		errs = multiErr
+	}
+
+	texts := make([]string, 0, len(errs))
+	for _, e := range errs {
+		if e == nil {
+			continue
+		}
+		texts = append(texts, e.Error())
+
+		var validationErr *openapi3filter.ValidationError
+		if errors.As(e, &validationErr) {
+			msg := strings.TrimSpace(validationErr.Detail)
+			if msg == "" {
+				msg = strings.TrimSpace(validationErr.Error())
+			}
+			if i := strings.IndexByte(msg, '\n'); i >= 0 {
+				msg = strings.TrimSpace(msg[:i])
+			}
+
+			if validationErr.Source != nil {
+				if validationErr.Source.Parameter != "" {
+					if _, exists := result[validationErr.Source.Parameter]; !exists && msg != "" {
+						result[validationErr.Source.Parameter] = msg
+					}
+				}
+				if validationErr.Source.Pointer != "" {
+					field := jsonPointerToFieldPath(validationErr.Source.Pointer)
+					if field == "" {
+						field = "body"
+					}
+					if _, exists := result[field]; !exists && msg != "" {
+						result[field] = msg
+					}
+				}
+			}
+
+			if validationErr.Detail != "" {
+				texts = append(texts, validationErr.Detail)
+			}
+		}
+	}
+
+	for _, text := range texts {
+		for _, match := range reErrorAt.FindAllStringSubmatch(text, -1) {
+			if len(match) < 3 {
+				continue
+			}
+			field := jsonPointerToFieldPath(match[1])
+			msg := strings.TrimSpace(match[2])
+			if field == "" {
+				field = "body"
+			}
+			if _, exists := result[field]; !exists && msg != "" {
+				result[field] = msg
+			}
+		}
+	}
+
+	if len(result) > 0 {
+		return fieldErrorMapToList(result)
+	}
+
+	for _, text := range texts {
+		match := reParam.FindStringSubmatch(text)
+		if len(match) >= 4 {
+			param := strings.TrimSpace(match[1])
+			msg := strings.TrimSpace(match[3])
+			if param != "" && msg != "" {
+				result[param] = msg
+				return fieldErrorMapToList(result)
+			}
+		}
+	}
+
+	fallback := err.Error()
+	if idx := strings.Index(fallback, "has an error:"); idx >= 0 {
+		fallback = strings.TrimSpace(fallback[idx+len("has an error:"):])
+	}
+	if idx := strings.IndexByte(fallback, '\n'); idx >= 0 {
+		fallback = strings.TrimSpace(fallback[:idx])
+	}
+	if fallback == "" {
+		fallback = "request validation failed"
+	}
+	result["body"] = fallback
+	return fieldErrorMapToList(result)
+}
+
+func fieldErrorMapToList(m map[string]string) []map[string]string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	out := make([]map[string]string, 0, len(keys))
+	for _, k := range keys {
+		out = append(out, map[string]string{
+			"field":   k,
+			"message": m[k],
+		})
+	}
+	return out
+}
+
+func jsonPointerToFieldPath(pointer string) string {
+	pointer = strings.TrimSpace(pointer)
+	if pointer == "" {
+		return ""
+	}
+	if pointer == "/" {
+		return ""
+	}
+	if strings.HasPrefix(pointer, "#") {
+		if i := strings.Index(pointer, "/"); i >= 0 {
+			pointer = pointer[i:]
+		} else {
+			return ""
+		}
+	}
+	pointer = strings.TrimPrefix(pointer, "/")
+	if pointer == "" {
+		return ""
+	}
+	parts := strings.Split(pointer, "/")
+	for i, p := range parts {
+		p = strings.ReplaceAll(p, "~1", "/")
+		p = strings.ReplaceAll(p, "~0", "~")
+		parts[i] = p
+	}
+	return strings.Join(parts, ".")
 }
 
 // validateRequest validates incoming request against OpenAPI schema

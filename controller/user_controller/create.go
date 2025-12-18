@@ -29,6 +29,10 @@ func Create(w http.ResponseWriter, r *http.Request) {
 
 	plainId, err := user_service.CreateService(requestBody)
 	if err != nil {
+		if errors.IsAlreadyExistsError(err) {
+			util.ComposeJSONResponse(w, http.StatusConflict, err)
+			return
+		}
 		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
 	}

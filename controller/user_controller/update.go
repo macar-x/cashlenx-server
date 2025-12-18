@@ -29,12 +29,12 @@ func Update(w http.ResponseWriter, r *http.Request) {
 
 	// Update user via service
 	if err := user_service.UpdateService(userId, requestBody); err != nil {
-		if err.Error() == "user not found" {
-			util.ComposeJSONResponse(w, http.StatusNotFound, errors.NewNotFoundError(err.Error()))
+		if errors.IsAlreadyExistsError(err) {
+			util.ComposeJSONResponse(w, http.StatusConflict, err)
 			return
 		}
-		if err.Error() == "username is already taken" {
-			util.ComposeJSONResponse(w, http.StatusConflict, errors.NewValidationError(err.Error()))
+		if err.Error() == "user not found" {
+			util.ComposeJSONResponse(w, http.StatusNotFound, errors.NewNotFoundError(err.Error()))
 			return
 		}
 		util.ComposeJSONResponse(w, http.StatusInternalServerError, errors.NewInternalError(err.Error(), nil))

@@ -64,14 +64,10 @@ func ListAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Calculate current page
-	currentPage := (offset / limit) + 1
-
-	// Create meta info
 	meta := map[string]interface{}{
-		"total": totalCount,
-		"page":  int64(currentPage),
-		"limit": int64(limit),
+		"total_count": totalCount,
+		"limit":       limit,
+		"offset":      offset,
 	}
 
 	// Return with pagination metadata

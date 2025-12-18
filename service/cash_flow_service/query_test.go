@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/macar-x/cashlenx-server/errors"
+	"github.com/macar-x/cashlenx-server/util"
 )
 
 func TestQueryById(t *testing.T) {
@@ -44,15 +45,15 @@ func TestQueryByDate(t *testing.T) {
 		t.Errorf("Expected empty result for invalid date format, got %+v", result)
 	}
 
-	// Test with valid date format
+	if util.GetConfigByKey("db.mongodb.url") == "" && util.GetConfigByKey("db.mysql.url") == "" {
+		t.Skip("database not configured")
+	}
+
 	result, err = QueryByDate("20230101")
-	// This should not return an error, but may return an empty slice
 	if err != nil {
-		// Only fail if it's an unexpected error type
 		if _, ok := err.(*errors.AppError); !ok {
 			t.Errorf("Unexpected error type for valid date: %v", err)
 		}
-		// Allow AppError in case the database is not set up
 	}
 }
 

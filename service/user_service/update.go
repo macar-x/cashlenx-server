@@ -1,8 +1,9 @@
 package user_service
 
 import (
-	"errors"
+	std_errors "errors"
 
+	"github.com/macar-x/cashlenx-server/errors"
 	"github.com/macar-x/cashlenx-server/mapper/user_mapper"
 	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/util"
@@ -15,14 +16,14 @@ func UpdateService(userId string, requestBody model.UserDTO) error {
 	// Check if user exists
 	existingUser := user_mapper.INSTANCE.GetUserByObjectId(userId)
 	if existingUser.Id.IsZero() {
-		return errors.New("user not found")
+		return std_errors.New("user not found")
 	}
 
 	// Check if username is already taken by another user
 	if requestBody.Username != "" && requestBody.Username != existingUser.Username {
 		userWithSameName := user_mapper.INSTANCE.GetUserByUsername(requestBody.Username)
 		if !userWithSameName.Id.IsZero() && userWithSameName.Id.Hex() != userId {
-			return errors.New("username is already taken")
+			return errors.NewFieldAlreadyExistsError("username", "username is already taken")
 		}
 		existingUser.Username = requestBody.Username
 	}
@@ -36,7 +37,7 @@ func UpdateService(userId string, requestBody model.UserDTO) error {
 		}
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(requestBody.Password), bcrypt.DefaultCost)
 		if err != nil {
-			return errors.New("failed to hash password")
+			return std_errors.New("failed to hash password")
 		}
 		existingUser.PasswordHash = string(hashedPassword)
 	}
@@ -55,7 +56,7 @@ func UpdateService(userId string, requestBody model.UserDTO) error {
 	// Update the user in the database
 	updatedUser := user_mapper.INSTANCE.UpdateUserByEntity(userId, existingUser)
 	if updatedUser.Id.IsZero() {
-		return errors.New("failed to update user")
+		return std_errors.New("failed to update user")
 	}
 
 	return nil

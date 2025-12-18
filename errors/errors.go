@@ -106,6 +106,14 @@ func NewAlreadyExistsError(message string) *AppError {
 	}
 }
 
+func NewFieldAlreadyExistsError(field, message string) *AppError {
+	return &AppError{
+		Code:    ErrAlreadyExists,
+		Message: message,
+		Field:   field,
+	}
+}
+
 // NewUnauthorizedError creates an UNAUTHORIZED error
 func NewUnauthorizedError(message string) *AppError {
 	return &AppError{
@@ -160,6 +168,13 @@ func IsValidationError(err error) bool {
 func IsDatabaseError(err error) bool {
 	if appErr, ok := err.(*AppError); ok {
 		return appErr.Code == ErrDatabase
+	}
+	return false
+}
+
+func IsAlreadyExistsError(err error) bool {
+	if appErr, ok := err.(*AppError); ok {
+		return appErr.Code == ErrAlreadyExists
 	}
 	return false
 }

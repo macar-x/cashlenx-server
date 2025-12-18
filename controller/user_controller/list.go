@@ -34,10 +34,12 @@ func ListAll(w http.ResponseWriter, r *http.Request) {
 	count := user_service.CountAllUsers()
 
 	response := map[string]interface{}{
-		"users":  users,
-		"total":  count,
-		"limit":  limit,
-		"offset": offset,
+		"data": users,
+		"meta": map[string]interface{}{
+			"total_count": count,
+			"limit":       limit,
+			"offset":      offset,
+		},
 	}
 
 	util.ComposeJSONResponse(w, http.StatusOK, response)

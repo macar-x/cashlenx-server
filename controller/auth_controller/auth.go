@@ -97,7 +97,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	// Check if user already exists
 	existingUser := user_service.GetUserByUsername(registerRequest.Username)
 	if !existingUser.Id.IsZero() {
-		util.ComposeJSONResponse(w, http.StatusConflict, errors.NewAlreadyExistsError("username already exists"))
+		util.ComposeJSONResponse(w, http.StatusConflict, errors.NewFieldAlreadyExistsError("username", "username already exists"))
 		return
 	}
 

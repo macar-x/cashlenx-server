@@ -26,10 +26,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/ResponseWrapper'
               example:
+                code: OK
+                message: ""
                 data:
                   status: healthy
                   service: cashlenx-api
                   message: API is running
+                meta: {}
+                extra: {}
+                errors: []
 
   /api/system/version:
     get:
@@ -799,50 +804,65 @@ components:
     ResponseWrapper:
       type: object
       properties:
-        data:
-          type: object
-          description: The actual data payload
-        error:
-          $ref: '#/components/schemas/ErrorInfo'
-        meta:
-          $ref: '#/components/schemas/MetaInfo'
-      required:
-        - data
-
-    ErrorInfo:
-      type: object
-      properties:
         code:
           type: string
-          description: Error code for machine consumption
+          description: Response code for machine consumption
+        message:
+          type: string
+          description: Human-readable message
+        data:
+          description: The actual data payload
+          nullable: true
+          oneOf:
+            - type: object
+            - type: array
+              items: {}
+            - type: string
+            - type: number
+            - type: boolean
+        meta:
+          $ref: '#/components/schemas/MetaInfo'
+        extra:
+          type: object
+          description: Additional payload for non-standard fields
+          additionalProperties: true
+        errors:
+          type: array
+          description: Structured error list (empty for success)
+          items:
+            $ref: '#/components/schemas/ErrorItem'
+      required:
+        - code
+        - data
+        - message
+        - meta
+        - extra
+        - errors
+
+    ErrorItem:
+      type: object
+      properties:
+        field:
+          type: string
+          description: The specific field that caused the error (optional)
         message:
           type: string
           description: Human-readable error message
-        details:
-          type: string
-          description: Detailed error information for debugging
-        field:
-          type: string
-          description: The specific field that caused the error (for validation errors)
-        request_id:
-          type: string
-          description: Unique request identifier for tracing
       required:
-        - code
         - message
 
     MetaInfo:
       type: object
       properties:
-        total:
+        total_count:
           type: integer
           description: Total number of items (for pagination)
-        page:
-          type: integer
-          description: Current page number
         limit:
           type: integer
           description: Items per page
+        offset:
+          type: integer
+          description: Offset for pagination
         request_id:
           type: string
           description: Unique request identifier
@@ -923,6 +943,9 @@ components:
           type: string
           description: Category type
           enum: [income, expense]
+        remark:
+          type: string
+          description: Category remark (optional)
       required:
         - name
         - type
@@ -934,6 +957,10 @@ components:
           type: string
           pattern: '^[0-9a-fA-F]{24}$'
           description: Category ID
+        user_id:
+          type: string
+          pattern: '^[0-9a-fA-F]{24}$'
+          description: Owner user ID
         name:
           type: string
           description: Category name
@@ -945,6 +972,9 @@ components:
           type: string
           description: Category type
           enum: [income, expense]
+        remark:
+          type: string
+          description: Category remark
         create_time:
           type: string
           format: date-time

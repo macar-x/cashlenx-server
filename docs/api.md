@@ -5,8 +5,8 @@
 ### Infrastructure
 - [x] CORS middleware
 - [x] Logging middleware  
-- [x] Health check endpoint (`GET /api/health`)
-- [x] Version info endpoint (`GET /api/version`)
+- [x] Health check endpoint (`GET /api/system/health`)
+- [x] Version info endpoint (`GET /api/system/version`)
 
 ### Cash Flow API
 - [x] `POST /api/cash/expense` - Create expense
@@ -97,13 +97,20 @@ func UpdateById(w http.ResponseWriter, r *http.Request) {
 **Response**:
 ```json
 {
-  "from": "2024-01-01",
-  "to": "2024-01-31",
-  "count": 15,
-  "total_income": 5000.00,
-  "total_expense": 2500.00,
-  "balance": 2500.00,
-  "transactions": [...]
+  "code": "OK",
+  "message": "",
+  "data": {
+    "from": "2024-01-01",
+    "to": "2024-01-31",
+    "count": 15,
+    "total_income": 5000.00,
+    "total_expense": 2500.00,
+    "balance": 2500.00,
+    "transactions": [...]
+  },
+  "meta": {},
+  "extra": {},
+  "errors": []
 }
 ```
 
@@ -116,15 +123,22 @@ func UpdateById(w http.ResponseWriter, r *http.Request) {
 **Response Format**:
 ```json
 {
-  "period": "2024-01",
-  "income": 5000.00,
-  "expense": 2500.00,
-  "balance": 2500.00,
-  "transaction_count": 15,
-  "categories": {
-    "Food & Dining": 500.00,
-    "Transportation": 200.00
-  }
+  "code": "OK",
+  "message": "",
+  "data": {
+    "period": "2024-01",
+    "income": 5000.00,
+    "expense": 2500.00,
+    "balance": 2500.00,
+    "transaction_count": 15,
+    "categories": {
+      "Food & Dining": 500.00,
+      "Transportation": 200.00
+    }
+  },
+  "meta": {},
+  "extra": {},
+  "errors": []
 }
 ```
 
@@ -163,17 +177,17 @@ export MONGO_DB_URI="mongodb://cashlenx:cashlenx123@localhost:27017/cashlenx?aut
 go run main.go server start -p 8080
 
 # Test health
-curl http://localhost:8080/api/health
+curl http://localhost:8080/api/system/health
 
 # Test version
-curl http://localhost:8080/api/version
+curl http://localhost:8080/api/system/version
 
 # Test CORS
 curl -H "Origin: http://localhost:3000" \
      -H "Access-Control-Request-Method: GET" \
      -H "Access-Control-Request-Headers: Content-Type" \
      -X OPTIONS \
-     http://localhost:8080/api/health
+     http://localhost:8080/api/system/health
 
 # Test cash flow
 curl http://localhost:8080/api/cash/date/$(date +%Y-%m-%d)
@@ -238,7 +252,7 @@ Already defined in `docker/mysql/init-mysql.sql`
 ## Notes
 
 - All endpoints should return proper HTTP status codes
-- Use consistent error response format
+- Use consistent error response format with `errors` array
 - Add input validation
 - Consider pagination for list endpoints
 - Add query parameters for filtering and sorting

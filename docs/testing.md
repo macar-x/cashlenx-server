@@ -111,10 +111,10 @@ go run main.go server start -p 8080
 
 ```bash
 # Health check
-curl http://localhost:8080/api/health
+curl http://localhost:8080/api/system/health
 
 # Version info
-curl http://localhost:8080/api/version
+curl http://localhost:8080/api/system/version
 
 # Get today's transactions
 curl http://localhost:8080/api/cash/date/$(date +%Y-%m-%d)
@@ -156,7 +156,7 @@ curl -i -H "Origin: http://localhost:3000" \
      -H "Access-Control-Request-Method: GET" \
      -H "Access-Control-Request-Headers: Content-Type" \
      -X OPTIONS \
-     http://localhost:8080/api/health
+     http://localhost:8080/api/system/health
 ```
 
 Should return CORS headers:
@@ -230,7 +230,7 @@ go test -v ./...
 sudo apt-get install apache2-utils
 
 # Test health endpoint
-ab -n 1000 -c 10 http://localhost:8080/api/health
+ab -n 1000 -c 10 http://localhost:8080/api/system/health
 
 # Test query endpoint
 ab -n 100 -c 5 http://localhost:8080/api/cash/date/2024-12-04

@@ -34,8 +34,8 @@ export DB_NAME=cashlenx
 
 ### 5. Test API (in new terminal)
 ```bash
-curl http://localhost:8080/api/health
-curl http://localhost:8080/api/version | jq .
+curl http://localhost:8080/api/system/health
+curl http://localhost:8080/api/system/version | jq .
 ```
 
 ---
@@ -51,7 +51,7 @@ curl http://localhost:8080/api/version | jq .
 nohup ./cashlenx server start -p 8080 > server.log 2>&1 &
 
 # Check server status
-curl http://localhost:8080/api/health
+curl http://localhost:8080/api/system/health
 
 # Stop server (if in background)
 pkill -f "cashlenx server"
@@ -80,10 +80,10 @@ docker-compose restart mongodb
 # Create category
 curl -X POST http://localhost:8080/api/category \
   -H "Content-Type: application/json" \
-  -d '{"name": "Food", "remark": "Food expenses"}'
+  -d '{"name": "Food", "type": "expense", "remark": "Food expenses"}'
 
 # List all categories
-curl http://localhost:8080/api/category/list
+curl http://localhost:8080/api/category
 
 # Get category by name
 curl http://localhost:8080/api/category/name/Food
@@ -120,7 +120,7 @@ curl -X POST http://localhost:8080/api/cash/income \
   }'
 
 # List all transactions
-curl http://localhost:8080/api/cash/list
+curl "http://localhost:8080/api/cash?limit=20&offset=0"
 
 # Get transaction by ID
 curl http://localhost:8080/api/cash/{id}
@@ -249,7 +249,7 @@ chmod +x test_api.sh
 | Port 8080 in use | `./cashlenx server start -p 8081` |
 | MongoDB not running | `docker-compose up -d mongodb` |
 | Category not found | Create category first with POST /api/category |
-| Connection refused | Check server is running: `curl localhost:8080/api/health` |
+| Connection refused | Check server is running: `curl localhost:8080/api/system/health` |
 | Permission denied | `chmod +x cashlenx` |
 
 ---

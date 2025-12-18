@@ -39,7 +39,7 @@
 - [x] Fix slow server startup by implementing multi-stage Docker build #devops
 - [x] Update Docker configuration to use health API for container readiness #devops #observability
 - [x] Publish HTML docs artifact from OpenAPI #docs #devops
-- [x] Introduce consistent response wrapper `{data,error,meta}` #api
+- [x] Introduce consistent response wrapper `{code,data,message,meta,extra,errors}` #api
 - [x] Centralize error types and mapping #api
 - [x] Increase unit test coverage in services and mappers #api
 - [x] Implement ADMIN_TOKEN verification for sensitive endpoints #security #api
@@ -104,7 +104,7 @@
 ## Version Sources
 - `model/version.go:4` defines the canonical version constant
 - `cmd/version.go:12` prints version in CLI `cashlenx-server version`
-- `controller/server.go:91` returns version from `GET /api/version`
+- `controller/server.go:91` returns version from `GET /api/system/version`
 
 ## Notes
 - Each completed big feature increases the minor version by `+0.1`

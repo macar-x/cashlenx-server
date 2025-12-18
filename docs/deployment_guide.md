@@ -179,42 +179,56 @@ cat server.log
 ### Test 1: Health Check
 
 ```bash
-curl http://localhost:8080/api/health
+curl http://localhost:8080/api/system/health
 ```
 
 **Expected response**:
 ```json
 {
-  "status": "healthy",
-  "service": "cashlenx-api",
-  "message": "API is running"
+  "code": "OK",
+  "message": "",
+  "data": {
+    "status": "healthy",
+    "service": "cashlenx-api",
+    "message": "API is running"
+  },
+  "meta": {},
+  "extra": {},
+  "errors": []
 }
 ```
 
 ### Test 2: Version Info
 
 ```bash
-curl http://localhost:8080/api/version
+curl http://localhost:8080/api/system/version
 ```
 
 **Expected response**:
 ```json
 {
-  "version": "1.0.0",
-  "name": "CashLenX API",
-  "description": "Personal finance management API",
-  "endpoints": {
-    "cash_flow": [...],
-    "category": [...],
-    "health": [...]
-  }
+  "code": "OK",
+  "message": "",
+  "data": {
+    "version": "1.0.0",
+    "name": "CashLenX API",
+    "description": "Personal finance management API",
+    "endpoints": {
+      "cash_flow": [...],
+      "category": [...],
+      "health": [...]
+    }
+  },
+  "meta": {},
+  "extra": {},
+  "errors": []
 }
 ```
 
 ### Test 3: Get Version Info (Formatted)
 
 ```bash
-curl -s http://localhost:8080/api/version | jq .
+curl -s http://localhost:8080/api/system/version | jq .
 ```
 
 ---
@@ -228,6 +242,7 @@ curl -X POST http://localhost:8080/api/category \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Food",
+    "type": "expense",
     "remark": "Food and dining expenses"
   }'
 ```
@@ -235,8 +250,20 @@ curl -X POST http://localhost:8080/api/category \
 **Expected response**:
 ```json
 {
-  "id": "507f1f77bcf86cd799439011",
-  "message": "category created successfully"
+  "code": "OK",
+  "message": "",
+  "data": {
+    "id": "507f1f77bcf86cd799439011",
+    "parent_id": "000000000000000000000000",
+    "name": "Food",
+    "type": "expense",
+    "remark": "Food and dining expenses",
+    "create_time": "2025-12-12T...",
+    "modify_time": "2025-12-12T..."
+  },
+  "meta": {},
+  "extra": {},
+  "errors": []
 }
 ```
 
@@ -245,25 +272,32 @@ curl -X POST http://localhost:8080/api/category \
 ### List All Categories
 
 ```bash
-curl http://localhost:8080/api/category/list
+curl "http://localhost:8080/api/category?limit=50&offset=0"
 ```
 
 **Expected response**:
 ```json
 {
+  "code": "OK",
+  "message": "",
   "data": [
     {
       "id": "507f1f77bcf86cd799439011",
       "parent_id": "000000000000000000000000",
       "name": "Food",
+      "type": "expense",
       "remark": "Food and dining expenses",
       "create_time": "2025-12-12T...",
       "modify_time": "2025-12-12T..."
     }
   ],
-  "total_count": 1,
-  "limit": 50,
-  "offset": 0
+  "meta": {
+    "total_count": 1,
+    "limit": 50,
+    "offset": 0
+  },
+  "extra": {},
+  "errors": []
 }
 ```
 
@@ -283,15 +317,22 @@ curl -X POST http://localhost:8080/api/cash/expense \
 **Expected response**:
 ```json
 {
-  "id": "507f1f77bcf86cd799439012",
-  "category_id": "507f1f77bcf86cd799439011",
-  "belongs_date": "2025-12-12T00:00:00Z",
-  "flow_type": "OUTCOME",
-  "amount": 45.5,
-  "description": "Lunch at restaurant",
-  "remark": "",
-  "create_time": "2025-12-12T...",
-  "modify_time": "2025-12-12T..."
+  "code": "OK",
+  "message": "",
+  "data": {
+    "id": "507f1f77bcf86cd799439012",
+    "category_id": "507f1f77bcf86cd799439011",
+    "belongs_date": "2025-12-12T00:00:00Z",
+    "flow_type": "OUTCOME",
+    "amount": 45.5,
+    "description": "Lunch at restaurant",
+    "remark": "",
+    "create_time": "2025-12-12T...",
+    "modify_time": "2025-12-12T..."
+  },
+  "meta": {},
+  "extra": {},
+  "errors": []
 }
 ```
 
@@ -313,7 +354,7 @@ curl -X POST http://localhost:8080/api/cash/income \
 ### List All Transactions
 
 ```bash
-curl http://localhost:8080/api/cash/list
+curl "http://localhost:8080/api/cash?limit=20&offset=0"
 ```
 
 ### Get Daily Summary
@@ -325,14 +366,21 @@ curl http://localhost:8080/api/cash/summary/daily/20251212
 **Expected response**:
 ```json
 {
-  "total_income": 5000.0,
-  "total_expense": 45.5,
-  "balance": 4954.5,
-  "transaction_count": 2,
-  "category_breakdown": {
-    "Food": 45.5,
-    "Salary": 5000.0
-  }
+  "code": "OK",
+  "message": "",
+  "data": {
+    "total_income": 5000.0,
+    "total_expense": 45.5,
+    "balance": 4954.5,
+    "transaction_count": 2,
+    "category_breakdown": {
+      "Food": 45.5,
+      "Salary": 5000.0
+    }
+  },
+  "meta": {},
+  "extra": {},
+  "errors": []
 }
 ```
 
@@ -394,7 +442,7 @@ curl -X POST http://localhost:8080/api/category \
 ./cashlenx server start -p 8081
 ```
 
-Then test with: `curl http://localhost:8081/api/health`
+Then test with: `curl http://localhost:8081/api/system/health`
 
 ### Problem: Permission denied when running ./cashlenx
 
@@ -491,8 +539,8 @@ After deployment, verify these work:
 ## 📖 Additional Resources
 
 - **API Reference**: `docs/api.md`
-- **API Reference**: `backend/docs/api.md`
-- **CLI Reference**: `backend/docs/cli.md`
+- **API Reference**: `docs/api.md`
+- **CLI Reference**: `docs/cli.md`
 - **Environment Setup**: `docs/environment.md`
 - **Docker Setup**: `docs/docker.md`
 
@@ -508,14 +556,14 @@ After deployment, verify these work:
 # macOS: brew install jq
 
 # Use with curl
-curl -s http://localhost:8080/api/version | jq .
+curl -s http://localhost:8080/api/system/version | jq .
 ```
 
 ### Save API Responses
 
 ```bash
 # Save to file
-curl http://localhost:8080/api/category/list > categories.json
+curl http://localhost:8080/api/category > categories.json
 
 # View formatted
 cat categories.json | jq .

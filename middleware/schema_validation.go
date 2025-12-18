@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"os"
 	"strings"
@@ -11,6 +10,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/getkin/kin-openapi/routers"
 	"github.com/getkin/kin-openapi/routers/gorillamux"
+	"github.com/macar-x/cashlenx-server/errors"
 	"github.com/macar-x/cashlenx-server/util"
 )
 
@@ -70,36 +70,11 @@ func SchemaValidation(next http.Handler) http.Handler {
 			// Log the detailed error for debugging
 			util.Logger.Errorw("Schema validation failed", "error", err, "path", r.URL.Path, "method", r.Method)
 			
-			// Parse validation errors and return structured response
-			response := util.Response{
-				Code:    "VALIDATION_ERROR",
-				Message: "Validation failed",
-				Data:    nil,
-				Errors:  make(map[string]string),
-			}
+			// Create an AppError with validation code
+			appErr := errors.NewValidationError("Request validation failed")
 			
-			// Extract field errors from the complex validation error
-			errorStr := err.Error()
-			
-			// Handle password minimum length error
-			if strings.Contains(errorStr, `"/password": minimum string length is 6`) {
-				response.Errors["password"] = "minimum string length is 6"
-			}
-			
-			// Handle username maximum length error (example)
-			if strings.Contains(errorStr, `"/username": maximum string length is 100`) {
-				response.Errors["username"] = "maximum string length is 100"
-			}
-			
-			// If no specific errors were found, use generic message
-			if len(response.Errors) == 0 {
-				response.Message = "Request validation failed"
-			}
-			
-			// Write the structured response
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(response)
+			// Use ComposeJSONResponse to handle the error with the standard response structure
+			util.ComposeJSONResponse(w, http.StatusBadRequest, appErr)
 			return
 		}
 

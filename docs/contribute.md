@@ -84,7 +84,7 @@ func CalculateDailySummary(date string) (*Summary, error) {
 
 ```go
 // CalculateDailySummary calculates the daily summary for the given date.
-// It returns a summary object with income, outcome, and balance.
+// It returns a summary object with income, expense, and balance.
 func CalculateDailySummary(date string) (*Summary, error) {
     // Implementation...
 }

@@ -323,7 +323,7 @@ curl -X POST http://localhost:8080/api/cash/expense \
     "id": "507f1f77bcf86cd799439012",
     "category_id": "507f1f77bcf86cd799439011",
     "belongs_date": "2025-12-12T00:00:00Z",
-    "flow_type": "OUTCOME",
+    "flow_type": "EXPENSE",
     "amount": 45.5,
     "description": "Lunch at restaurant",
     "remark": "",

@@ -156,9 +156,9 @@ func TestValidateFlowType(t *testing.T) {
 		wantErr  bool
 	}{
 		{"Valid INCOME", "INCOME", false},
-		{"Valid OUTCOME", "OUTCOME", false},
+		{"Valid EXPENSE", "EXPENSE", false},
 		{"Invalid lowercase", "income", true},
-		{"Invalid type", "EXPENSE", true},
+		{"Invalid type", "OUTCOME", true},
 		{"Empty type", "", true},
 	}
 

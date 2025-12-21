@@ -36,7 +36,7 @@ print(`Found ${Object.keys(categories).length} categories`);
 // - _id: MongoDB ObjectId
 // - category_id: reference to category ObjectId
 // - belongs_date: date string (YYYY-MM-DD format)
-// - flow_type: 'income' or 'outcome'
+// - flow_type: 'income' or 'expense'
 // - amount: numeric amount
 // - description: transaction description
 // - remark: additional notes
@@ -48,7 +48,7 @@ const cashFlows = [
     _id: ObjectId(),
     category_id: categories['Food & Dining'],
     belongs_date: getDateString(0),
-    flow_type: 'outcome',
+    flow_type: 'expense',
     amount: 45.50,
     description: 'Lunch at Italian restaurant',
     remark: 'Great pasta',
@@ -59,7 +59,7 @@ const cashFlows = [
     _id: ObjectId(),
     category_id: categories['Transportation'],
     belongs_date: getDateString(0),
-    flow_type: 'outcome',
+    flow_type: 'expense',
     amount: 12.00,
     description: 'Uber to office',
     remark: 'Morning commute',
@@ -83,7 +83,7 @@ const cashFlows = [
     _id: ObjectId(),
     category_id: categories['Shopping'],
     belongs_date: getDateString(1),
-    flow_type: 'outcome',
+    flow_type: 'expense',
     amount: 89.99,
     description: 'New shoes',
     remark: 'Sports shoes',
@@ -94,7 +94,7 @@ const cashFlows = [
     _id: ObjectId(),
     category_id: categories['Entertainment'],
     belongs_date: getDateString(1),
-    flow_type: 'outcome',
+    flow_type: 'expense',
     amount: 25.00,
     description: 'Movie tickets',
     remark: 'Watched latest film',
@@ -107,7 +107,7 @@ const cashFlows = [
     _id: ObjectId(),
     category_id: categories['Utilities'],
     belongs_date: getDateString(3),
-    flow_type: 'outcome',
+    flow_type: 'expense',
     amount: 150.00,
     description: 'Electricity bill',
     remark: 'Monthly bill',
@@ -118,7 +118,7 @@ const cashFlows = [
     _id: ObjectId(),
     category_id: categories['Healthcare'],
     belongs_date: getDateString(4),
-    flow_type: 'outcome',
+    flow_type: 'expense',
     amount: 65.00,
     description: 'Pharmacy',
     remark: 'Prescription refill',
@@ -142,7 +142,7 @@ const cashFlows = [
     _id: ObjectId(),
     category_id: categories['Food & Dining'],
     belongs_date: getDateString(10),
-    flow_type: 'outcome',
+    flow_type: 'expense',
     amount: 120.00,
     description: 'Grocery shopping',
     remark: 'Weekly groceries',
@@ -153,7 +153,7 @@ const cashFlows = [
     _id: ObjectId(),
     category_id: categories['Transportation'],
     belongs_date: getDateString(12),
-    flow_type: 'outcome',
+    flow_type: 'expense',
     amount: 45.00,
     description: 'Gas station',
     remark: 'Fill up tank',
@@ -164,7 +164,7 @@ const cashFlows = [
     _id: ObjectId(),
     category_id: categories['Food & Dining'],
     belongs_date: getDateString(15),
-    flow_type: 'outcome',
+    flow_type: 'expense',
     amount: 75.50,
     description: 'Dinner with friends',
     remark: 'Birthday celebration',
@@ -175,7 +175,7 @@ const cashFlows = [
     _id: ObjectId(),
     category_id: categories['Entertainment'],
     belongs_date: getDateString(18),
-    flow_type: 'outcome',
+    flow_type: 'expense',
     amount: 30.00,
     description: 'Concert tickets',
     remark: 'Live music event',
@@ -186,7 +186,7 @@ const cashFlows = [
     _id: ObjectId(),
     category_id: categories['Shopping'],
     belongs_date: getDateString(20),
-    flow_type: 'outcome',
+    flow_type: 'expense',
     amount: 250.00,
     description: 'Clothing',
     remark: 'New wardrobe',
@@ -208,7 +208,7 @@ const cashFlows = [
     _id: ObjectId(),
     category_id: categories['Utilities'],
     belongs_date: getDateString(25),
-    flow_type: 'outcome',
+    flow_type: 'expense',
     amount: 80.00,
     description: 'Internet bill',
     remark: 'Monthly service',
@@ -226,15 +226,15 @@ const totalIncome = db.cash_flows.aggregate([
   { $group: { _id: null, total: { $sum: '$amount' } } }
 ]).toArray()[0]?.total || 0;
 
-const totalOutcome = db.cash_flows.aggregate([
-  { $match: { flow_type: 'outcome' } },
+const totalExpense = db.cash_flows.aggregate([
+  { $match: { flow_type: 'expense' } },
   { $group: { _id: null, total: { $sum: '$amount' } } }
 ]).toArray()[0]?.total || 0;
 
 print('\n=== Demo Data Loaded ===');
 print(`Total Income: $${totalIncome.toFixed(2)}`);
-print(`Total Expense: $${totalOutcome.toFixed(2)}`);
-print(`Balance: $${(totalIncome - totalOutcome).toFixed(2)}`);
+print(`Total Expense: $${totalExpense.toFixed(2)}`);
+print(`Balance: $${(totalIncome - totalExpense).toFixed(2)}`);
 print('========================\n');
 
 print('Demo data loaded successfully!');

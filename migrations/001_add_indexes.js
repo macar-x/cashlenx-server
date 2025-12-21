@@ -10,7 +10,7 @@ print("Creating indexes for cash_flow collection...");
 db.cash_flow.createIndex({ "belongs_date": 1 }, { name: "idx_belongs_date" });
 print("✓ Created index: idx_belongs_date");
 
-// Index on flow_type for income/outcome filtering
+// Index on flow_type for income/expense filtering
 db.cash_flow.createIndex({ "flow_type": 1 }, { name: "idx_flow_type" });
 print("✓ Created index: idx_flow_type");
 

@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS categories (
 -- - id: UUID primary key
 -- - category_id: foreign key to categories
 -- - belongs_date: date of transaction
--- - flow_type: 'income' or 'outcome'
+-- - flow_type: 'income' or 'expense'
 -- - amount: decimal amount with precision
 -- - description: transaction description
 -- - remark: additional notes
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS cash_flows (
     id VARCHAR(36) PRIMARY KEY COMMENT 'UUID identifier',
     category_id VARCHAR(36) NOT NULL COMMENT 'Foreign key to categories table',
     belongs_date DATE NOT NULL COMMENT 'Date of transaction',
-    flow_type VARCHAR(20) NOT NULL COMMENT 'Transaction type: income or outcome',
+    flow_type VARCHAR(20) NOT NULL COMMENT 'Transaction type: income or expense',
     amount DECIMAL(19, 4) NOT NULL COMMENT 'Transaction amount with 4 decimal places',
     description TEXT COMMENT 'Transaction description',
     remark TEXT COMMENT 'Additional remarks',

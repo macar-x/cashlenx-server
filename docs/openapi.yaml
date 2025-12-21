@@ -111,7 +111,7 @@ paths:
           description: Filter by transaction type
           schema:
             type: string
-            enum: [INCOME, OUTCOME]
+            enum: [INCOME, EXPENSE]
         - name: category_id
           in: query
           description: Filter by category ID
@@ -907,8 +907,8 @@ components:
           description: Transaction date
         flow_type:
           type: string
-          description: Flow type (INCOME or OUTCOME)
-          enum: [INCOME, OUTCOME]
+          description: Flow type (INCOME or EXPENSE)
+          enum: [INCOME, EXPENSE]
         amount:
           type: number
           format: double

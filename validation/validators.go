@@ -154,10 +154,10 @@ func ValidateDescription(desc string) error {
 	return nil
 }
 
-// ValidateFlowType validates flow type (INCOME or OUTCOME)
+// ValidateFlowType validates flow type (INCOME or EXPENSE)
 func ValidateFlowType(flowType string) error {
-	if flowType != model.FlowTypeIncome && flowType != model.FlowTypeOutcome {
-		return NewValidationError("flow_type", "must be INCOME or OUTCOME")
+	if flowType != model.FlowTypeIncome && flowType != model.FlowTypeExpense {
+		return NewValidationError("flow_type", "must be INCOME or EXPENSE")
 	}
 
 	return nil

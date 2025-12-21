@@ -13,7 +13,7 @@ import (
 )
 
 // SaveIncome creates a new income cash flow record
-// Note: Could be merged with SaveOutcome into a single SaveCashFlow(flowType, ...) function
+// Note: Could be merged with SaveExpense into a single SaveCashFlow(flowType, ...) function
 func SaveIncome(belongsDate, categoryName string, amount float64, description string) (model.CashFlowEntity, error) {
 	// Validate inputs
 	if err := validation.ValidateCategoryName(categoryName); err != nil {

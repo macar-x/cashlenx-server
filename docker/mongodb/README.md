@@ -45,7 +45,7 @@ docker exec -i cashlenx-mongodb mongosh -u cashlenx -p cashlenx123 \
 
 **Data Included**:
 - 15 sample transactions spread across the past month
-- Mix of income and outcome transactions
+- Mix of income and expense transactions
 - Realistic amounts and categories
 - Includes today, yesterday, this week, and earlier month data
 
@@ -73,7 +73,7 @@ docker exec -i cashlenx-mongodb mongosh -u cashlenx -p cashlenx123 \
   _id: ObjectId(),              // MongoDB ID
   category_id: ObjectId(),      // Reference to categories
   belongs_date: String,         // Date string (YYYY-MM-DD format)
-  flow_type: String,            // 'income' or 'outcome'
+  flow_type: String,            // 'income' or 'expense'
   amount: Number,               // Transaction amount
   description: String,          // Transaction description
   remark: String,               // Additional notes
@@ -85,7 +85,7 @@ docker exec -i cashlenx-mongodb mongosh -u cashlenx -p cashlenx123 \
 ### Indexes
 - `belongs_date: -1` - Query by date (descending for latest first)
 - `category_id: 1` - Filter by category
-- `flow_type: 1` - Filter by income/outcome
+- `flow_type: 1` - Filter by income/expense
 - `belongs_date: -1, flow_type: 1` - Common combined query
 
 ## Improvements Over Original

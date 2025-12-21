@@ -44,7 +44,7 @@ mysql -u cashlenx -p cashlenx123 cashlenx < docker/mysql/init-mysql-demo.sql
 
 **Data Included**:
 - 15 sample transactions spread across the past month
-- Mix of income and outcome transactions
+- Mix of income and expense transactions
 - Realistic amounts and categories
 - Includes today, yesterday, this week, and earlier month data
 
@@ -78,7 +78,7 @@ CREATE TABLE cash_flows (
     id VARCHAR(36) PRIMARY KEY,              -- UUID
     category_id VARCHAR(36) NOT NULL,        -- FK to categories
     belongs_date DATE NOT NULL,              -- Transaction date
-    flow_type VARCHAR(20) NOT NULL,          -- 'income' or 'outcome'
+    flow_type VARCHAR(20) NOT NULL,          -- 'income' or 'expense'
     amount DECIMAL(19, 4) NOT NULL,          -- Precise decimal (4 places)
     description TEXT,                        -- Transaction description
     remark TEXT,                             -- Additional notes
@@ -90,7 +90,7 @@ CREATE TABLE cash_flows (
 
 ### Indexes
 - `idx_belongs_date` - Query by date
-- `idx_flow_type` - Filter by income/outcome
+- `idx_flow_type` - Filter by income/expense
 - `idx_category_id` - Filter by category
 - `idx_date_type` - Common combined query
 - `idx_date_category` - Date + category filtering

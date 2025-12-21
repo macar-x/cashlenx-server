@@ -3,7 +3,7 @@ package model
 // FlowType constants for cash flow types
 const (
 	FlowTypeIncome  = "INCOME"
-	FlowTypeOutcome = "OUTCOME"
+	FlowTypeExpense = "EXPENSE"
 )
 
 // DateFormat constants

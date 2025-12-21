@@ -14,7 +14,7 @@ var indexesCmd = &cobra.Command{
 
 This command creates the following indexes:
   - cash_flow.belongs_date: For date range queries
-  - cash_flow.flow_type: For income/outcome filtering
+  - cash_flow.flow_type: For income/expense filtering
   - cash_flow(belongs_date, flow_type): Compound index for filtered date queries
   - cash_flow.category_id: For category-based queries
   - category.name: Unique index for category lookups

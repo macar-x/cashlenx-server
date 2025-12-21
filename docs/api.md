@@ -210,7 +210,7 @@ Create test files:
   amount: Number,
   date: String (YYYY-MM-DD),
   category: String,
-  type: String (income/outcome),
+  type: String (income/expense),
   description: String,
   created_at: Date,
   updated_at: Date

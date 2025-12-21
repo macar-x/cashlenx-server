@@ -9,7 +9,7 @@ CREATE TABLE `cash_flows`
     `id`           VARCHAR(24)  NOT NULL,
     `category_id`  VARCHAR(24)  NOT NULL,
     `belongs_date` TIMESTAMP    NOT NULL,
-    `flow_type`    VARCHAR(10)  NOT NULL COMMENT 'INCOME/OUTCOME',
+    `flow_type`    VARCHAR(10)  NOT NULL COMMENT 'INCOME/EXPENSE',
     `amount`       DECIMAL      NOT NULL,
     `description`  VARCHAR(200) NOT NULL,
     `remark`       VARCHAR(200)          DEFAULT NULL COMMENT 'KEEP EMPTY',

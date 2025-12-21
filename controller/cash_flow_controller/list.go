@@ -17,7 +17,7 @@ func ListAll(w http.ResponseWriter, r *http.Request) {
 	pageStr := r.URL.Query().Get("page")
 
 	// Filter parameters
-	cashType := r.URL.Query().Get("type") // INCOME or OUTCOME
+	cashType := r.URL.Query().Get("type") // INCOME or EXPENSE
 	categoryId := r.URL.Query().Get("category_id")
 	description := r.URL.Query().Get("description") // Fuzzy search
 	exactDescription := r.URL.Query().Get("exact_description")

@@ -52,6 +52,16 @@ func (entity CategoryEntity) MarshalJSON() ([]byte, error) {
 	})
 }
 
+// CategoryTree represents a category in a tree structure with string IDs
+// Used for API responses where ObjectID needs to be converted to string
+type CategoryTree struct {
+	Id       string          `json:"id"`
+	ParentId string          `json:"parent_id"`
+	Name     string          `json:"name"`
+	Type     string          `json:"type"`
+	Children []CategoryTree  `json:"children"`
+}
+
 // CategoryTreeNode represents a category in a tree structure with its children
 // This is used for tree view representation of categories with controlled depth
 // Each node contains the full category information plus its direct children

@@ -8,10 +8,6 @@ import (
 
 var (
 	plainId          string
-	amount           float64
-	belongsDate      string
-	categoryName     string
-	descriptionExact string
 	descriptionFuzzy string
 )
 

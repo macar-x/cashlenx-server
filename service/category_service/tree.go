@@ -13,11 +13,12 @@ import (
 // Parameters:
 //   - deep: maximum depth of the tree (0 means unlimited)
 //   - categoryType: optional filter for category type ("income" or "expense")
+//
 // Returns:
 //   - []model.CategoryTreeNode: root categories with their children up to the specified depth
 func TreeService(deep int, categoryType string) ([]model.CategoryTreeNode, error) {
 	// Get all categories
-	allCategories, _, err := ListAllService(0, 0) // Get all categories without pagination
+	allCategories, _, err := ListAllService("", categoryType, 0, 0) // Get all categories without pagination
 	if err != nil {
 		return nil, err
 	}
@@ -80,16 +81,17 @@ func buildCategoryTree(current model.CategoryEntity, categoryMap map[primitive.O
 	return node
 }
 
-func TreeService(userId, categoryType string) ([]model.CategoryTree, error) {
+// GetCategoryTreeByUser builds category tree for a specific user
+func GetCategoryTreeByUser(userId, categoryType string) ([]model.CategoryTree, error) {
 	// Validate user ID
 	userObjectId := util.Convert2ObjectId(userId)
 	if userObjectId == primitive.NilObjectID {
-		return nil, errors.New("invalid user ID")
+		return nil, fmt.Errorf("invalid user ID")
 	}
 
 	// Validate category type
 	if categoryType != "income" && categoryType != "expense" && categoryType != "" {
-		return nil, errors.New("category type must be 'income', 'expense', or empty")
+		return nil, fmt.Errorf("category type must be 'income', 'expense', or empty")
 	}
 
 	// Get root categories with user ID and type filter
@@ -109,14 +111,14 @@ func TreeService(userId, categoryType string) ([]model.CategoryTree, error) {
 	// Build category tree recursively
 	var categoryTreeList []model.CategoryTree
 	for _, root := range rootCategories {
-		categoryTree := buildCategoryTree(root, userObjectId, categoryType)
+		categoryTree := buildUserCategoryTree(root, userObjectId, categoryType)
 		categoryTreeList = append(categoryTreeList, categoryTree)
 	}
 
 	return categoryTreeList, nil
 }
 
-func buildCategoryTree(parent model.CategoryEntity, userId primitive.ObjectID, categoryType string) model.CategoryTree {
+func buildUserCategoryTree(parent model.CategoryEntity, userId primitive.ObjectID, categoryType string) model.CategoryTree {
 	// Convert entity to tree node
 	categoryTree := model.CategoryTree{
 		Id:       parent.Id.Hex(),
@@ -143,7 +145,7 @@ func buildCategoryTree(parent model.CategoryEntity, userId primitive.ObjectID, c
 
 	// Recursively build children nodes
 	for _, child := range children {
-		childTree := buildCategoryTree(child, userId, categoryType)
+		childTree := buildUserCategoryTree(child, userId, categoryType)
 		categoryTree.Children = append(categoryTree.Children, childTree)
 	}
 

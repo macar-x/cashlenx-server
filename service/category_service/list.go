@@ -1,6 +1,8 @@
 package category_service
 
 import (
+	"fmt"
+
 	"github.com/macar-x/cashlenx-server/mapper/category_mapper"
 	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/util"
@@ -12,7 +14,7 @@ func ListAllService(userId, categoryType string, limit, offset int) ([]model.Cat
 	// Validate user ID
 	userObjectId := util.Convert2ObjectId(userId)
 	if userObjectId == primitive.NilObjectID {
-		return nil, 0, util.NewError(util.ErrInvalidUserId, "invalid user ID")
+		return nil, 0, fmt.Errorf("invalid user ID")
 	}
 
 	// Get total count with filters
@@ -28,4 +30,4 @@ func ListAllService(userId, categoryType string, limit, offset int) ([]model.Cat
 	}
 
 	return categories, totalCount, nil
-}
+}

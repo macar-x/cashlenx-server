@@ -18,11 +18,11 @@ You can update the category name, type, and parent.`,
 			return errors.New("id is required for update operation")
 		}
 
-		if categoryName == "" && parentPlainId == "" && categoryType == "" {
+		if categoryName == "" && parentPlainId == "" && catType == "" {
 			return errors.New("at least one field to update must be provided (name, type, or parent)")
 		}
 
-		err := category_service.UpdateService(plainId, parentPlainId, categoryName, categoryType)
+		err := category_service.UpdateService(plainId, parentPlainId, categoryName, catType)
 		if err != nil {
 			return err
 		}
@@ -38,7 +38,7 @@ func init() {
 	updateCmd.Flags().StringVarP(
 		&categoryName, "name", "n", "", "new category name (optional)")
 	updateCmd.Flags().StringVarP(
-		&categoryType, "type", "t", "", "new category type (optional, must be 'income' or 'expense')")
+		&catType, "type", "t", "", "new category type (optional, must be 'income' or 'expense')")
 	updateCmd.Flags().StringVarP(
 		&parentPlainId, "parent", "p", "", "new parent category id (optional)")
 

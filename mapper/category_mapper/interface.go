@@ -3,6 +3,7 @@ package category_mapper
 import (
 	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/util"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var INSTANCE CategoryMapper
@@ -15,16 +16,21 @@ type CategoryMapper interface {
 	UpdateCategoryByEntity(plainId string, updatedEntity model.CategoryEntity) model.CategoryEntity
 	GetAllCategories(limit, offset int) []model.CategoryEntity
 	CountAllCategories() int64
+	CountCategoriesByUserAndType(userId primitive.ObjectID, categoryType string) (int64, error)
 	DeleteCategoryByObjectId(plainId string) model.CategoryEntity
 	TruncateCategories() error
+	// New methods added for user-specific category operations
+	GetCategoriesByUserAndType(userId primitive.ObjectID, categoryType string, limit, offset int) ([]model.CategoryEntity, error)
+	GetRootCategoriesByUser(userId primitive.ObjectID) ([]model.CategoryEntity, error)
+	GetRootCategoriesByUserAndType(userId primitive.ObjectID, categoryType string) ([]model.CategoryEntity, error)
+	GetCategoriesByParentIdAndUser(parentId primitive.ObjectID, userId primitive.ObjectID) ([]model.CategoryEntity, error)
+	GetCategoriesByParentIdUserAndType(parentId primitive.ObjectID, userId primitive.ObjectID, categoryType string) ([]model.CategoryEntity, error)
 }
 
 func init() {
 	switch util.GetConfigByKey("db.type") {
 	case "mongodb":
 		INSTANCE = CategoryMongoDbMapper{}
-	case "mysql":
-		INSTANCE = CategoryMySqlMapper{}
 	default:
 		panic("database type not supported")
 	}

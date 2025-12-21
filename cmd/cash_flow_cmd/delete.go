@@ -12,6 +12,15 @@ var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "delete cash_flow by specific type",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// Get command line arguments
+		plainId, err := cmd.Flags().GetString("id")
+		if err != nil {
+			return err
+		}
+		belongsDate, err := cmd.Flags().GetString("date")
+		if err != nil {
+			return err
+		}
 		// Valid params through command.
 		if cash_flow_service.IsDeleteFieldsConflicted(plainId, belongsDate) {
 			return errors.New("should have one and only one delete type")
@@ -47,9 +56,7 @@ var deleteCmd = &cobra.Command{
 }
 
 func init() {
-	deleteCmd.Flags().StringVarP(
-		&plainId, "id", "i", "", "delete by id")
-	deleteCmd.Flags().StringVarP(
-		&belongsDate, "date", "b", "", "delete by belongs-date")
+	deleteCmd.Flags().StringP("id", "i", "", "delete by id")
+	deleteCmd.Flags().StringP("date", "b", "", "delete by belongs-date")
 	CashCmd.AddCommand(deleteCmd)
 }

@@ -5,8 +5,27 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/macar-x/cashlenx-server/errors"
 )
+
+// ResponseError sends an error response using Gin context
+func ResponseError(c *gin.Context, statusCode int, message string) {
+	c.JSON(statusCode, Response{
+		Code:    defaultCodeForStatus(statusCode),
+		Message: message,
+		Data:    nil,
+	})
+}
+
+// ResponseSuccess sends a success response using Gin context
+func ResponseSuccess(c *gin.Context, data interface{}) {
+	c.JSON(http.StatusOK, Response{
+		Code:    "SUCCESS",
+		Data:    data,
+		Message: "Operation successful",
+	})
+}
 
 // ParseJSONRequest is a utility function to parse JSON requests
 func ParseJSONRequest(r *http.Request, v interface{}) error {

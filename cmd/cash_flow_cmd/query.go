@@ -12,6 +12,11 @@ var queryCmd = &cobra.Command{
 	Use:   "query",
 	Short: "query for cash_flow data",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		plainId, _ := cmd.Flags().GetString("id")
+		belongsDate, _ := cmd.Flags().GetString("date")
+		descriptionExact, _ := cmd.Flags().GetString("exact")
+		descriptionFuzzy, _ := cmd.Flags().GetString("fuzzy")
+
 		// Valid params through command.
 		if cash_flow_service.IsQueryFieldsConflicted(plainId, belongsDate, descriptionExact, descriptionFuzzy) {
 			return errors.New("should have one and only one query type")
@@ -80,13 +85,13 @@ var queryCmd = &cobra.Command{
 }
 
 func init() {
-	queryCmd.Flags().StringVarP(
-		&plainId, "id", "i", "", "query by id")
-	queryCmd.Flags().StringVarP(
-		&belongsDate, "date", "b", "", "query by belongs-date")
-	queryCmd.Flags().StringVarP(
-		&descriptionExact, "exact", "e", "", "query by exact-description")
-	queryCmd.Flags().StringVarP(
-		&descriptionFuzzy, "fuzzy", "f", "", "query by fuzzy-description")
+	queryCmd.Flags().StringP(
+		"id", "i", "", "query by id")
+	queryCmd.Flags().StringP(
+		"date", "b", "", "query by belongs-date")
+	queryCmd.Flags().StringP(
+		"exact", "e", "", "query by exact-description")
+	queryCmd.Flags().StringP(
+		"fuzzy", "f", "", "query by fuzzy-description")
 	CashCmd.AddCommand(queryCmd)
 }

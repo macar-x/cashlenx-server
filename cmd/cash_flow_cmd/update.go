@@ -14,6 +14,12 @@ var updateCmd = &cobra.Command{
 	Long: `Update an existing cash flow record by its ID.
 You can update amount, category, date, and description.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		plainId, _ := cmd.Flags().GetString("id")
+		belongsDate, _ := cmd.Flags().GetString("date")
+		categoryName, _ := cmd.Flags().GetString("category")
+		amount, _ := cmd.Flags().GetFloat64("amount")
+		descriptionExact, _ := cmd.Flags().GetString("description")
+
 		if plainId == "" {
 			return errors.New("id is required for update operation")
 		}
@@ -34,16 +40,16 @@ You can update amount, category, date, and description.`,
 }
 
 func init() {
-	updateCmd.Flags().StringVarP(
-		&plainId, "id", "i", "", "cash_flow id (required)")
-	updateCmd.Flags().StringVarP(
-		&belongsDate, "date", "b", "", "new belongs-date (optional)")
-	updateCmd.Flags().StringVarP(
-		&categoryName, "category", "c", "", "new category name (optional)")
-	updateCmd.Flags().Float64VarP(
-		&amount, "amount", "a", 0.00, "new amount (optional)")
-	updateCmd.Flags().StringVarP(
-		&descriptionExact, "description", "d", "", "new description (optional)")
+	updateCmd.Flags().StringP(
+		"id", "i", "", "cash_flow id (required)")
+	updateCmd.Flags().StringP(
+		"date", "b", "", "new belongs-date (optional)")
+	updateCmd.Flags().StringP(
+		"category", "c", "", "new category name (optional)")
+	updateCmd.Flags().Float64P(
+		"amount", "a", 0.00, "new amount (optional)")
+	updateCmd.Flags().StringP(
+		"description", "d", "", "new description (optional)")
 
 	updateCmd.MarkFlagRequired("id")
 	CashCmd.AddCommand(updateCmd)

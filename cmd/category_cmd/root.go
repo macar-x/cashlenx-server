@@ -10,7 +10,8 @@ var (
 	plainId       string
 	parentPlainId string
 	categoryName  string
-	categoryType  string
+	catType       string
+	userId        string
 )
 
 var CategoryCmd = &cobra.Command{
@@ -28,4 +29,9 @@ Available sub-commands:
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return errors.New("must provide a valid sub command")
 	},
+}
+
+func init() {
+	CategoryCmd.PersistentFlags().StringVarP(&userId, "user", "u", "", "user ID (required)")
+	CategoryCmd.MarkPersistentFlagRequired("user")
 }

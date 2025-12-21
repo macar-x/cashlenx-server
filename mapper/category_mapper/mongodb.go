@@ -55,8 +55,32 @@ func (CategoryMongoDbMapper) GetCategoryByName(categoryName string) model.Catego
 	return entity
 }
 
+func (CategoryMongoDbMapper) GetCategoriesByUserAndType(userObjectId primitive.ObjectID, categoryType string, page, pageSize int) ([]model.CategoryEntity, error) {
+	filter := bson.D{
+		primitive.E{Key: "user_id", Value: userObjectId},
+		primitive.E{Key: "type", Value: categoryType},
+	}
+
+	database.OpenMongoDbConnection(database.CategoryTableName)
+	defer database.CloseMongoDbConnection()
+
+	// Calculate skip for pagination
+	skip := (page - 1) * pageSize
+
+	// Find documents with pagination
+	results := database.GetManyInMongoDBWithPagination(filter, int64(skip), int64(pageSize))
+
+	// No error handling needed as GetManyInMongoDBWithPagination handles it internally
+
+	// Convert to CategoryEntity slice
+	categories := make([]model.CategoryEntity, 0, len(results))
+	for _, result := range results {
+		categories = append(categories, convertBsonM2CategoryEntity(result))
+	}
+
+	return categories, nil
+}
 func (CategoryMongoDbMapper) GetCategoryByParentId(parentPlainId string) []model.CategoryEntity {
-	// Convert parentPlainId to ObjectID
 	parentObjectId := util.Convert2ObjectId(parentPlainId)
 	filter := bson.D{
 		primitive.E{Key: "parent_id", Value: parentObjectId},
@@ -239,52 +263,82 @@ func (CategoryMongoDbMapper) CountCategoriesByUserAndType(userObjectId primitive
 	return count, nil
 }
 
-// GetCategoriesByUserAndType retrieves paginated categories filtered by user ID and type
-func (CategoryMongoDbMapper) GetCategoriesByUserAndType(userObjectId primitive.ObjectID, categoryType string, limit, offset int) ([]model.CategoryEntity, error) {
+func (CategoryMongoDbMapper) GetRootCategoriesByUser(userId primitive.ObjectID) ([]model.CategoryEntity, error) {
+	filter := bson.D{
+		primitive.E{Key: "user_id", Value: userId},
+		primitive.E{Key: "parent_id", Value: bson.M{"$exists": false}},
+	}
+
 	database.OpenMongoDbConnection(database.CategoryTableName)
 	defer database.CloseMongoDbConnection()
 
-	collection := database.GetMongoCollection(database.CategoryTableName)
+	results := database.GetManyInMongoDB(filter)
 
+	categories := make([]model.CategoryEntity, 0, len(results))
+	for _, result := range results {
+		categories = append(categories, convertBsonM2CategoryEntity(result))
+	}
+
+	return categories, nil
+}
+
+func (CategoryMongoDbMapper) GetRootCategoriesByUserAndType(userId primitive.ObjectID, categoryType string) ([]model.CategoryEntity, error) {
 	filter := bson.D{
-		primitive.E{Key: "user_id", Value: userObjectId},
+		primitive.E{Key: "user_id", Value: userId},
+		primitive.E{Key: "type", Value: categoryType},
+		primitive.E{Key: "parent_id", Value: bson.M{"$exists": false}},
+	}
+
+	database.OpenMongoDbConnection(database.CategoryTableName)
+	defer database.CloseMongoDbConnection()
+
+	results := database.GetManyInMongoDB(filter)
+
+	categories := make([]model.CategoryEntity, 0, len(results))
+	for _, result := range results {
+		categories = append(categories, convertBsonM2CategoryEntity(result))
+	}
+
+	return categories, nil
+}
+
+func (CategoryMongoDbMapper) GetCategoriesByParentIdAndUser(parentId primitive.ObjectID, userId primitive.ObjectID) ([]model.CategoryEntity, error) {
+	filter := bson.D{
+		primitive.E{Key: "parent_id", Value: parentId},
+		primitive.E{Key: "user_id", Value: userId},
+	}
+
+	database.OpenMongoDbConnection(database.CategoryTableName)
+	defer database.CloseMongoDbConnection()
+
+	results := database.GetManyInMongoDB(filter)
+
+	categories := make([]model.CategoryEntity, 0, len(results))
+	for _, result := range results {
+		categories = append(categories, convertBsonM2CategoryEntity(result))
+	}
+
+	return categories, nil
+}
+
+func (CategoryMongoDbMapper) GetCategoriesByParentIdUserAndType(parentId primitive.ObjectID, userId primitive.ObjectID, categoryType string) ([]model.CategoryEntity, error) {
+	filter := bson.D{
+		primitive.E{Key: "parent_id", Value: parentId},
+		primitive.E{Key: "user_id", Value: userId},
 		primitive.E{Key: "type", Value: categoryType},
 	}
 
-	ctx := context.TODO()
-	findOptions := options.Find()
-	if limit > 0 {
-		findOptions.SetLimit(int64(limit))
-	}
-	if offset > 0 {
-		findOptions.SetSkip(int64(offset))
-	}
-	// Sort by name ascending
-	findOptions.SetSort(bson.D{primitive.E{Key: "name", Value: 1}})
+	database.OpenMongoDbConnection(database.CategoryTableName)
+	defer database.CloseMongoDbConnection()
 
-	cursor, err := collection.Find(ctx, filter, findOptions)
-	if err != nil {
-		util.Logger.Errorw("Query categories by user and type failed", "error", err)
-		return nil, err
-	}
-	defer cursor.Close(ctx)
+	results := database.GetManyInMongoDB(filter)
 
-	var targetEntityList []model.CategoryEntity
-	for cursor.Next(ctx) {
-		var bsonM bson.M
-		if err := cursor.Decode(&bsonM); err != nil {
-			util.Logger.Errorw("Decode failed", "error", err)
-			continue
-		}
-		targetEntityList = append(targetEntityList, convertBsonM2CategoryEntity(bsonM))
+	categories := make([]model.CategoryEntity, 0, len(results))
+	for _, result := range results {
+		categories = append(categories, convertBsonM2CategoryEntity(result))
 	}
 
-	if err := cursor.Err(); err != nil {
-		util.Logger.Errorw("Cursor error", "error", err)
-		return nil, err
-	}
-
-	return targetEntityList, nil
+	return categories, nil
 }
 
 func (CategoryMongoDbMapper) TruncateCategories() error {
@@ -332,4 +386,3 @@ func convertBsonM2CategoryEntity(bsonM bson.M) model.CategoryEntity {
 	}
 	return newEntity
 }
-

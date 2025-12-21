@@ -11,6 +11,7 @@ import (
 
 // InitializeDemoData initializes the database with demo categories and transactions
 func InitializeDemoData() error {
+	userId := "demo_user"
 	// Create default categories with their types
 	categories := []struct {
 		name  string
@@ -28,7 +29,7 @@ func InitializeDemoData() error {
 
 	for _, cat := range categories {
 		// Check if category already exists
-		_, err := category_service.CreateService("", cat.name, cat.type_)
+		_, err := category_service.CreateService(userId, cat.name, cat.type_, "")
 		if err != nil {
 			util.Logger.Warnw("category creation skipped", "category", cat.name, "error", err)
 		}
@@ -43,6 +44,7 @@ func InitializeDemoData() error {
 		"Salary",
 		5000.00,
 		"Monthly salary",
+		userId,
 	)
 
 	// Sample expenses
@@ -63,7 +65,7 @@ func InitializeDemoData() error {
 
 	for _, exp := range expenses {
 		date := today.AddDate(0, 0, -exp.daysAgo).Format(model.DateFormatYYYYMMDD)
-		_, _ = cash_flow_service.SaveExpense(date, exp.category, exp.amount, exp.description)
+		_, _ = cash_flow_service.SaveExpense(date, exp.category, exp.amount, exp.description, userId)
 	}
 
 	return nil

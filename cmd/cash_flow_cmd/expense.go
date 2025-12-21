@@ -12,10 +12,20 @@ var expenseCmd = &cobra.Command{
 	Use:   "expense",
 	Short: "add new expense cash_flow",
 	RunE: func(cmd *cobra.Command, args []string) error {
+	belongsDate, _ := cmd.Flags().GetString("date")
+categoryName, _ := cmd.Flags().GetString("category")
+amount, _ := cmd.Flags().GetFloat64("amount")
+descriptionExact, _ := cmd.Flags().GetString("description")
+expenseUserId, _ := cmd.Flags().GetString("user")
+		
+
+		if expenseUserId == "" {
+			return errors.New("user ID is required")
+		}
 		if !cash_flow_service.IsExpenseRequiredFiledSatisfied(categoryName, amount) {
 			return errors.New("some required fields are empty")
 		}
-		cashFlowEntity, err := cash_flow_service.SaveExpense(belongsDate, categoryName, amount, descriptionExact)
+		cashFlowEntity, err := cash_flow_service.SaveExpense(belongsDate, categoryName, amount, descriptionExact, expenseUserId)
 		if err != nil {
 			return err
 		}
@@ -25,13 +35,15 @@ var expenseCmd = &cobra.Command{
 }
 
 func init() {
-	expenseCmd.Flags().StringVarP(
-		&belongsDate, "date", "b", "", "flow's belongs-date (optional, blank for today)")
-	expenseCmd.Flags().StringVarP(
-		&categoryName, "category", "c", "", "flow's category name (required)")
-	expenseCmd.Flags().Float64VarP(
-		&amount, "amount", "a", 0.00, "flow's amount (required)")
-	expenseCmd.Flags().StringVarP(
-		&descriptionExact, "description", "d", "", "flow's description (optional, could be blank)")
+	expenseCmd.Flags().StringP("date", "b", "", "flow's belongs-date (optional, blank for today)")
+	expenseCmd.Flags().StringP("category", "c", "", "flow's category name (required)")
+	expenseCmd.Flags().Float64P("amount", "a", 0.00, "flow's amount (required)")
+	expenseCmd.Flags().StringP("description", "d", "", "flow's description (optional, could be blank)")
+	expenseCmd.Flags().StringP("user", "u", "", "user ID (required)")
+
+	// Mark required flags
+	_ = expenseCmd.MarkFlagRequired("category")
+	_ = expenseCmd.MarkFlagRequired("amount")
+	_ = expenseCmd.MarkFlagRequired("user")
 	CashCmd.AddCommand(expenseCmd)
 }

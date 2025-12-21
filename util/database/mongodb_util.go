@@ -136,6 +136,28 @@ func GetManyInMongoDB(filter bson.D) []bson.M {
 	return resultInBsonArray
 }
 
+// GetManyInMongoDBWithPagination retrieves multiple documents with pagination support
+func GetManyInMongoDBWithPagination(filter bson.D, limit int64, offset int64) []bson.M {
+	checkDbConnection()
+
+	var resultInBsonArray []bson.M
+	options := options.Find().SetSkip(offset).SetLimit(limit)
+	cursor, err := collection.Find(context.TODO(), filter, options)
+
+	// Handle query failure
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		// Logger.Warnln("record does not exist")
+	} else if err != nil {
+		log.Fatal(err)
+	}
+
+	if err2 := cursor.All(context.TODO(), &resultInBsonArray); err2 != nil {
+		log.Fatal(err2)
+	}
+
+	return resultInBsonArray
+}
+
 func CountInMongoDB(filter bson.D) int64 {
 	checkDbConnection()
 

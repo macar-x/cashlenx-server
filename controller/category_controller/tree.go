@@ -2,41 +2,66 @@ package category_controller
 
 import (
 	"net/http"
+	"strconv"
 
-	"github.com/gin-gonic/gin"
 	"github.com/macar-x/cashlenx-server/service/category_service"
 	"github.com/macar-x/cashlenx-server/util"
 )
 
-func Tree(c *gin.Context) {
+func Tree(w http.ResponseWriter, r *http.Request) {
 	// Extract user ID from context
-	userId, exists := c.Get("user_id")
-	if !exists {
-		util.ResponseError(c, http.StatusUnauthorized, "user not authenticated")
+	userId := r.Context().Value("user_id")
+	if userId == nil {
+		util.ComposeJSONResponse(w, http.StatusUnauthorized, map[string]interface{}{
+			"code":    http.StatusUnauthorized,
+			"message": "user not authenticated",
+		})
 		return
 	}
 
 	userStrId, ok := userId.(string)
 	if !ok {
-		util.ResponseError(c, http.StatusUnauthorized, "invalid user ID format")
+		util.ComposeJSONResponse(w, http.StatusUnauthorized, map[string]interface{}{
+			"code":    http.StatusUnauthorized,
+			"message": "invalid user ID format",
+		})
+		return
+	}
+
+	// Convert user ID to integer
+	userIdInt, err := strconv.Atoi(userStrId)
+	if err != nil {
+		util.ComposeJSONResponse(w, http.StatusUnauthorized, map[string]interface{}{
+			"code":    http.StatusUnauthorized,
+			"message": "invalid user ID format",
+		})
 		return
 	}
 
 	// Get category type from query parameter
-	categoryType := c.Query("type")
+	categoryType := r.URL.Query().Get("type")
 
 	// Validate category type if provided
 	if categoryType != "" && categoryType != "income" && categoryType != "expense" {
-		util.ResponseError(c, http.StatusBadRequest, "category type must be 'income' or 'expense'")
+		util.ComposeJSONResponse(w, http.StatusBadRequest, map[string]interface{}{
+			"code":    http.StatusBadRequest,
+			"message": "category type must be 'income' or 'expense'",
+		})
 		return
 	}
 
 	// Get category tree with user ID and type filter
-	tree, err := category_service.TreeService(userStrId, categoryType)
+	tree, err := category_service.TreeService(userIdInt, categoryType)
 	if err != nil {
-		util.ResponseError(c, http.StatusInternalServerError, err.Error())
+		util.ComposeJSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
+			"code":    http.StatusInternalServerError,
+			"message": err.Error(),
+		})
 		return
 	}
 
-	util.ResponseSuccess(c, tree)
+	util.ComposeJSONResponse(w, http.StatusOK, map[string]interface{}{
+		"code": http.StatusOK,
+		"data": tree,
+	})
 }

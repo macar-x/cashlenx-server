@@ -3,47 +3,39 @@ package category_controller
 import (
 	"net/http"
 
-	"github.com/macar-x/cashlenx-server/errors"
+	"github.com/gin-gonic/gin"
 	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/service/category_service"
 	"github.com/macar-x/cashlenx-server/util"
 )
 
-// Create creates a new category
-func Create(w http.ResponseWriter, r *http.Request) {
-	var requestBody model.CategoryDTO
-	if err := util.ParseJSONRequest(r, &requestBody); err != nil {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewInvalidInputError("invalid request body"))
+func Create(c *gin.Context) {
+	var req model.CreateCategoryReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		util.ResponseError(c, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
-	if requestBody.Name == "" {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewValidationError("category name is required"))
+	// Extract user ID from context
+	userId, exists := c.Get("user_id")
+	if !exists {
+		util.ResponseError(c, http.StatusUnauthorized, "user not authenticated")
 		return
 	}
 
-	if requestBody.Type == "" {
-		util.ComposeJSONResponse(w, http.StatusBadRequest, errors.NewValidationError("category type is required"))
+	userStrId, ok := userId.(string)
+	if !ok {
+		util.ResponseError(c, http.StatusUnauthorized, "invalid user ID format")
 		return
 	}
 
-	plainId, err := category_service.CreateService(requestBody.ParentId, requestBody.Name, requestBody.Type)
+	categoryId, err := category_service.CreateService(userStrId, req.ParentId, req.Name, req.Type)
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
+		util.ResponseError(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	// Get the created category entity
-	createdCategory, err := category_service.QueryService(plainId, "", "")
-	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	if len(createdCategory) == 0 {
-		util.ComposeJSONResponse(w, http.StatusInternalServerError, errors.NewInternalError("failed to retrieve created category", nil))
-		return
-	}
-
-	util.ComposeJSONResponse(w, http.StatusCreated, createdCategory[0])
+	util.ResponseSuccess(c, gin.H{
+		"category_id": categoryId,
+	})
 }

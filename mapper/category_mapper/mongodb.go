@@ -221,6 +221,72 @@ func (CategoryMongoDbMapper) CountAllCategories() int64 {
 	return database.CountInMongoDB(filter)
 }
 
+// CountCategoriesByUserAndType counts categories filtered by user ID and type
+func (CategoryMongoDbMapper) CountCategoriesByUserAndType(userObjectId primitive.ObjectID, categoryType string) (int64, error) {
+	filter := bson.D{
+		primitive.E{Key: "user_id", Value: userObjectId},
+		primitive.E{Key: "type", Value: categoryType},
+	}
+
+	database.OpenMongoDbConnection(database.CategoryTableName)
+	defer database.CloseMongoDbConnection()
+
+	count, err := database.CountInMongoDBWithError(filter)
+	if err != nil {
+		util.Logger.Errorw("Failed to count categories by user and type", "error", err)
+		return 0, err
+	}
+	return count, nil
+}
+
+// GetCategoriesByUserAndType retrieves paginated categories filtered by user ID and type
+func (CategoryMongoDbMapper) GetCategoriesByUserAndType(userObjectId primitive.ObjectID, categoryType string, limit, offset int) ([]model.CategoryEntity, error) {
+	database.OpenMongoDbConnection(database.CategoryTableName)
+	defer database.CloseMongoDbConnection()
+
+	collection := database.GetMongoCollection(database.CategoryTableName)
+
+	filter := bson.D{
+		primitive.E{Key: "user_id", Value: userObjectId},
+		primitive.E{Key: "type", Value: categoryType},
+	}
+
+	ctx := context.TODO()
+	findOptions := options.Find()
+	if limit > 0 {
+		findOptions.SetLimit(int64(limit))
+	}
+	if offset > 0 {
+		findOptions.SetSkip(int64(offset))
+	}
+	// Sort by name ascending
+	findOptions.SetSort(bson.D{primitive.E{Key: "name", Value: 1}})
+
+	cursor, err := collection.Find(ctx, filter, findOptions)
+	if err != nil {
+		util.Logger.Errorw("Query categories by user and type failed", "error", err)
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var targetEntityList []model.CategoryEntity
+	for cursor.Next(ctx) {
+		var bsonM bson.M
+		if err := cursor.Decode(&bsonM); err != nil {
+			util.Logger.Errorw("Decode failed", "error", err)
+			continue
+		}
+		targetEntityList = append(targetEntityList, convertBsonM2CategoryEntity(bsonM))
+	}
+
+	if err := cursor.Err(); err != nil {
+		util.Logger.Errorw("Cursor error", "error", err)
+		return nil, err
+	}
+
+	return targetEntityList, nil
+}
+
 func (CategoryMongoDbMapper) TruncateCategories() error {
 	// Open database connection
 	database.OpenMongoDbConnection(database.CategoryTableName)
@@ -250,6 +316,7 @@ func convertCategoryEntity2BsonD(entity model.CategoryEntity) bson.D {
 		primitive.E{Key: "parent_id", Value: entity.ParentId},
 		primitive.E{Key: "name", Value: entity.Name},
 		primitive.E{Key: "type", Value: entity.Type},
+		primitive.E{Key: "user_id", Value: entity.UserId},
 		primitive.E{Key: "remark", Value: entity.Remark},
 		primitive.E{Key: "create_time", Value: entity.CreateTime},
 		primitive.E{Key: "modify_time", Value: entity.ModifyTime},
@@ -265,3 +332,4 @@ func convertBsonM2CategoryEntity(bsonM bson.M) model.CategoryEntity {
 	}
 	return newEntity
 }
+

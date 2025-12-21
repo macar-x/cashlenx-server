@@ -16,7 +16,14 @@ func CreateExpense(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cashFlowEntity, err := cash_flow_service.SaveExpense(requestBody.BelongsDate, requestBody.CategoryName, requestBody.Amount, requestBody.Description)
+	// Get user ID from request context
+	userId, ok := r.Context().Value("user_id").(string)
+	if !ok || userId == "" {
+		util.ComposeJSONResponse(w, http.StatusUnauthorized, errors.NewUnauthorizedError("user not authenticated"))
+		return
+	}
+
+	cashFlowEntity, err := cash_flow_service.SaveExpense(requestBody.BelongsDate, requestBody.CategoryName, requestBody.Amount, requestBody.Description, userId)
 	if err != nil {
 		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
@@ -31,7 +38,14 @@ func CreateIncome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cashFlowEntity, err := cash_flow_service.SaveIncome(requestBody.BelongsDate, requestBody.CategoryName, requestBody.Amount, requestBody.Description)
+	// Get user ID from request context
+	userId, ok := r.Context().Value("user_id").(string)
+	if !ok || userId == "" {
+		util.ComposeJSONResponse(w, http.StatusUnauthorized, errors.NewUnauthorizedError("user not authenticated"))
+		return
+	}
+
+	cashFlowEntity, err := cash_flow_service.SaveIncome(requestBody.BelongsDate, requestBody.CategoryName, requestBody.Amount, requestBody.Description, userId)
 	if err != nil {
 		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return

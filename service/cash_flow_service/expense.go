@@ -10,9 +10,10 @@ import (
 	"github.com/macar-x/cashlenx-server/util"
 	"github.com/macar-x/cashlenx-server/validation"
 	"github.com/shopspring/decimal"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func SaveExpense(belongsDate, categoryName string, amount float64, description string) (model.CashFlowEntity, error) {
+func SaveExpense(belongsDate, categoryName string, amount float64, description string, userId string) (model.CashFlowEntity, error) {
 	// Validate inputs
 	if err := validation.ValidateCategoryName(categoryName); err != nil {
 		return model.CashFlowEntity{}, err
@@ -30,6 +31,17 @@ func SaveExpense(belongsDate, categoryName string, amount float64, description s
 
 	if err := validation.ValidateDescription(description); err != nil {
 		return model.CashFlowEntity{}, err
+	}
+
+	// Validate user ID
+	if userId == "" {
+		return model.CashFlowEntity{}, errors.New("user ID is required")
+	}
+
+	// Convert user ID to ObjectID
+	userObjectId := util.Convert2ObjectId(userId)
+	if userObjectId == primitive.NilObjectID {
+		return model.CashFlowEntity{}, errors.New("invalid user ID format")
 	}
 
 	// Round to 2 decimal places
@@ -63,6 +75,7 @@ func SaveExpense(belongsDate, categoryName string, amount float64, description s
 		FlowType:    model.FlowTypeExpense,
 		Amount:      amount,
 		Description: description,
+		UserId:      userObjectId,
 	})
 	if newCashFlowId == "" {
 		return model.CashFlowEntity{}, errors.New("cash_flow create failed")

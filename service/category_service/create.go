@@ -11,7 +11,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateService(parentPlainId, categoryName, categoryType string) (string, error) {
+func CreateService(userId, parentPlainId, categoryName, categoryType string) (string, error) {
+	// Validate user ID
+	userObjectId := util.Convert2ObjectId(userId)
+	if userObjectId == primitive.NilObjectID {
+		return "", errors.New("invalid user ID")
+	}
+
 	// Validate category name
 	if err := validation.ValidateCategoryName(categoryName); err != nil {
 		return "", err
@@ -28,10 +34,15 @@ func CreateService(parentPlainId, categoryName, categoryType string) (string, er
 			return "", err
 		}
 
-		// Check if parent category exists and has the same type
+		// Check if parent category exists and belongs to the same user
 		parentCategory := category_mapper.INSTANCE.GetCategoryByObjectId(parentPlainId)
 		if parentCategory.IsEmpty() {
 			return "", errors.New("parent category not found")
+		}
+
+		// Ensure parent category belongs to the same user
+		if parentCategory.UserId != userObjectId {
+			return "", errors.New("parent category does not belong to user")
 		}
 
 		// Ensure parent and child categories have the same type
@@ -42,6 +53,7 @@ func CreateService(parentPlainId, categoryName, categoryType string) (string, er
 
 	categoryEntity := model.CategoryEntity{
 		ParentId: primitive.NilObjectID,
+		UserId:   userObjectId,
 		Name:     categoryName,
 		Type:     categoryType,
 	}

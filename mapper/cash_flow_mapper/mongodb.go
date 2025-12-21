@@ -379,6 +379,7 @@ func convertCashFlowEntity2BsonD(entity model.CashFlowEntity) bson.D {
 
 	return bson.D{
 		primitive.E{Key: "_id", Value: entity.Id},
+		primitive.E{Key: "user_id", Value: entity.UserId},
 		primitive.E{Key: "category_id", Value: entity.CategoryId},
 		primitive.E{Key: "belongs_date", Value: entity.BelongsDate},
 		primitive.E{Key: "flow_type", Value: entity.FlowType},

@@ -3,13 +3,25 @@ package category_controller
 import (
 	"net/http"
 	"strconv"
+	"context"
 
+	"github.com/macar-x/cashlenx-server/model"
 	"github.com/macar-x/cashlenx-server/service/category_service"
 	"github.com/macar-x/cashlenx-server/util"
 )
 
 // ListAll returns paginated list of all categories
 func ListAll(w http.ResponseWriter, r *http.Request) {
+	// Get current user ID from context
+	userId, ok := r.Context().Value("user_id").(string)
+	if !ok || userId == "" {
+		util.ComposeJSONResponse(w, http.StatusUnauthorized, map[string]interface{}{
+			"error":   "Unauthorized",
+			"message": "Invalid or missing user authentication",
+		})
+		return
+	}
+
 	// Parse query parameters for pagination
 	limitStr := r.URL.Query().Get("limit")
 	offsetStr := r.URL.Query().Get("offset")
@@ -29,8 +41,11 @@ func ListAll(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Call service to get paginated results
-	categories, totalCount, err := category_service.ListAllService(limit, offset)
+	// Get category type filter
+	categoryType := r.URL.Query().Get("type")
+
+	// Call service to get paginated results with user ID and type filter
+	categories, totalCount, err := category_service.ListAllService(userId, categoryType, limit, offset)
 	if err != nil {
 		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
@@ -45,4 +60,4 @@ func ListAll(w http.ResponseWriter, r *http.Request) {
 			"offset":      offset,
 		},
 	})
-}
+}

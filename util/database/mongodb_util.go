@@ -147,6 +147,17 @@ func CountInMongoDB(filter bson.D) int64 {
 	return result
 }
 
+func CountInMongoDBWithError(filter bson.D) (int64, error) {
+	checkDbConnection()
+
+	result, err := collection.CountDocuments(context.TODO(), filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return result, nil
+}
+
 
 
 

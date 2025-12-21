@@ -50,10 +50,24 @@ func RestoreBackup(filePath string) (OperationStats, error) {
 
 	// Step 2: Insert categories from backup
 	for _, catMap := range backup.Categories {
-		// Create category entity from backup data
+		// Parse Id from backup data
+		id, _ := primitive.ObjectIDFromHex(catMap["Id"].(string))
+		
+		// Parse ParentId from backup data
+		parentId, _ := primitive.ObjectIDFromHex(catMap["ParentId"].(string))
+		
+		// Parse CreateTime and ModifyTime
+		createTime, _ := time.Parse(time.RFC3339, catMap["CreateTime"].(string))
+		modifyTime, _ := time.Parse(time.RFC3339, catMap["ModifyTime"].(string))
+		
+		// Create category entity from backup data, preserving all original fields
 		catEntity := model.CategoryEntity{
-			Name:   catMap["Name"].(string),
-			Remark: catMap["Remark"].(string),
+			Id:         id,
+			ParentId:   parentId,
+			Name:       catMap["Name"].(string),
+			Remark:     catMap["Remark"].(string),
+			CreateTime: createTime,
+			ModifyTime: modifyTime,
 		}
 
 		// Insert category
@@ -66,20 +80,30 @@ func RestoreBackup(filePath string) (OperationStats, error) {
 	// Step 3: Insert cash flows from backup
 	cashFlowEntities := make([]model.CashFlowEntity, totalCashFlows)
 	for i, cfMap := range backup.CashFlows {
+		// Parse Id from backup data
+		id, _ := primitive.ObjectIDFromHex(cfMap["Id"].(string))
+		
 		// Parse belongs_date string to time.Time
 		belongsDate, _ := time.Parse(time.RFC3339, cfMap["BelongsDate"].(string))
 
 		// Parse CategoryId from backup data
 		categoryId, _ := primitive.ObjectIDFromHex(cfMap["CategoryId"].(string))
-
-		// Create cash flow entity from backup data
+		
+		// Parse CreateTime and ModifyTime
+		createTime, _ := time.Parse(time.RFC3339, cfMap["CreateTime"].(string))
+		modifyTime, _ := time.Parse(time.RFC3339, cfMap["ModifyTime"].(string))
+		
+		// Create cash flow entity from backup data, preserving all original fields
 		cfEntity := model.CashFlowEntity{
+			Id:          id,
 			CategoryId:  categoryId,
 			BelongsDate: belongsDate,
 			FlowType:    cfMap["FlowType"].(string),
 			Amount:      cfMap["Amount"].(float64),
 			Description: cfMap["Description"].(string),
 			Remark:      cfMap["Remark"].(string),
+			CreateTime:  createTime,
+			ModifyTime:  modifyTime,
 		}
 		cashFlowEntities[i] = cfEntity
 	}

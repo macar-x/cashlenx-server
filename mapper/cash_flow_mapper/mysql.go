@@ -189,9 +189,20 @@ func (CashFlowMySqlMapper) CountCashFLowsByCategoryId(categoryPlainId string) in
 }
 
 func (CashFlowMySqlMapper) InsertCashFlowByEntity(newEntity model.CashFlowEntity) string {
+	// Use existing ID if provided, otherwise generate a new one
+	newPlainId := newEntity.Id.Hex()
+	if newPlainId == "" {
+		newPlainId = primitive.NewObjectID().Hex()
+	}
+	
+	// Only set CreateTime and ModifyTime if they're not already set (e.g., during restoration)
 	operatingTime := time.Now().UTC() // Store in UTC
-	newEntity.CreateTime = operatingTime
-	newEntity.ModifyTime = operatingTime
+	if newEntity.CreateTime.IsZero() {
+		newEntity.CreateTime = operatingTime
+	}
+	if newEntity.ModifyTime.IsZero() {
+		newEntity.ModifyTime = operatingTime
+	}
 
 	var sqlString bytes.Buffer
 	sqlString.WriteString("INSERT ")
@@ -214,9 +225,8 @@ func (CashFlowMySqlMapper) InsertCashFlowByEntity(newEntity model.CashFlowEntity
 		util.Logger.Errorw("insert failed", "error", err)
 	}
 
-	newPlainId := primitive.NewObjectID().Hex()
 	result, err := statement.Exec(newPlainId, newEntity.CategoryId.Hex(), newEntity.BelongsDate, newEntity.FlowType,
-		newEntity.Amount, newEntity.Description, newEntity.Remark, operatingTime, operatingTime)
+		newEntity.Amount, newEntity.Description, newEntity.Remark, newEntity.CreateTime, newEntity.ModifyTime)
 	if err != nil {
 		util.Logger.Errorw("insert failed", "error", err)
 	}
@@ -249,9 +259,25 @@ func (CashFlowMySqlMapper) BulkInsertCashFlows(entities []model.CashFlowEntity) 
 		}
 		sqlString.WriteString("(?, ?, ?, ?, ?, ?, ?, ?, ?)")
 
-		ids[i] = primitive.NewObjectID().Hex()
-		values = append(values, ids[i], entity.CategoryId.Hex(), entity.BelongsDate, entity.FlowType,
-			entity.Amount, entity.Description, entity.Remark, operatingTime, operatingTime)
+		// Use existing ID if provided, otherwise generate a new one
+		entityId := entity.Id.Hex()
+		if entityId == "" {
+			entityId = primitive.NewObjectID().Hex()
+		}
+		ids[i] = entityId
+		
+		// Only set CreateTime and ModifyTime if they're not already set (e.g., during restoration)
+		createTime := entity.CreateTime
+		if createTime.IsZero() {
+			createTime = operatingTime
+		}
+		modifyTime := entity.ModifyTime
+		if modifyTime.IsZero() {
+			modifyTime = operatingTime
+		}
+
+		values = append(values, entityId, entity.CategoryId.Hex(), entity.BelongsDate, entity.FlowType,
+			entity.Amount, entity.Description, entity.Remark, createTime, modifyTime)
 	}
 
 	connection := database.GetMySqlConnection()

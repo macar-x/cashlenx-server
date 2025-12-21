@@ -75,9 +75,14 @@ func (CategoryMongoDbMapper) GetCategoryByParentId(parentPlainId string) []model
 }
 
 func (CategoryMongoDbMapper) InsertCategoryByEntity(newEntity model.CategoryEntity) string {
+	// Only set CreateTime and ModifyTime if they're not already set (e.g., during restoration)
 	operatingTime := time.Now().UTC() // Store in UTC
-	newEntity.CreateTime = operatingTime
-	newEntity.ModifyTime = operatingTime
+	if newEntity.CreateTime.IsZero() {
+		newEntity.CreateTime = operatingTime
+	}
+	if newEntity.ModifyTime.IsZero() {
+		newEntity.ModifyTime = operatingTime
+	}
 
 	database.OpenMongoDbConnection(database.CategoryTableName)
 	defer database.CloseMongoDbConnection()

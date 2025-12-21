@@ -93,9 +93,22 @@ func (CategoryMySqlMapper) GetCategoryByParentId(parentPlainId string) []model.C
 }
 
 func (CategoryMySqlMapper) InsertCategoryByEntity(newEntity model.CategoryEntity) string {
-	operatingTime := time.Now().UTC() // Store in UTC
-	newEntity.CreateTime = operatingTime
-	newEntity.ModifyTime = operatingTime
+	// Use existing ID if provided, otherwise generate a new one
+	newPlainId := newEntity.Id.Hex()
+	if newPlainId == "" {
+		newPlainId = primitive.NewObjectID().Hex()
+	}
+	
+	// Only set CreateTime and ModifyTime if they're not already set (e.g., during restoration)
+	if newEntity.CreateTime.IsZero() || newEntity.ModifyTime.IsZero() {
+		operatingTime := time.Now().UTC() // Store in UTC
+		if newEntity.CreateTime.IsZero() {
+			newEntity.CreateTime = operatingTime
+		}
+		if newEntity.ModifyTime.IsZero() {
+			newEntity.ModifyTime = operatingTime
+		}
+	}
 
 	var sqlString bytes.Buffer
 	sqlString.WriteString("INSERT ")
@@ -116,9 +129,8 @@ func (CategoryMySqlMapper) InsertCategoryByEntity(newEntity model.CategoryEntity
 		util.Logger.Errorw("insert failed", "error", err)
 	}
 
-	newPlainId := primitive.NewObjectID().Hex()
 	result, err := statement.Exec(newPlainId, newEntity.ParentId.Hex(), newEntity.Name,
-		newEntity.Type, newEntity.Remark, operatingTime, operatingTime)
+		newEntity.Type, newEntity.Remark, newEntity.CreateTime, newEntity.ModifyTime)
 	if err != nil {
 		util.Logger.Errorw("insert failed", "error", err)
 	}

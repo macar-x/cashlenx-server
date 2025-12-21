@@ -129,8 +129,15 @@ func exportData(file *excelize.File, fromDateInString, toDateInString string) {
 				dateStr := cashFlow.BelongsDate.Format("20060102")
 				writeExcelRow(file, yearMonth, "A"+cashFlowIndexInString, cashFlow.Id.Hex())
 				writeExcelRow(file, yearMonth, "B"+cashFlowIndexInString, cashFlow.CategoryId.Hex())
-				writeExcelRow(file, yearMonth, "C"+cashFlowIndexInString,
-					category_mapper.INSTANCE.GetCategoryByObjectId(cashFlow.CategoryId.Hex()).Name)
+				
+				// Get category name with fallback for missing categories
+				categoryEntity := category_mapper.INSTANCE.GetCategoryByObjectId(cashFlow.CategoryId.Hex())
+				categoryName := "Unknown"
+				if !categoryEntity.IsEmpty() {
+					categoryName = categoryEntity.Name
+				}
+				writeExcelRow(file, yearMonth, "C"+cashFlowIndexInString, categoryName)
+				
 				writeExcelRow(file, yearMonth, "D"+cashFlowIndexInString, dateStr)
 				writeExcelRow(file, yearMonth, "E"+cashFlowIndexInString, cashFlow.FlowType)
 				writeExcelRow(file, yearMonth, "F"+cashFlowIndexInString, cashFlow.Amount)
@@ -170,18 +177,25 @@ func exportData(file *excelize.File, fromDateInString, toDateInString string) {
 			}
 
 			for _, cashFlow := range cashFlowArray {
-				cashFlowRowIndex++
-				cashFlowIndexInString := strconv.Itoa(cashFlowRowIndex)
-				// refer to hardcode defaultRowTitle, bad idea.
-				writeExcelRow(file, currentYearAndMonth, "A"+cashFlowIndexInString, cashFlow.Id.Hex())
-				writeExcelRow(file, currentYearAndMonth, "B"+cashFlowIndexInString, cashFlow.CategoryId.Hex())
-				writeExcelRow(file, currentYearAndMonth, "C"+cashFlowIndexInString,
-					category_mapper.INSTANCE.GetCategoryByObjectId(cashFlow.CategoryId.Hex()).Name)
-				writeExcelRow(file, currentYearAndMonth, "D"+cashFlowIndexInString, queryDateCurrentInString)
-				writeExcelRow(file, currentYearAndMonth, "E"+cashFlowIndexInString, cashFlow.FlowType)
-				writeExcelRow(file, currentYearAndMonth, "F"+cashFlowIndexInString, cashFlow.Amount)
-				writeExcelRow(file, currentYearAndMonth, "G"+cashFlowIndexInString, cashFlow.Description)
+			cashFlowRowIndex++
+			cashFlowIndexInString := strconv.Itoa(cashFlowRowIndex)
+			// refer to hardcode defaultRowTitle, bad idea.
+			writeExcelRow(file, currentYearAndMonth, "A"+cashFlowIndexInString, cashFlow.Id.Hex())
+			writeExcelRow(file, currentYearAndMonth, "B"+cashFlowIndexInString, cashFlow.CategoryId.Hex())
+			
+			// Get category name with fallback for missing categories
+			categoryEntity := category_mapper.INSTANCE.GetCategoryByObjectId(cashFlow.CategoryId.Hex())
+			categoryName := "Unknown"
+			if !categoryEntity.IsEmpty() {
+				categoryName = categoryEntity.Name
 			}
+			writeExcelRow(file, currentYearAndMonth, "C"+cashFlowIndexInString, categoryName)
+			
+			writeExcelRow(file, currentYearAndMonth, "D"+cashFlowIndexInString, queryDateCurrentInString)
+			writeExcelRow(file, currentYearAndMonth, "E"+cashFlowIndexInString, cashFlow.FlowType)
+			writeExcelRow(file, currentYearAndMonth, "F"+cashFlowIndexInString, cashFlow.Amount)
+			writeExcelRow(file, currentYearAndMonth, "G"+cashFlowIndexInString, cashFlow.Description)
+		}
 
 			queryDateCurrent = queryDateCurrent.AddDate(0, 0, 1)
 		}

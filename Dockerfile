@@ -1,7 +1,7 @@
 # Multi-stage build for fast container startup
 
 # Build stage
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
 WORKDIR /app
 
 # Install dependencies for building

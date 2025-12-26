@@ -1,14 +1,30 @@
 # CashLenX CLI Reference
 
+**Version**: 2.0.0
+**Last Updated**: 2025-01-26
+
 **See your money clearly**
 
 Command-line interface for managing personal finances with CashLenX.
 
+## Overview
+
+The CashLenX CLI provides a complete interface to manage your finances from the command line, organized by access level:
+
+- **`cashlenx open`** - Public commands (no authentication required)
+- **`cashlenx admin`** - Admin commands (requires admin privileges)
+- **`cashlenx cash`** - Cash flow management (requires authentication)
+- **`cashlenx category`** - Category management (requires authentication)
+
 ## Quick Start
 
-### Common Commands
-
 ```bash
+# Start the server
+cashlenx open start -p 8080
+
+# Check server health
+cashlenx open health
+
 # Add expense
 cashlenx cash expense -c "Food" -a 45.50 -d "Lunch"
 
@@ -18,60 +34,16 @@ cashlenx cash income -c "Salary" -a 5000
 # View today's transactions
 cashlenx cash query -b $(date +%Y-%m-%d)
 
-# Start API server
-cashlenx server start -p 8080
-
-# Export data
-cashlenx manage export -o data.xlsx
+# Create backup
+cashlenx admin backup -o backup.json
 ```
-
-### Command Structure
-
-```
-cashlenx
-├── version              Show version info
-├── server start         Start API server
-├── cash                 Manage transactions
-│   ├── income          Add income
-│   ├── expense         Add expense
-│   ├── update          Update transaction
-│   ├── delete          Delete transaction
-│   ├── query           Query transactions
-│   ├── list            List all transactions
-│   ├── range           Query date range
-│   └── summary         Show summary
-├── category            Manage categories
-│   ├── create          Create category
-│   ├── update          Update category
-│   ├── delete          Delete category
-│   ├── query           Query categories
-│   └── list            List all categories
-├── manage              Data management
-│   ├── export          Export to Excel
-│   ├── import          Import from Excel
-│   ├── backup          Create backup
-│   ├── restore         Restore backup
-│   ├── init            Initialize demo data
-│   ├── reset           Clear all data
-│   └── stats           Show statistics
-└── db                  Database operations
-    ├── connect         Test connection
-    ├── seed            Seed demo data
-    ├── dump            Dump database contents
-    ├── restore         Restore database from dump
-    └── truncate        Clear all database data
-```
-
-### Implementation Status
-
-✅ **Working**: cash income/expense/query/delete/list, category create/query/delete/update/list, manage export/import/init/backup/restore/reset, server start, db dump/restore/truncate  
-🚧 **Pending**: cash update/range/summary, manage stats, db connect/seed
 
 ## Installation
 
 ```bash
 cd backend
 go build -o cashlenx main.go
+sudo mv cashlenx /usr/local/bin/
 ```
 
 ## Environment Setup
@@ -86,98 +58,245 @@ export DB_NAME=cashlenx
 export DB_TYPE=mysql
 export MYSQL_DB_URI="cashlenx:cashlenx123@tcp(localhost:3306)/cashlenx"
 export DB_NAME=cashlenx
-```
 
-See [ENVIRONMENT.md](../../docs/ENVIRONMENT.md) for detailed configuration.
+# JWT Secret (required for authentication)
+export JWT_SECRET="your-secret-key"
+```
 
 ---
 
-## Command Reference
+## Command Structure
 
-### Global Commands
+```
+cashlenx
+├── open                # Public commands (no auth)
+│   ├── health         Check system health
+│   ├── version        Show version info
+│   └── start          Start API server
+├── admin              # Admin commands (admin role required)
+│   ├── backup         Create database backup
+│   ├── restore        Restore from backup
+│   ├── export         Export to Excel (TODO: move to statistic)
+│   └── import         Import from Excel (TODO: move to statistic)
+├── cash               # Cash flow commands (user auth required)
+│   ├── income         Add income
+│   ├── expense        Add expense
+│   ├── update         Update transaction
+│   ├── delete         Delete transaction
+│   ├── query          Query transactions
+│   ├── list           List all transactions
+│   ├── range          Query date range
+│   └── summary        Show summary
+└── category           # Category commands (user auth required)
+    ├── create         Create category
+    ├── update         Update category
+    ├── delete         Delete category
+    ├── query          Query categories
+    ├── list           List all categories
+    └── tree           Show category tree
+```
 
-### version
-Show version information
+---
+
+## Public Commands (`cashlenx open`)
+
+### open health
+Check if the API server is running and healthy.
 
 ```bash
-cashlenx version
+cashlenx open health
 ```
 
-Output:
+**Output**:
 ```
-CashLenX v1.0.0
-Build Time: unknown
-Git Commit: unknown
+✅ System is healthy
+Status Code: 200 OK
+```
+
+**Requirements**: Server must be running at localhost:8080
+
+---
+
+### open version
+Show version information.
+
+```bash
+cashlenx open version
+```
+
+**Output**:
+```
+CashLenX v2.0.0
+Build Time: 2024-01-15T10:00:00Z
+Git Commit: abc1234
 Go Version: go1.21.5
 OS/Arch: linux/amd64
 ```
 
-## Server Commands
+---
 
-### server start
-Start the API server
+### open start
+Start the API server.
 
 ```bash
-cashlenx server start -p 8080
+cashlenx open start -p 8080
 ```
 
-Flags:
+**Flags**:
 - `-p, --port` - Server port (default: 8080)
 
-Environment variables required:
-- `MONGO_DB_URI` or `MYSQL_DB_URI` - Database connection string
+**Environment variables required**:
+- `MONGO_DB_URI` or `MYSQL_DB_URI` - Database connection
 - `DB_TYPE` - Database type (mongodb/mysql)
 - `DB_NAME` - Database name
+- `JWT_SECRET` - Secret for JWT tokens
 
-## Cash Flow Commands
+---
+
+## Admin Commands (`cashlenx admin`)
+
+**Note**: All admin commands require admin privileges and the ADMIN_TOKEN environment variable.
+
+### admin backup
+Create a backup of all database data (all users).
+
+```bash
+# Auto-generated filename
+cashlenx admin backup
+
+# Custom filename
+cashlenx admin backup -o backup_20240115.json
+```
+
+**Flags**:
+- `-o, --output` - Backup file path (optional, default: cashlenx_backup_TIMESTAMP.json)
+- `-t, --admin-token` - Admin token for dangerous operations
+
+**Output Statistics**:
+- Users: success/failed counts
+- Categories: success/failed counts
+- Cash Flows: success/failed counts
+
+**Environment**:
+- `ADMIN_TOKEN` - Required for verification
+
+---
+
+### admin restore
+Restore database from a backup file.
+
+```bash
+cashlenx admin restore -i backup_20240115.json
+
+# Skip confirmation
+cashlenx admin restore -i backup_20240115.json -f
+```
+
+**Flags**:
+- `-i, --input` - Backup file path (required)
+- `-f, --force` - Skip confirmation prompt
+- `-t, --admin-token` - Admin token for dangerous operations
+
+**Output Statistics**:
+- Users: success/failed counts
+- Categories: success/failed counts
+- Cash Flows: success/failed counts
+
+⚠️ **WARNING**: This replaces all existing data!
+
+---
+
+### admin export
+Export data to Excel.
+
+```bash
+# Export all data
+cashlenx admin export -o data.xlsx
+
+# Export date range
+cashlenx admin export -f 2024-01-01 -t 2024-01-31 -o january.xlsx
+```
+
+**Flags**:
+- `-o, --output` - Output file path (default: ./export.xlsx)
+- `-f, --from` - Start date (optional, YYYY-MM-DD)
+- `-t, --to` - End date (optional, YYYY-MM-DD)
+
+**TODO**: This command will move to `cashlenx statistic export` with user data isolation.
+
+---
+
+### admin import
+Import data from Excel.
+
+```bash
+cashlenx admin import -i data.xlsx
+```
+
+**Flags**:
+- `-i, --input` - Input file path (required)
+
+**TODO**: This command will move to `cashlenx statistic import` with user data isolation.
+
+---
+
+## Cash Flow Commands (`cashlenx cash`)
+
+**Note**: All cash flow commands enforce user data isolation - users can only access their own transactions.
 
 ### cash income
-Add new income transaction
+Add new income transaction.
 
 ```bash
 cashlenx cash income -c "Salary" -a 5000 -d "Monthly salary"
 cashlenx cash income -c "Freelance" -a 1500 -b 2024-01-15
 ```
 
-Flags:
+**Flags**:
 - `-c, --category` - Category name (required)
 - `-a, --amount` - Amount (required)
 - `-b, --date` - Transaction date (optional, default: today)
 - `-d, --description` - Description (optional)
 
+---
+
 ### cash expense
-Add new expense transaction
+Add new expense transaction.
 
 ```bash
 cashlenx cash expense -c "Food & Dining" -a 45.50 -d "Lunch"
 cashlenx cash expense -c "Transportation" -a 20 -b 2024-01-15
 ```
 
-Flags:
+**Flags**:
 - `-c, --category` - Category name (required)
 - `-a, --amount` - Amount (required)
 - `-b, --date` - Transaction date (optional, default: today)
 - `-d, --description` - Description (optional)
 
+---
+
 ### cash update
-Update existing transaction
+Update existing transaction.
 
 ```bash
 cashlenx cash update -i 507f1f77bcf86cd799439011 -a 50.00
 cashlenx cash update -i 507f1f77bcf86cd799439011 -c "Groceries" -d "Updated"
 ```
 
-Flags:
+**Flags**:
 - `-i, --id` - Transaction ID (required)
 - `-a, --amount` - New amount (optional)
 - `-c, --category` - New category (optional)
 - `-b, --date` - New date (optional)
 - `-d, --description` - New description (optional)
 
-**Status**: Not yet implemented - requires database integration
+**Note**: Can only update your own transactions.
+
+---
 
 ### cash delete
-Delete transaction(s)
+Delete transaction(s).
 
 ```bash
 # Delete by ID
@@ -187,12 +306,16 @@ cashlenx cash delete -i 507f1f77bcf86cd799439011
 cashlenx cash delete -b 2024-01-15
 ```
 
-Flags:
+**Flags**:
 - `-i, --id` - Transaction ID
 - `-b, --date` - Date (YYYY-MM-DD)
 
+**Note**: Can only delete your own transactions.
+
+---
+
 ### cash query
-Query transactions by filters
+Query transactions by filters.
 
 ```bash
 # Query by ID
@@ -208,14 +331,18 @@ cashlenx cash query -e "Lunch"
 cashlenx cash query -f "lunch"
 ```
 
-Flags:
+**Flags**:
 - `-i, --id` - Query by ID
 - `-b, --date` - Query by date
 - `-e, --exact` - Query by exact description
 - `-f, --fuzzy` - Query by fuzzy description
 
+**Note**: Only returns your own transactions.
+
+---
+
 ### cash list
-List all transactions with pagination
+List all transactions with pagination.
 
 ```bash
 # List all
@@ -232,104 +359,125 @@ cashlenx cash list -t income
 cashlenx cash list -t expense
 ```
 
-Flags:
+**Flags**:
 - `-l, --limit` - Maximum records to return (default: 50)
 - `-o, --offset` - Number of records to skip (default: 0)
 - `-t, --type` - Filter by type (income/expense)
 
-**Status**: Not yet implemented - requires database integration
+**Note**: Only returns your own transactions.
+
+---
 
 ### cash range
-Query transactions by date range
+Query transactions by date range.
 
 ```bash
 cashlenx cash range -f 2024-01-01 -t 2024-01-31
 cashlenx cash range --from 2024-01-01 --to 2024-01-31
 ```
 
-Flags:
+**Flags**:
 - `-f, --from` - Start date (YYYY-MM-DD) (required)
 - `-t, --to` - End date (YYYY-MM-DD) (required)
 
-Output includes:
+**Output includes**:
 - All transactions in range
 - Total income
 - Total expense
 - Balance
 
-**Status**: Not yet implemented - requires database integration
+**Note**: Only returns your own transactions.
+
+---
 
 ### cash summary
-Show financial summary
+Show financial summary.
 
 ```bash
-# Daily summary
-cashlenx cash summary -p daily -d 2024-01-15
-
 # Monthly summary
 cashlenx cash summary -p monthly -d 2024-01
 
-# Yearly summary
+# Daily summary (if implemented)
+cashlenx cash summary -p daily -d 2024-01-15
+
+# Yearly summary (if implemented)
 cashlenx cash summary -p yearly -d 2024
 ```
 
-Flags:
+**Flags**:
 - `-p, --period` - Period type (daily/monthly/yearly) (required)
 - `-d, --date` - Date for summary (required)
   - Daily: YYYY-MM-DD
   - Monthly: YYYY-MM
   - Yearly: YYYY
 
-Output includes:
+**Output includes**:
 - Total income
 - Total expense
 - Balance
 - Transaction count
-- Category breakdown
 
-**Status**: Not yet implemented - requires database integration
+**Note**: Only includes your own transactions.
 
-## Category Commands
+---
+
+## Category Commands (`cashlenx category`)
+
+**Note**: All category commands enforce user data isolation - users can only access their own categories.
 
 ### category create
-Create new category
+Create new category.
 
 ```bash
 cashlenx category create -n "Food & Dining"
-cashlenx category create -n "Groceries" -p 507f1f77bcf86cd799439011
+cashlenx category create -n "Groceries" -p 507f1f77bcf86cd799439011 -t expense
 ```
 
-Flags:
+**Flags**:
 - `-n, --name` - Category name (required)
 - `-p, --parent` - Parent category ID (optional)
+- `-t, --type` - Category type: income or expense (optional)
+- `-r, --remark` - Description or notes (optional)
+
+**Note**: Category is created for your user account.
+
+---
 
 ### category update
-Update existing category
+Update existing category.
 
 ```bash
 cashlenx category update -i 507f1f77bcf86cd799439011 -n "New Name"
 cashlenx category update -i 507f1f77bcf86cd799439011 -p 507f1f77bcf86cd799439012
 ```
 
-Flags:
+**Flags**:
 - `-i, --id` - Category ID (required)
 - `-n, --name` - New name (optional)
+- `-t, --type` - New type (optional)
 - `-p, --parent` - New parent ID (optional)
+- `-r, --remark` - New description (optional)
 
-**Status**: Not yet implemented - requires database integration
+**Note**: Can only update your own categories.
+
+---
 
 ### category delete
-Delete category
+Delete category.
 
 ```bash
 cashlenx category delete -i 507f1f77bcf86cd799439011
 ```
 
-Flags:
+**Flags**:
 - `-i, --id` - Category ID (required)
 
+**Note**: Can only delete your own categories.
+
+---
+
 ### category query
-Query categories by filters
+Query categories by filters.
 
 ```bash
 # Query by ID
@@ -338,225 +486,135 @@ cashlenx category query -i 507f1f77bcf86cd799439011
 # Query by name
 cashlenx category query -n "Food & Dining"
 
-# Query by parent
+# Query children of a parent
 cashlenx category query -p 507f1f77bcf86cd799439011
 ```
 
-Flags:
+**Flags**:
 - `-i, --id` - Query by ID
 - `-n, --name` - Query by name
 - `-p, --parent` - Query by parent ID
 
+**Note**: Only searches your own categories.
+
+---
+
 ### category list
-List all categories
+List all categories.
 
 ```bash
+# List all
 cashlenx category list
+
+# Filter by type
+cashlenx category list -t expense
+cashlenx category list -t income
+
+# With pagination
+cashlenx category list -l 20 -o 40
 ```
 
-**Status**: Not yet implemented - requires database integration
+**Flags**:
+- `-l, --limit` - Maximum records to return (default: 50)
+- `-o, --offset` - Number of records to skip (default: 0)
+- `-t, --type` - Filter by type (income/expense)
 
-## Data Management Commands
+**Note**: Only returns your own categories.
 
-### manage export
-Export data to Excel
+---
+
+### category tree
+Show category tree structure.
 
 ```bash
-# Export all data
-cashlenx manage export -o data.xlsx
+# All categories
+cashlenx category tree
 
-# Export date range
-cashlenx manage export -f 2024-01-01 -t 2024-01-31 -o january.xlsx
+# Filter by type
+cashlenx category tree -t expense
 ```
 
-Flags:
-- `-o, --output` - Output file path (required)
-- `-f, --from` - Start date (optional)
-- `-t, --to` - End date (optional)
+**Flags**:
+- `-t, --type` - Filter by type (income/expense)
 
-### manage import
-Import data from Excel
+**Note**: Only shows your own categories.
+
+---
+
+## 🚧 Planned: Statistic Commands (`cashlenx statistic`)
+
+These commands will be available to all authenticated users with proper data isolation.
+
+### statistic export
+Export your own data to Excel.
 
 ```bash
-cashlenx manage import -i data.xlsx
+cashlenx statistic export -o mydata.xlsx
+cashlenx statistic export -f 2024-01-01 -t 2024-12-31 -o year2024.xlsx
 ```
 
-Flags:
-- `-i, --input` - Input file path (required)
+**Note**: Only exports your own data.
 
-### manage backup
-Create database backup
+### statistic import
+Import data to your account.
 
 ```bash
-# Auto-generated filename
-cashlenx manage backup
-
-# Custom filename
-cashlenx manage backup -o backup_20240115.json
+cashlenx statistic import -i mydata.xlsx
 ```
 
-Flags:
-- `-o, --output` - Backup file path (optional, default: cashlenx_backup_TIMESTAMP.json)
+**Note**: Only imports to your account.
 
-**Status**: Not yet implemented - requires database integration
-
-### manage restore
-Restore database from backup
+### statistic summary
+Advanced summaries and analytics.
 
 ```bash
-cashlenx manage restore -i backup_20240115.json
-
-# Skip confirmation
-cashlenx manage restore -i backup_20240115.json -f
+cashlenx statistic summary -p daily -d 2024-01-15
+cashlenx statistic summary -p monthly -d 2024-01
+cashlenx statistic summary -p yearly -d 2024
 ```
 
-Flags:
-- `-i, --input` - Backup file path (required)
-- `-f, --force` - Skip confirmation prompt
-
-**Status**: Not yet implemented - requires database integration
-
-### manage init
-Initialize database with demo data
+### statistic breakdown
+Category breakdown analysis.
 
 ```bash
-cashlenx manage init
+cashlenx statistic breakdown --period month --date 2024-01
 ```
 
-Creates:
-- 8 default categories
-- 15 sample transactions
-
-**Status**: Not yet implemented - requires database integration
-
-### manage reset
-Clear all database data
+### statistic trends
+Spending trend analysis.
 
 ```bash
-cashlenx manage reset
-
-# Skip confirmation (dangerous!)
-cashlenx manage reset -f
+cashlenx statistic trends --period year --date 2024
 ```
 
-Flags:
-- `-f, --force` - Skip confirmation prompt
-
-⚠️ **WARNING**: This operation cannot be undone. Create a backup first!
-
-**Status**: Not yet implemented - requires database integration
-
-### manage stats
-Show database statistics
+### statistic top
+Top N expenses.
 
 ```bash
-cashlenx manage stats
+cashlenx statistic top -n 10 --period month --date 2024-01
 ```
 
-Output:
-- Cash flow record counts
-- Income/expense breakdown
-- Financial summary
-- Date range
+---
 
-**Status**: Not yet implemented - requires database integration
+## Data Isolation
 
-## Database Commands
+### User Data Isolation (Implemented)
 
-### db connect
-Test database connection
+All user commands (`cash` and `category`) enforce strict data isolation:
 
-```bash
-cashlenx db connect
-```
+- Users can **only** access their own transactions
+- Users can **only** access their own categories
+- Attempts to access another user's data return "not found" errors
 
-Output:
-- Connection status
-- Database type
-- Host
-- Database name
+### Admin Data Access
 
-**Status**: Not yet implemented - requires database integration
+Admin commands can access data across all users:
 
-### db seed
-Seed database with demo data
+- `backup` includes all users' data
+- `restore` properly isolates data by user
+- `export/import` currently access all data (will be moved to user statistic module)
 
-```bash
-cashlenx db seed
-```
-
-Alias for `manage init`.
-
-**Status**: Not yet implemented - requires database integration
-
-### db dump
-Dump database contents to JSON file
-
-```bash
-# Dump to auto-generated file
-cashlenx db dump
-
-# Dump to specific file
-cashlenx db dump -o backup.json
-
-# Dump with verbose output
-cashlenx db dump -v
-```
-
-Flags:
-- `-o, --output` - Output file path (optional, default: cashlenx_dump_TIMESTAMP.json)
-- `-v, --verbose` - Enable verbose output
-
-Output file contains:
-- Categories
-- Cash flow transactions
-- Export metadata
-
-### db restore
-Restore database from JSON dump file
-
-```bash
-# Restore from file
-cashlenx db restore -i backup.json
-
-# Restore with verbose output
-cashlenx db restore -i backup.json -v
-```
-
-Flags:
-- `-i, --input` - Input dump file path (required)
-- `-v, --verbose` - Enable verbose output
-
-⚠️ **WARNING**: This operation will replace all existing data in the database! Ensure you have a backup before proceeding.
-
-### db truncate
-Truncate all data from the database
-
-```bash
-# Truncate with confirmation
-cashlenx db truncate
-
-# Truncate with force flag (dangerous!)
-cashlenx db truncate -f
-```
-
-Flags:
-- `-f, --force` - Skip confirmation prompt
-
-⚠️ **WARNING**: This operation will permanently delete ALL data from the database! Ensure you have a backup before proceeding.
-
-## Advanced Configuration
-
-### Optional Environment Variables
-
-```bash
-# Logging
-export LOG_LEVEL=debug  # debug, info, warn, error
-
-# Server
-export SERVER_PORT=8080
-export CORS_ORIGINS="http://localhost:3000,http://localhost:4000"
-```
+---
 
 ## Examples
 
@@ -576,62 +634,56 @@ cashlenx cash query -b $(date +%Y-%m-%d)
 cashlenx cash summary -p monthly -d $(date +%Y-%m)
 ```
 
-### Data Management
-
-```bash
-# Create backup before major changes
-cashlenx manage backup -o backup_before_cleanup.json
-
-# Export data for analysis
-cashlenx manage export -f 2024-01-01 -t 2024-12-31 -o year_2024.xlsx
-
-# Check database stats
-cashlenx manage stats
-```
-
 ### Category Management
 
 ```bash
 # Create main categories
-cashlenx category create -n "Food & Dining"
-cashlenx category create -n "Transportation"
-cashlenx category create -n "Entertainment"
+cashlenx category create -n "Food & Dining" -t expense
+cashlenx category create -n "Transportation" -t expense
+cashlenx category create -n "Salary" -t income
 
 # Create subcategories
-cashlenx category create -n "Groceries" -p <food_category_id>
-cashlenx category create -n "Restaurants" -p <food_category_id>
+FOOD_ID=$(cashlenx category query -n "Food & Dining" | grep ID | cut -d: -f2)
+cashlenx category create -n "Groceries" -p $FOOD_ID -t expense
+cashlenx category create -n "Restaurants" -p $FOOD_ID -t expense
 
-# List all categories
-cashlenx category list
+# View category tree
+cashlenx category tree -t expense
 ```
+
+### Admin Data Management
+
+```bash
+# Create backup before major changes
+cashlenx admin backup -o backup_before_cleanup.json
+
+# Restore from backup if needed
+cashlenx admin restore -i backup_before_cleanup.json -f
+```
+
+---
 
 ## Implementation Status
 
 ### ✅ Implemented
-- Server start
-- Cash income/expense
-- Cash query (by ID, date, description)
-- Cash delete (by ID, date)
-- Cash list (with pagination and filtering)
-- Category create/query/delete
-- Category update
-- Category list (with pagination)
-- Manage export/import
-- Manage init (demo data initialization)
-- Manage backup
-- Manage restore
-- Manage reset
-- DB dump/restore/truncate
-- Version command
+- **Public**: health, version, start
+- **Admin**: backup, restore, export, import
+- **Cash**: income, expense, query, delete, list, update, range, summary (monthly)
+- **Category**: create, query, delete, update, list, tree
 
-### 🚧 Pending Implementation
-- Cash update
-- Cash range
-- Cash summary
-- Manage stats
-- DB connect/seed
+### 🚧 Planned
+- **Statistic module**: User-specific export/import with data isolation
+- **Advanced analytics**: Category breakdown, spending trends, top expenses
+- **Daily/yearly summaries**: Extended summary periods
 
-All pending commands have CLI structure in place and will return helpful error messages indicating they need database integration.
+### ❌ Removed (Rarely Used)
+- DB connect - Rarely needed
+- DB stats - Use monitoring tools
+- DB init/seed - Development only
+- DB reset/truncate - Dangerous
+- DB indexes - Handled by migrations
+
+---
 
 ## Building for Production
 
@@ -639,40 +691,34 @@ All pending commands have CLI structure in place and will return helpful error m
 # Build with version info
 cd backend
 go build -ldflags "\
-  -X github.com/macar-x/cashlenx_server/cmd.Version=1.0.0 \
-  -X github.com/macar-x/cashlenx_server/cmd.BuildTime=$(date -u +%Y-%m-%dT%H:%M:%SZ) \
-  -X github.com/macar-x/cashlenx_server/cmd.GitCommit=$(git rev-parse --short HEAD)" \
+  -X github.com/macar-x/cashlenx-server/cmd/open_cmd.Version=2.0.0 \
+  -X github.com/macar-x/cashlenx-server/cmd/open_cmd.BuildTime=$(date -u +%Y-%m-%dT%H:%M:%SZ) \
+  -X github.com/macar-x/cashlenx-server/cmd/open_cmd.GitCommit=$(git rev-parse --short HEAD)" \
   -o cashlenx main.go
 
 # Install globally
 sudo mv cashlenx /usr/local/bin/
 ```
 
-## Shell Completion
-
-Generate shell completion scripts:
-
-```bash
-# Bash
-cashlenx completion bash > /etc/bash_completion.d/cashlenx
-
-# Zsh
-cashlenx completion zsh > "${fpath[1]}/_cashlenx"
-
-# Fish
-cashlenx completion fish > ~/.config/fish/completions/cashlenx.fish
-
-# PowerShell
-cashlenx completion powershell > cashlenx.ps1
-```
+---
 
 ## Troubleshooting
+
+### Authentication Issues
+
+```bash
+# Ensure JWT_SECRET is set
+echo $JWT_SECRET
+
+# Check server logs for auth errors
+cashlenx open start -p 8080  # Check output for errors
+```
 
 ### Database Connection Issues
 
 ```bash
-# Test connection
-cashlenx db connect
+# Test server health
+cashlenx open health
 
 # Check environment variables
 echo $MONGO_DB_URI
@@ -680,24 +726,31 @@ echo $DB_TYPE
 echo $DB_NAME
 ```
 
-### Command Not Found
-
-```bash
-# Ensure binary is in PATH
-which cashlenx
-
-# Or use full path
-./cashlenx version
-```
-
 ### Permission Denied
 
 ```bash
 # Make binary executable
 chmod +x cashlenx
+
+# Check if it's in PATH
+which cashlenx
+
+# Use full path if needed
+./cashlenx open version
 ```
+
+---
+
+## See Also
+
+- [API Documentation](./api.md)
+- [Feature Parity Matrix](./FEATURE_PARITY.md)
+- [Quick Start Guide](./quick_start.md)
+- [Deployment Guide](./deployment_guide.md)
+
+---
 
 ## Support
 
-For issues and feature requests, visit:
-https://github.com/macar-x/cashlenx_server/issues
+For issues and feature requests:
+https://github.com/macar-x/cashlenx-server/issues

@@ -1,259 +1,641 @@
-# Backend API Implementation TODO
+# CashLenX API Documentation
 
-## Completed ✅
+**Version**: 2.0.0
+**Last Updated**: 2025-01-26
 
-### Infrastructure
-- [x] CORS middleware
-- [x] Logging middleware  
-- [x] Health check endpoint (`GET /api/system/health`)
-- [x] Version info endpoint (`GET /api/system/version`)
+## Overview
 
-### Cash Flow API
-- [x] `POST /api/cash/expense` - Create expense
-- [x] `POST /api/cash/income` - Create income
-- [x] `GET /api/cash/{id}` - Query by ID
-- [x] `GET /api/cash/date/{date}` - Query by date
-- [x] `DELETE /api/cash/{id}` - Delete by ID
-- [x] `DELETE /api/cash/date/{date}` - Delete by date
+CashLenX provides a RESTful API for personal finance management with multi-user support and data isolation.
 
-### Manage API
-- [x] `GET /api/manage/dump` - Download database dump (requires ADMIN_TOKEN)
-- [x] `POST /api/manage/restore` - Restore database from dump (requires ADMIN_TOKEN)
-- [x] `POST /api/manage/truncate` - Truncate database (requires ADMIN_TOKEN)
-- [x] `GET /api/manage/export` - Export data to Excel
-- [x] `POST /api/manage/import` - Import data from Excel
-
-## To Implement 🚧
-
-### Cash Flow API Extensions
-- [ ] `PUT /api/cash/{id}` - Update cash flow record
-- [ ] `GET /api/cash/range?from={date}&to={date}` - Query by date range
-- [ ] `GET /api/cash/summary/daily?date={date}` - Daily summary
-- [ ] `GET /api/cash/summary/monthly?year={year}&month={month}` - Monthly summary
-- [ ] `GET /api/cash/summary/yearly?year={year}` - Yearly summary
-
-### Category API
-- [x] `POST /api/category` - Create category
-- [x] `GET /api/category` - List all categories
-- [x] `GET /api/category/{id}` - Get category by ID
-- [x] `PUT /api/category/{id}` - Update category
-- [x] `DELETE /api/category/{id}` - Delete category
-- [ ] `GET /api/category/{id}/stats` - Category statistics
-
-### Statistics API
-- [ ] `GET /api/stats/overview?period={period}` - Financial overview
-- [ ] `GET /api/stats/trends?period={period}` - Spending trends
-- [ ] `GET /api/stats/category-breakdown?period={period}` - Category breakdown
-- [ ] `GET /api/stats/income-vs-expense?period={period}` - Income vs expense
-- [ ] `GET /api/stats/top-expenses?limit={n}&period={period}` - Top N expenses
-
-### Import/Export API
-- [ ] `POST /api/export` - Export to Excel
-- [ ] `POST /api/import` - Import from Excel
-- [ ] `GET /api/export/csv` - Export to CSV
-
-## Implementation Guide
-
-### 1. Update Cash Flow Record
-
-**Endpoint**: `PUT /api/cash/{id}`
-
-**Request Body**:
-```json
-{
-  "amount": 100.50,
-  "date": "2024-01-15",
-  "category": "Food & Dining",
-  "description": "Updated description"
-}
+### Base URL
+```
+http://localhost:8080/api
 ```
 
-**Implementation**:
-```go
-// In cash_flow_controller package
-func UpdateById(w http.ResponseWriter, r *http.Request) {
-    vars := mux.Vars(r)
-    id := vars["id"]
-    
-    var cashFlow model.CashFlow
-    json.NewDecoder(r.Body).Decode(&cashFlow)
-    
-    // Update in database
-    err := service.UpdateCashFlow(id, cashFlow)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    
-    w.WriteHeader(http.StatusOK)
-    json.NewEncoder(w).Encode(cashFlow)
-}
+### Authentication
+Most endpoints require JWT authentication. Include the token in the Authorization header:
+```
+Authorization: Bearer <your-jwt-token>
 ```
 
-### 2. Date Range Query
+### Route Organization
 
-**Endpoint**: `GET /api/cash/range?from=2024-01-01&to=2024-01-31`
+Routes are organized by access level:
+
+- **`/api/open/*`** - Public endpoints (no authentication required)
+- **`/api/admin/*`** - Admin-only endpoints (requires admin role)
+- **`/api/cash/*`** - User-specific cash flow operations (requires authentication)
+- **`/api/category/*`** - User-specific category operations (requires authentication)
+
+## API Reference
+
+### Public Endpoints (`/api/open/*`)
+
+#### Health Check
+```http
+GET /api/open/health
+```
 
 **Response**:
 ```json
 {
-  "code": "OK",
-  "message": "",
-  "data": {
-    "from": "2024-01-01",
-    "to": "2024-01-31",
-    "count": 15,
-    "total_income": 5000.00,
-    "total_expense": 2500.00,
-    "balance": 2500.00,
-    "transactions": [...]
-  },
-  "meta": {},
-  "extra": {},
-  "errors": []
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:00Z"
 }
 ```
 
-### 3. Summary Endpoints
+#### Version Info
+```http
+GET /api/open/version
+```
 
-**Daily**: `GET /api/cash/summary/daily?date=2024-01-15`
-**Monthly**: `GET /api/cash/summary/monthly?year=2024&month=1`
-**Yearly**: `GET /api/cash/summary/yearly?year=2024`
+**Response**:
+```json
+{
+  "version": "2.0.0",
+  "buildTime": "2024-01-15T10:00:00Z",
+  "gitCommit": "abc1234"
+}
+```
 
-**Response Format**:
+#### User Login
+```http
+POST /api/open/auth/login
+```
+
+**Request**:
+```json
+{
+  "username": "john_doe",
+  "password": "securepassword"
+}
+```
+
+**Response**:
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "507f1f77bcf86cd799439011",
+    "username": "john_doe",
+    "role": "user"
+  }
+}
+```
+
+#### User Registration
+```http
+POST /api/open/auth/register
+```
+
+**Request**:
+```json
+{
+  "username": "john_doe",
+  "password": "securepassword",
+  "email": "john@example.com"
+}
+```
+
+**Response**:
+```json
+{
+  "id": "507f1f77bcf86cd799439011",
+  "username": "john_doe",
+  "role": "user"
+}
+```
+
+---
+
+### Cash Flow Endpoints (`/api/cash/*`)
+
+All cash flow endpoints enforce user data isolation - users can only access their own transactions.
+
+#### Create Income
+```http
+POST /api/cash/income
+Authorization: Bearer <token>
+```
+
+**Request**:
+```json
+{
+  "amount": 5000.00,
+  "date": "2024-01-15",
+  "category": "Salary",
+  "description": "Monthly salary"
+}
+```
+
+#### Create Expense
+```http
+POST /api/cash/expense
+Authorization: Bearer <token>
+```
+
+**Request**:
+```json
+{
+  "amount": 45.50,
+  "date": "2024-01-15",
+  "category": "Food & Dining",
+  "description": "Lunch"
+}
+```
+
+#### Query by ID
+```http
+GET /api/cash/{id}
+Authorization: Bearer <token>
+```
+
+**Note**: Only returns the transaction if it belongs to the authenticated user.
+
+#### Query by Date
+```http
+GET /api/cash/date/{date}
+Authorization: Bearer <token>
+```
+
+**Example**: `GET /api/cash/date/2024-01-15`
+
+**Note**: Only returns transactions belonging to the authenticated user.
+
+#### Update Transaction
+```http
+PUT /api/cash/{id}
+Authorization: Bearer <token>
+```
+
+**Request**:
+```json
+{
+  "amount": 50.00,
+  "category": "Groceries",
+  "description": "Updated description"
+}
+```
+
+**Note**: Can only update transactions belonging to the authenticated user.
+
+#### Delete by ID
+```http
+DELETE /api/cash/{id}
+Authorization: Bearer <token>
+```
+
+**Note**: Can only delete transactions belonging to the authenticated user.
+
+#### Delete by Date
+```http
+DELETE /api/cash/date/{date}
+Authorization: Bearer <token>
+```
+
+**Note**: Only deletes transactions belonging to the authenticated user.
+
+#### List Transactions
+```http
+GET /api/cash?limit=50&offset=0&type=expense
+Authorization: Bearer <token>
+```
+
+**Query Parameters**:
+- `limit` (optional): Max records to return (default: 50)
+- `offset` (optional): Records to skip (default: 0)
+- `type` (optional): Filter by type (`income` or `expense`)
+
+**Note**: Only returns transactions belonging to the authenticated user.
+
+#### Query Date Range
+```http
+GET /api/cash/range?from=2024-01-01&to=2024-01-31
+Authorization: Bearer <token>
+```
+
+**Query Parameters**:
+- `from` (required): Start date (YYYY-MM-DD)
+- `to` (required): End date (YYYY-MM-DD)
+
+**Response**:
+```json
+{
+  "from": "2024-01-01",
+  "to": "2024-01-31",
+  "total_income": 5000.00,
+  "total_expense": 2500.00,
+  "balance": 2500.00,
+  "count": 15,
+  "transactions": [...]
+}
+```
+
+**Note**: Only returns transactions belonging to the authenticated user.
+
+#### Monthly Summary
+```http
+GET /api/cash/summary/monthly/{yyyymm}
+Authorization: Bearer <token>
+```
+
+**Example**: `GET /api/cash/summary/monthly/202401`
+
+**Response**:
+```json
+{
+  "period": "2024-01",
+  "income": 5000.00,
+  "expense": 2500.00,
+  "balance": 2500.00,
+  "transaction_count": 15,
+  "income_count": 2,
+  "expense_count": 13
+}
+```
+
+**Note**: Only includes transactions belonging to the authenticated user.
+
+---
+
+### Category Endpoints (`/api/category/*`)
+
+All category endpoints enforce user data isolation - users can only access their own categories.
+
+#### Create Category
+```http
+POST /api/category
+Authorization: Bearer <token>
+```
+
+**Request**:
+```json
+{
+  "name": "Food & Dining",
+  "type": "expense",
+  "parent_id": "507f1f77bcf86cd799439011",
+  "remark": "All food-related expenses"
+}
+```
+
+**Note**: Category is created for the authenticated user.
+
+#### List Categories
+```http
+GET /api/category?limit=50&offset=0&type=expense
+Authorization: Bearer <token>
+```
+
+**Query Parameters**:
+- `limit` (optional): Max records to return (default: 50)
+- `offset` (optional): Records to skip (default: 0)
+- `type` (optional): Filter by type (`income` or `expense`)
+
+**Note**: Only returns categories belonging to the authenticated user.
+
+#### Query by ID
+```http
+GET /api/category/{id}
+Authorization: Bearer <token>
+```
+
+**Note**: Only returns the category if it belongs to the authenticated user.
+
+#### Query by Name
+```http
+GET /api/category/name/{name}
+Authorization: Bearer <token>
+```
+
+**Example**: `GET /api/category/name/Food%20%26%20Dining`
+
+**Note**: Only searches categories belonging to the authenticated user.
+
+#### Get Child Categories
+```http
+GET /api/category/{id}/children?type=expense
+Authorization: Bearer <token>
+```
+
+**Query Parameters**:
+- `type` (optional): Filter by type (`income` or `expense`)
+
+**Note**: Only returns child categories if parent belongs to the authenticated user.
+
+#### Update Category
+```http
+PUT /api/category/{id}
+Authorization: Bearer <token>
+```
+
+**Request**:
+```json
+{
+  "name": "Dining Out",
+  "type": "expense",
+  "parent_id": "507f1f77bcf86cd799439011",
+  "remark": "Updated description"
+}
+```
+
+**Note**: Can only update categories belonging to the authenticated user.
+
+#### Delete Category
+```http
+DELETE /api/category/{id}
+Authorization: Bearer <token>
+```
+
+**Note**: Can only delete categories belonging to the authenticated user.
+
+#### Get Category Tree
+```http
+GET /api/category/tree?type=expense
+Authorization: Bearer <token>
+```
+
+**Query Parameters**:
+- `type` (optional): Filter by type (`income` or `expense`)
+
+**Response**: Hierarchical tree structure of categories
+
+**Note**: Only returns categories belonging to the authenticated user.
+
+---
+
+### Admin Endpoints (`/api/admin/*`)
+
+All admin endpoints require the `admin` role.
+
+#### User Management
+
+##### Create User
+```http
+POST /api/admin/user
+Authorization: Bearer <admin-token>
+```
+
+**Request**:
+```json
+{
+  "username": "new_user",
+  "password": "securepassword",
+  "email": "user@example.com",
+  "role": "user"
+}
+```
+
+##### List Users
+```http
+GET /api/admin/user?limit=50&offset=0
+Authorization: Bearer <admin-token>
+```
+
+##### Get User by ID
+```http
+GET /api/admin/user/{id}
+Authorization: Bearer <admin-token>
+```
+
+##### Update User
+```http
+PUT /api/admin/user/{id}
+Authorization: Bearer <admin-token>
+```
+
+##### Delete User
+```http
+DELETE /api/admin/user/{id}
+Authorization: Bearer <admin-token>
+```
+
+#### Database Management
+
+##### Database Backup
+```http
+GET /api/admin/manage/dump
+Authorization: Bearer <admin-token>
+Header: ADMIN_TOKEN=<your-admin-token>
+```
+
+**Response**: JSON file containing all database data (all users)
+
+**Statistics Returned**:
+- Users: success/failed counts
+- Categories: success/failed counts
+- Cash Flows: success/failed counts
+
+##### Database Restore
+```http
+POST /api/admin/manage/restore
+Authorization: Bearer <admin-token>
+Header: ADMIN_TOKEN=<your-admin-token>
+Content-Type: application/json
+```
+
+**Request**: Upload backup JSON file
+
+**Statistics Returned**:
+- Users: success/failed counts
+- Categories: success/failed counts
+- Cash Flows: success/failed counts
+
+##### Export to Excel
+```http
+GET /api/admin/manage/export?from=2024-01-01&to=2024-01-31
+Authorization: Bearer <admin-token>
+```
+
+**Query Parameters**:
+- `from` (optional): Start date (YYYY-MM-DD)
+- `to` (optional): End date (YYYY-MM-DD)
+
+**Response**: Excel file (.xlsx)
+
+**TODO**: This endpoint will be moved to `/api/statistic/export` with user data isolation.
+
+##### Import from Excel
+```http
+POST /api/admin/manage/import
+Authorization: Bearer <admin-token>
+Content-Type: multipart/form-data
+```
+
+**Request**: Upload Excel file (.xlsx)
+
+**TODO**: This endpoint will be moved to `/api/statistic/import` with user data isolation.
+
+---
+
+## 🚧 Planned: Statistic Module
+
+### User Statistic Endpoints (`/api/statistic/*`)
+
+These endpoints will be available to all authenticated users with proper data isolation.
+
+#### Export User Data
+```http
+GET /api/statistic/export?from=2024-01-01&to=2024-01-31
+Authorization: Bearer <token>
+```
+
+**Note**: Only exports data belonging to the authenticated user.
+
+#### Import User Data
+```http
+POST /api/statistic/import
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+```
+
+**Note**: Only imports data to the authenticated user's account.
+
+#### Category Breakdown
+```http
+GET /api/statistic/category-breakdown?period=month&date=2024-01
+Authorization: Bearer <token>
+```
+
+#### Spending Trends
+```http
+GET /api/statistic/trends?period=year&date=2024
+Authorization: Bearer <token>
+```
+
+#### Top Expenses
+```http
+GET /api/statistic/top-expenses?limit=10&period=month&date=2024-01
+Authorization: Bearer <token>
+```
+
+---
+
+## Data Isolation
+
+### User Data Isolation (Implemented)
+
+All user-specific endpoints enforce strict data isolation:
+
+- **Cash flows**: Users can only access their own transactions
+- **Categories**: Users can only access their own categories
+- **Three-layer enforcement**:
+  1. **Mapper layer**: `*AndUser()` methods enforce database-level filtering
+  2. **Service layer**: `*ForUser()` methods provide user-specific business logic
+  3. **Controller layer**: Extracts `userId` from JWT and passes to services
+
+### Admin Data Access
+
+Admin endpoints can access data across all users:
+
+- **Backup/Restore**: Includes data from all users with proper user_id references
+- **User Management**: Admins can create, update, and delete users
+- **Database Operations**: Full database access for backup and restore
+
+---
+
+## Error Handling
+
+### Standard Response Format
+
+**Success Response**:
 ```json
 {
   "code": "OK",
-  "message": "",
-  "data": {
-    "period": "2024-01",
-    "income": 5000.00,
-    "expense": 2500.00,
-    "balance": 2500.00,
-    "transaction_count": 15,
-    "categories": {
-      "Food & Dining": 500.00,
-      "Transportation": 200.00
-    }
-  },
+  "message": "Success",
+  "data": { ... },
   "meta": {},
   "extra": {},
   "errors": []
 }
 ```
 
-### 4. Category Management
+**Error Response**:
+```json
+{
+  "code": "ERROR",
+  "message": "Error message",
+  "data": null,
+  "meta": {},
+  "extra": {},
+  "errors": [
+    {
+      "field": "amount",
+      "message": "Amount must be positive"
+    }
+  ]
+}
+```
 
-Create new controller: `backend/controller/category_controller/`
+### HTTP Status Codes
 
-**Files needed**:
-- `create.go` - Create category
-- `query.go` - List and get by ID
-- `update.go` - Update category
-- `delete.go` - Delete category
-- `stats.go` - Category statistics
+- `200 OK` - Success
+- `201 Created` - Resource created
+- `400 Bad Request` - Invalid input
+- `401 Unauthorized` - Missing or invalid authentication
+- `403 Forbidden` - Insufficient permissions (e.g., non-admin trying to access admin endpoint)
+- `404 Not Found` - Resource not found or not owned by user
+- `500 Internal Server Error` - Server error
 
-### 5. Statistics API
-
-Create new controller: `backend/controller/stats_controller/`
-
-**Aggregation queries needed**:
-- Group by date for trends
-- Group by category for breakdown
-- Sum by type for income vs expense
-- Sort and limit for top expenses
+---
 
 ## Testing
 
-### Manual Testing
+### Authentication Testing
 
 ```bash
-# Start MongoDB
-docker compose up -d mongodb
+# Register new user
+curl -X POST http://localhost:8080/api/open/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","password":"test123","email":"test@example.com"}'
 
-# Start backend
-cd backend
-export MONGO_DB_URI="mongodb://cashlenx:cashlenx123@localhost:27017/cashlenx?authSource=admin"
-go run main.go server start -p 8080
+# Login
+curl -X POST http://localhost:8080/api/open/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","password":"test123"}'
 
-# Test health
-curl http://localhost:8080/api/system/health
-
-# Test version
-curl http://localhost:8080/api/system/version
-
-# Test CORS
-curl -H "Origin: http://localhost:3000" \
-     -H "Access-Control-Request-Method: GET" \
-     -H "Access-Control-Request-Headers: Content-Type" \
-     -X OPTIONS \
-     http://localhost:8080/api/system/health
-
-# Test cash flow
-curl http://localhost:8080/api/cash/date/$(date +%Y-%m-%d)
+# Use token for authenticated requests
+TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+curl -H "Authorization: Bearer $TOKEN" \
+  http://localhost:8080/api/cash
 ```
 
-### Integration Testing
+### Data Isolation Testing
 
-Create test files:
-- `backend/controller/server_test.go`
-- `backend/controller/cash_flow_controller/controller_test.go`
+```bash
+# User A creates transaction
+curl -X POST http://localhost:8080/api/cash/expense \
+  -H "Authorization: Bearer $TOKEN_USER_A" \
+  -H "Content-Type: application/json" \
+  -d '{"amount":50,"category":"Food","description":"Lunch"}'
 
-## Database Schema
-
-### MongoDB Collections
-
-**cash_flows**:
-```javascript
-{
-  _id: ObjectId,
-  amount: Number,
-  date: String (YYYY-MM-DD),
-  category: String,
-  type: String (income/expense),
-  description: String,
-  created_at: Date,
-  updated_at: Date
-}
+# User B cannot access User A's transaction
+curl -H "Authorization: Bearer $TOKEN_USER_B" \
+  http://localhost:8080/api/cash/$TRANSACTION_ID_FROM_USER_A
+# Should return 404 Not Found
 ```
 
-**categories**:
-```javascript
-{
-  _id: ObjectId,
-  name: String,
-  icon: String,
-  color: String,
-  type: String (income/expense),
-  created_at: Date
-}
-```
+---
 
-### MySQL Tables
+## Version History
 
-Already defined in `docker/mysql/init-mysql.sql`
+### v2.0.0 (Current)
+- ✅ User authentication and authorization
+- ✅ User data isolation for cash flows and categories
+- ✅ Reorganized routes into /open and /admin
+- ✅ Admin user management endpoints
+- ✅ Backup/restore with user data support
+- 🚧 Planning statistic module
 
-## Priority Order
+### v1.0.0 (Previous)
+- Basic cash flow and category CRUD
+- No user isolation
+- No authentication
 
-1. **High Priority** (Core functionality):
-   - PUT /api/cash/{id} - Update records
-   - GET /api/cash/range - Date range queries
-   - Category CRUD operations
+---
 
-2. **Medium Priority** (Enhanced features):
-   - Summary endpoints
-   - Statistics API
-   - Category statistics
+## See Also
 
-3. **Low Priority** (Nice to have):
-   - Import/Export API
-   - Backup/Restore
-
-## Notes
-
-- All endpoints should return proper HTTP status codes
-- Use consistent error response format with `errors` array
-- Add input validation
-- Consider pagination for list endpoints
-- Add query parameters for filtering and sorting
-- Document all endpoints with examples
+- [CLI Documentation](./cli.md)
+- [Feature Parity Matrix](./FEATURE_PARITY.md)
+- [Quick Start Guide](./quick_start.md)
+- [Deployment Guide](./deployment_guide.md)

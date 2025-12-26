@@ -26,9 +26,9 @@ func Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Authentication is always enabled
 
-		// Skip authentication for public endpoints
+		// Skip authentication for all public endpoints under /api/open/*
 		path := r.URL.Path
-		if path == "/api/auth/login" || path == "/api/auth/register" || path == "/api/system/health" || path == "/api/system/version" {
+		if strings.HasPrefix(path, "/api/open/") {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -87,7 +87,7 @@ func Auth(next http.Handler) http.Handler {
 		r = r.WithContext(ctx)
 
 		// Check if admin role is required for admin-only routes
-		if strings.HasPrefix(path, "/api/manage/") || strings.HasPrefix(path, "/api/user") {
+		if strings.HasPrefix(path, "/api/admin/") {
 			if claims.Role != "admin" {
 				util.ComposeJSONResponse(w, http.StatusForbidden, errors.NewForbiddenError("admin role required"))
 				return

@@ -27,12 +27,11 @@ func StartServer(port int32) {
 
 	r := mux.NewRouter()
 
-	// Register routes
-	registerSystemRoutes(r)
-	registerUserRoute(r)
-	registerCashRoute(r)
-	registerCategoryRoute(r)
-	registerManageRoute(r)
+	// Register routes with new structure
+	registerOpenRoutes(r)       // Public endpoints (no auth)
+	registerAdminRoutes(r)      // Admin-only endpoints
+	registerCashRoute(r)        // User-specific cash flow endpoints
+	registerCategoryRoute(r)    // User-specific category endpoints
 
 	// Apply middleware
 	handler := middleware.Logging(middleware.Auth(middleware.SchemaValidation(middleware.CORS(r))))
@@ -42,22 +41,31 @@ func StartServer(port int32) {
 	http.ListenAndServe(addr, handler)
 }
 
-func registerSystemRoutes(r *mux.Router) {
-	r.HandleFunc("/api/system/health", healthCheck).Methods("GET")
-	r.HandleFunc("/api/system/version", versionInfo).Methods("GET")
+// registerOpenRoutes registers public endpoints that don't require authentication
+func registerOpenRoutes(r *mux.Router) {
+	// System health and version
+	r.HandleFunc("/api/open/health", healthCheck).Methods("GET")
+	r.HandleFunc("/api/open/version", versionInfo).Methods("GET")
+
+	// Authentication routes
+	r.HandleFunc("/api/open/auth/login", auth_controller.Login).Methods("POST")
+	r.HandleFunc("/api/open/auth/register", auth_controller.Register).Methods("POST")
 }
 
-func registerUserRoute(r *mux.Router) {
-	// User management routes - admin only
-	r.HandleFunc("/api/user", user_controller.Create).Methods("POST")
-	r.HandleFunc("/api/user", user_controller.ListAll).Methods("GET")
-	r.HandleFunc("/api/user/{id}", user_controller.Get).Methods("GET")
-	r.HandleFunc("/api/user/{id}", user_controller.Update).Methods("PUT")
-	r.HandleFunc("/api/user/{id}", user_controller.Delete).Methods("DELETE")
+// registerAdminRoutes registers admin-only endpoints
+func registerAdminRoutes(r *mux.Router) {
+	// User management - admin only
+	r.HandleFunc("/api/admin/user", user_controller.Create).Methods("POST")
+	r.HandleFunc("/api/admin/user", user_controller.ListAll).Methods("GET")
+	r.HandleFunc("/api/admin/user/{id}", user_controller.Get).Methods("GET")
+	r.HandleFunc("/api/admin/user/{id}", user_controller.Update).Methods("PUT")
+	r.HandleFunc("/api/admin/user/{id}", user_controller.Delete).Methods("DELETE")
 
-	// Authentication routes - public
-	r.HandleFunc("/api/auth/login", auth_controller.Login).Methods("POST")
-	r.HandleFunc("/api/auth/register", auth_controller.Register).Methods("POST")
+	// Database management - admin only
+	r.HandleFunc("/api/admin/manage/dump", manage_controller.DumpDatabase).Methods("GET")
+	r.HandleFunc("/api/admin/manage/restore", manage_controller.RestoreDatabase).Methods("POST")
+	r.HandleFunc("/api/admin/manage/export", manage_controller.ExportData).Methods("GET")
+	r.HandleFunc("/api/admin/manage/import", manage_controller.ImportData).Methods("POST")
 }
 
 func registerCashRoute(r *mux.Router) {
@@ -115,16 +123,6 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 	util.ComposeJSONResponse(w, http.StatusOK, response)
 }
 
-func registerManageRoute(r *mux.Router) {
-	// Dump and restore endpoints
-	r.HandleFunc("/api/manage/dump", manage_controller.DumpDatabase).Methods("GET")
-	r.HandleFunc("/api/manage/restore", manage_controller.RestoreDatabase).Methods("POST")
-
-	// Import and export endpoints
-	r.HandleFunc("/api/manage/export", manage_controller.ExportData).Methods("GET")
-	r.HandleFunc("/api/manage/import", manage_controller.ImportData).Methods("POST")
-}
-
 // Version info endpoint
 func versionInfo(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
@@ -132,6 +130,23 @@ func versionInfo(w http.ResponseWriter, r *http.Request) {
 		"name":        "CashLenX API",
 		"description": "Personal finance management API",
 		"endpoints": map[string][]string{
+			"open": {
+				"GET /api/open/health",
+				"GET /api/open/version",
+				"POST /api/open/auth/login",
+				"POST /api/open/auth/register",
+			},
+			"admin": {
+				"POST /api/admin/user",
+				"GET /api/admin/user",
+				"GET /api/admin/user/{id}",
+				"PUT /api/admin/user/{id}",
+				"DELETE /api/admin/user/{id}",
+				"GET /api/admin/manage/dump",
+				"POST /api/admin/manage/restore",
+				"GET /api/admin/manage/export",
+				"POST /api/admin/manage/import",
+			},
 			"cash_flow": {
 				"POST /api/cash/expense",
 				"POST /api/cash/income",
@@ -154,29 +169,9 @@ func versionInfo(w http.ResponseWriter, r *http.Request) {
 				"GET /api/category/{id}",
 				"GET /api/category/name/{name}",
 				"GET /api/category/{parent_id}/children",
+				"GET /api/category/tree",
 				"PUT /api/category/{id}",
 				"DELETE /api/category/{id}",
-			},
-			"manage": {
-				"GET /api/manage/dump",
-				"POST /api/manage/restore",
-				"GET /api/manage/export",
-				"POST /api/manage/import",
-			},
-			"user": {
-				"POST /api/user",
-				"GET /api/user",
-				"GET /api/user/{id}",
-				"PUT /api/user/{id}",
-				"DELETE /api/user/{id}",
-			},
-			"auth": {
-				"POST /api/auth/login",
-				"POST /api/auth/register",
-			},
-			"health": {
-				"GET /api/health",
-				"GET /api/version",
 			},
 		},
 	}

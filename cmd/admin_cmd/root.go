@@ -4,6 +4,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var adminToken string
+
 var AdminCmd = &cobra.Command{
 	Use:   "admin",
 	Short: "Admin-only commands (requires admin privileges)",
@@ -11,11 +13,30 @@ var AdminCmd = &cobra.Command{
 These commands are restricted and mirror the /api/admin/* endpoints.
 
 Available sub-commands:
-  db      - Database operations (connect, dump, restore, seed, truncate)
-  manage  - Data management (backup, restore, import, export, stats, init, reset)`,
+  connect - Test database connection
+  backup  - Create database backup
+  restore - Restore database from backup
+  export  - Export data to Excel
+  import  - Import data from Excel
+  stats   - Show database statistics
+  init    - Initialize with demo data
+  reset   - Clear all data (dangerous!)
+  indexes - Manage database indexes`,
 }
 
 func init() {
-	AdminCmd.AddCommand(dbCmd)
-	AdminCmd.AddCommand(manageCmd)
+	// Add global admin-token flag for dangerous operations
+	AdminCmd.PersistentFlags().StringVarP(
+		&adminToken, "admin-token", "t", "", "Admin token for dangerous operations")
+
+	// Register all admin commands directly
+	AdminCmd.AddCommand(connectCmd)
+	AdminCmd.AddCommand(backupCmd)
+	AdminCmd.AddCommand(restoreBackupCmd)
+	AdminCmd.AddCommand(exportCmd)
+	AdminCmd.AddCommand(importCmd)
+	AdminCmd.AddCommand(statsCmd)
+	AdminCmd.AddCommand(initCmd)
+	AdminCmd.AddCommand(resetCmd)
+	AdminCmd.AddCommand(indexesCmd)
 }

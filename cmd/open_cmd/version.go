@@ -1,4 +1,4 @@
-package system_cmd
+package open_cmd
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ var (
 	GitCommit = "unknown"
 )
 
-var VersionCmd = &cobra.Command{
+var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show version information",
 	Long:  `Display version, build time, and git commit information`,

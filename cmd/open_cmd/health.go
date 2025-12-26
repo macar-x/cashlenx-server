@@ -1,4 +1,4 @@
-package system_cmd
+package open_cmd
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var HealthCmd = &cobra.Command{
+var healthCmd = &cobra.Command{
 	Use:   "health",
 	Short: "Check system health",
 	Long:  `Check if the CashLenX system is running and healthy`,
@@ -18,7 +18,7 @@ var HealthCmd = &cobra.Command{
 			Timeout: 5 * time.Second,
 		}
 
-		resp, err := client.Get("http://localhost:8080/api/system/health")
+		resp, err := client.Get("http://localhost:8080/api/open/health")
 		if err != nil {
 			fmt.Println("❌ System is not healthy: Server is not reachable")
 			fmt.Printf("Error: %v\n", err)

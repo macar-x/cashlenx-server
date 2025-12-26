@@ -1,4 +1,4 @@
-package db_cmd
+package admin_cmd
 
 import (
 	"errors"
@@ -8,16 +8,16 @@ import (
 
 var adminToken string
 
-var DbCmd = &cobra.Command{
+var dbCmd = &cobra.Command{
 	Use:   "db",
-	Short: "database operations",
-	Long: `Database management operations.
+	Short: "Database operations (admin only)",
+	Long: `Database management operations requiring admin privileges.
 
 Available sub-commands:
-  connect - Test database connection
-  dump    - Create database dump
-  restore - Restore database from dump
-  seed    - Seed database with demo data
+  connect  - Test database connection
+  dump     - Create database dump
+  restore  - Restore database from dump
+  seed     - Seed database with demo data
   truncate - Clear all data from database`,
 
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
@@ -32,6 +32,13 @@ Available sub-commands:
 
 func init() {
 	// Add global admin-token flag for dangerous operations
-	DbCmd.PersistentFlags().StringVarP(
+	dbCmd.PersistentFlags().StringVarP(
 		&adminToken, "admin-token", "t", "", "Admin token for dangerous operations")
+
+	// Add all db subcommands
+	dbCmd.AddCommand(connectCmd)
+	dbCmd.AddCommand(dumpCmd)
+	dbCmd.AddCommand(restoreDbCmd)
+	dbCmd.AddCommand(seedCmd)
+	dbCmd.AddCommand(truncateCmd)
 }

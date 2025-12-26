@@ -1,4 +1,4 @@
-package manage_cmd
+package admin_cmd
 
 import (
 	"github.com/macar-x/cashlenx-server/service/manage_service"
@@ -7,15 +7,15 @@ import (
 
 var exportCmd = &cobra.Command{
 	Use:   "export",
-	Short: "export data to excel",
+	Short: "Export data to Excel",
+	Long:  `Export cash flow data to Excel file for the specified date range.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return manage_service.ExportService(fromDate, toDate, filePath)
 	},
 }
 
 func init() {
-	exportCmd.Flags().StringVarP(&fromDate, "from", "f", "", "from date(include), e.x. 19700101")
-	exportCmd.Flags().StringVarP(&toDate, "to", "t", "", "to date(include), e.x. 19700101")
+	exportCmd.Flags().StringVarP(&fromDate, "from", "f", "", "from date (include), e.g. 19700101")
+	exportCmd.Flags().StringVarP(&toDate, "to", "t", "", "to date (include), e.g. 19700101")
 	exportCmd.Flags().StringVarP(&filePath, "output", "o", "", "output path, default ./export.xlsx")
-	ManageCmd.AddCommand(exportCmd)
 }

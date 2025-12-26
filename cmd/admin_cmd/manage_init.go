@@ -1,4 +1,4 @@
-package manage_cmd
+package admin_cmd
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "initialize database with demo data",
+	Short: "Initialize database with demo data",
 	Long: `Initialize the database with demo categories and sample transactions.
 Useful for testing and development.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -24,8 +24,4 @@ Useful for testing and development.`,
 		fmt.Println("  - 15 sample transactions")
 		return nil
 	},
-}
-
-func init() {
-	ManageCmd.AddCommand(initCmd)
 }

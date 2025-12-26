@@ -1,4 +1,4 @@
-package manage_cmd
+package admin_cmd
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 
 var statsCmd = &cobra.Command{
 	Use:   "stats",
-	Short: "show database statistics",
+	Short: "Show database statistics",
 	Long:  `Display statistics about the database including record counts and storage info.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		stats, err := manage_service.GetDatabaseStats()
@@ -32,8 +32,4 @@ var statsCmd = &cobra.Command{
 
 		return nil
 	},
-}
-
-func init() {
-	ManageCmd.AddCommand(statsCmd)
 }

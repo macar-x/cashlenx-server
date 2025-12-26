@@ -1,4 +1,4 @@
-package db_cmd
+package admin_cmd
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 
 var connectCmd = &cobra.Command{
 	Use:   "connect",
-	Short: "test database connection",
+	Short: "Test database connection",
 	Long:  `Test the connection to the configured database and display connection info.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		info, err := db_service.TestConnection()
@@ -27,8 +27,4 @@ var connectCmd = &cobra.Command{
 
 		return nil
 	},
-}
-
-func init() {
-	DbCmd.AddCommand(connectCmd)
 }

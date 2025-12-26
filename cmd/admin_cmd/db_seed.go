@@ -1,4 +1,4 @@
-package db_cmd
+package admin_cmd
 
 import (
 	"fmt"
@@ -9,9 +9,9 @@ import (
 
 var seedCmd = &cobra.Command{
 	Use:   "seed",
-	Short: "seed database with demo data",
+	Short: "Seed database with demo data",
 	Long: `Seed the database with demo categories and sample transactions.
-This is an alias for 'manage init' command.`,
+This is an alias for 'admin manage init' command.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		err := manage_service.InitializeDemoData()
 		if err != nil {
@@ -21,8 +21,4 @@ This is an alias for 'manage init' command.`,
 		fmt.Println("✅ Database seeded with demo data successfully")
 		return nil
 	},
-}
-
-func init() {
-	DbCmd.AddCommand(seedCmd)
 }

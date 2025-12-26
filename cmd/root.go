@@ -6,12 +6,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/macar-x/cashlenx-server/cmd/admin_cmd"
 	"github.com/macar-x/cashlenx-server/cmd/cash_flow_cmd"
 	"github.com/macar-x/cashlenx-server/cmd/category_cmd"
-	"github.com/macar-x/cashlenx-server/cmd/db_cmd"
-	"github.com/macar-x/cashlenx-server/cmd/manage_cmd"
-	"github.com/macar-x/cashlenx-server/cmd/server_cmd"
-	"github.com/macar-x/cashlenx-server/cmd/system_cmd"
+	"github.com/macar-x/cashlenx-server/cmd/open_cmd"
 	"github.com/macar-x/cashlenx-server/util"
 	"github.com/macar-x/cashlenx-server/util/database"
 	"github.com/spf13/cobra"
@@ -66,10 +64,13 @@ func setupGracefulShutdown() {
 }
 
 func init() {
-	rootCmd.AddCommand(server_cmd.ServerCmd)
+	// Public commands (no auth required)
+	rootCmd.AddCommand(open_cmd.OpenCmd)
+
+	// Admin-only commands
+	rootCmd.AddCommand(admin_cmd.AdminCmd)
+
+	// User-specific commands (auth required)
 	rootCmd.AddCommand(cash_flow_cmd.CashCmd)
 	rootCmd.AddCommand(category_cmd.CategoryCmd)
-	rootCmd.AddCommand(manage_cmd.ManageCmd)
-	rootCmd.AddCommand(db_cmd.DbCmd)
-	rootCmd.AddCommand(system_cmd.SystemCmd)
 }

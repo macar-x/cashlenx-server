@@ -1,4 +1,4 @@
-package db_cmd
+package admin_cmd
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ var dumpPath string
 
 var dumpCmd = &cobra.Command{
 	Use:   "dump",
-	Short: "create database dump",
+	Short: "Create database dump",
 	Long: `Create a dump of all database data.
 If no path is specified, creates dump in current directory with timestamp.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -33,6 +33,7 @@ If no path is specified, creates dump in current directory with timestamp.`,
 
 		fmt.Printf("Database dump created successfully: %s\n", dumpPath)
 		fmt.Println("\nStatistics:")
+		fmt.Printf("  Users: %d success, %d failed\n", stats.Users.Success, stats.Users.Failed)
 		fmt.Printf("  Categories: %d success, %d failed\n", stats.Categories.Success, stats.Categories.Failed)
 		fmt.Printf("  Cash Flows: %d success, %d failed\n", stats.CashFlows.Success, stats.CashFlows.Failed)
 		return nil
@@ -42,6 +43,4 @@ If no path is specified, creates dump in current directory with timestamp.`,
 func init() {
 	dumpCmd.Flags().StringVarP(
 		&dumpPath, "output", "o", "", "dump file path (optional, default: cashlenx_dump_TIMESTAMP.json)")
-
-	DbCmd.AddCommand(dumpCmd)
 }

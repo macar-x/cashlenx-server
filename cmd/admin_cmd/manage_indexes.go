@@ -1,4 +1,4 @@
-package manage_cmd
+package admin_cmd
 
 import (
 	"fmt"
@@ -33,8 +33,4 @@ Indexes significantly improve query performance, especially for date range queri
 		fmt.Println("  - Category lookups: 10x faster")
 		fmt.Println("  - Type filtering: 50x faster")
 	},
-}
-
-func init() {
-	ManageCmd.AddCommand(indexesCmd)
 }

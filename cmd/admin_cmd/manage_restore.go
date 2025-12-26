@@ -1,4 +1,4 @@
-package manage_cmd
+package admin_cmd
 
 import (
 	"bufio"
@@ -16,9 +16,9 @@ var (
 	forceRestore bool
 )
 
-var restoreCmd = &cobra.Command{
+var restoreBackupCmd = &cobra.Command{
 	Use:   "restore",
-	Short: "restore database from backup",
+	Short: "Restore database from backup",
 	Long: `Restore database from a backup file.
 WARNING: This will replace all existing data unless --merge is used.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -55,11 +55,10 @@ WARNING: This will replace all existing data unless --merge is used.`,
 }
 
 func init() {
-	restoreCmd.Flags().StringVarP(
+	restoreBackupCmd.Flags().StringVarP(
 		&restorePath, "input", "i", "", "backup file path (required)")
-	restoreCmd.Flags().BoolVarP(
+	restoreBackupCmd.Flags().BoolVarP(
 		&forceRestore, "force", "f", false, "skip confirmation prompt")
 
-	restoreCmd.MarkFlagRequired("input")
-	ManageCmd.AddCommand(restoreCmd)
+	restoreBackupCmd.MarkFlagRequired("input")
 }

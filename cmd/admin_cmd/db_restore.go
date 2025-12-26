@@ -1,4 +1,4 @@
-package db_cmd
+package admin_cmd
 
 import (
 	"bufio"
@@ -17,9 +17,9 @@ var (
 	forceDbRestore bool
 )
 
-var restoreCmd = &cobra.Command{
+var restoreDbCmd = &cobra.Command{
 	Use:   "restore",
-	Short: "restore database from dump",
+	Short: "Restore database from dump",
 	Long: `Restore database from a dump file.
 WARNING: This will replace all existing data!`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -55,6 +55,7 @@ WARNING: This will replace all existing data!`,
 		}
 
 		fmt.Println("\nStatistics:")
+		fmt.Printf("  Users: %d success, %d failed\n", stats.Users.Success, stats.Users.Failed)
 		fmt.Printf("  Categories: %d success, %d failed\n", stats.Categories.Success, stats.Categories.Failed)
 		fmt.Printf("  Cash Flows: %d success, %d failed\n", stats.CashFlows.Success, stats.CashFlows.Failed)
 		return nil
@@ -62,11 +63,10 @@ WARNING: This will replace all existing data!`,
 }
 
 func init() {
-	restoreCmd.Flags().StringVarP(
+	restoreDbCmd.Flags().StringVarP(
 		&dbRestorePath, "input", "i", "", "dump file path (required)")
-	restoreCmd.Flags().BoolVarP(
+	restoreDbCmd.Flags().BoolVarP(
 		&forceDbRestore, "force", "f", false, "skip confirmation prompt")
 
-	restoreCmd.MarkFlagRequired("input")
-	DbCmd.AddCommand(restoreCmd)
+	restoreDbCmd.MarkFlagRequired("input")
 }

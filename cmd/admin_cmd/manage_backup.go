@@ -1,4 +1,4 @@
-package manage_cmd
+package admin_cmd
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ var backupPath string
 
 var backupCmd = &cobra.Command{
 	Use:   "backup",
-	Short: "create database backup",
+	Short: "Create database backup",
 	Long: `Create a backup of all database data.
 If no path is specified, creates backup in current directory with timestamp.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -37,6 +37,4 @@ If no path is specified, creates backup in current directory with timestamp.`,
 func init() {
 	backupCmd.Flags().StringVarP(
 		&backupPath, "output", "o", "", "backup file path (optional, default: cashlenx_backup_TIMESTAMP.json)")
-
-	ManageCmd.AddCommand(backupCmd)
 }

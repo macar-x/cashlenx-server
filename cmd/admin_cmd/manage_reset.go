@@ -1,4 +1,4 @@
-package manage_cmd
+package admin_cmd
 
 import (
 	"bufio"
@@ -14,7 +14,7 @@ var forceReset bool
 
 var resetCmd = &cobra.Command{
 	Use:   "reset",
-	Short: "clear all database data",
+	Short: "Clear all database data",
 	Long: `Clear all data from the database.
 WARNING: This operation cannot be undone. Create a backup first!`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -49,6 +49,4 @@ WARNING: This operation cannot be undone. Create a backup first!`,
 func init() {
 	resetCmd.Flags().BoolVarP(
 		&forceReset, "force", "f", false, "skip confirmation prompt (dangerous!)")
-
-	ManageCmd.AddCommand(resetCmd)
 }

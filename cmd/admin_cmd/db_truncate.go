@@ -1,4 +1,4 @@
-package db_cmd
+package admin_cmd
 
 import (
 	"bufio"
@@ -14,7 +14,7 @@ var forceTruncate bool
 
 var truncateCmd = &cobra.Command{
 	Use:   "truncate",
-	Short: "clear all data from database",
+	Short: "Clear all data from database",
 	Long: `Truncate (clear) all data from the database.
 WARNING: This will delete all cash flows and categories permanently!`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -53,6 +53,4 @@ WARNING: This will delete all cash flows and categories permanently!`,
 func init() {
 	truncateCmd.Flags().BoolVarP(
 		&forceTruncate, "force", "f", false, "skip confirmation prompt")
-
-	DbCmd.AddCommand(truncateCmd)
 }

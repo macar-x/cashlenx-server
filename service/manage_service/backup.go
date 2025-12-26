@@ -8,17 +8,19 @@ import (
 
 	"github.com/macar-x/cashlenx-server/mapper/cash_flow_mapper"
 	"github.com/macar-x/cashlenx-server/mapper/category_mapper"
+	"github.com/macar-x/cashlenx-server/mapper/user_mapper"
 )
 
 // BackupData represents the structure of backup data
 type BackupData struct {
 	Version    string                   `json:"version"`
 	Timestamp  string                   `json:"timestamp"`
-	CashFlows  []map[string]interface{} `json:"cash_flows"`
+	Users      []map[string]interface{} `json:"users"`
 	Categories []map[string]interface{} `json:"categories"`
+	CashFlows  []map[string]interface{} `json:"cash_flows"`
 }
 
-// EntityStats represents statistics for a single entity type (cash_flows or categories)
+// EntityStats represents statistics for a single entity type (cash_flows, categories, or users)
 type EntityStats struct {
 	Success    int      `json:"success"`
 	Failed     int      `json:"failed"`
@@ -27,19 +29,39 @@ type EntityStats struct {
 
 // OperationStats represents comprehensive statistics for an operation (backup/restore/truncate)
 type OperationStats struct {
-	CashFlows  EntityStats `json:"cash_flows"`
+	Users      EntityStats `json:"users"`
 	Categories EntityStats `json:"categories"`
+	CashFlows  EntityStats `json:"cash_flows"`
 }
 
 // CreateBackup creates a backup of all database data
 func CreateBackup(filePath string) (OperationStats, error) {
 	stats := OperationStats{
-		CashFlows:  EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
+		Users:      EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
 		Categories: EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
+		CashFlows:  EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
 	}
 
 	if filePath == "" {
 		return stats, errors.New("file path cannot be empty")
+	}
+
+	// Get all users (no pagination limit - get everything)
+	users := user_mapper.INSTANCE.GetAllUsers(0, 0)
+	stats.Users.Success = len(users)
+
+	// Convert users to map format for JSON serialization
+	userMaps := make([]map[string]interface{}, len(users))
+	for i, user := range users {
+		userMaps[i] = map[string]interface{}{
+			"Id":           user.Id.Hex(),
+			"Username":     user.Username,
+			"PasswordHash": user.PasswordHash,
+			"CreatedAt":    user.CreatedAt,
+			"UpdatedAt":    user.UpdatedAt,
+			"IsActive":     user.IsActive,
+			"Role":         user.Role,
+		}
 	}
 
 	// Get all categories (no pagination limit - get everything)
@@ -51,7 +73,9 @@ func CreateBackup(filePath string) (OperationStats, error) {
 	for i, cat := range categories {
 		categoryMaps[i] = map[string]interface{}{
 			"Id":         cat.Id.Hex(),
+			"UserId":     cat.UserId.Hex(),
 			"Name":       cat.Name,
+			"Type":       cat.Type,
 			"ParentId":   cat.ParentId.Hex(),
 			"Remark":     cat.Remark,
 			"CreateTime": cat.CreateTime,
@@ -68,6 +92,7 @@ func CreateBackup(filePath string) (OperationStats, error) {
 	for i, cf := range cashFlows {
 		cashFlowMaps[i] = map[string]interface{}{
 			"Id":          cf.Id.Hex(),
+			"UserId":      cf.UserId.Hex(),
 			"CategoryId":  cf.CategoryId.Hex(),
 			"BelongsDate": cf.BelongsDate,
 			"FlowType":    cf.FlowType,
@@ -81,10 +106,11 @@ func CreateBackup(filePath string) (OperationStats, error) {
 
 	// Create backup structure
 	backup := BackupData{
-		Version:    "1.0.0",
+		Version:    "2.0.0", // Version updated for user data isolation
 		Timestamp:  time.Now().Format(time.RFC3339),
-		CashFlows:  cashFlowMaps,
+		Users:      userMaps,
 		Categories: categoryMaps,
+		CashFlows:  cashFlowMaps,
 	}
 
 	// Write to file

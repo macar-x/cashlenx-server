@@ -27,6 +27,7 @@ If no path is specified, creates backup in current directory with timestamp.`,
 
 		fmt.Printf("Backup created successfully: %s\n", backupPath)
 		fmt.Println("\nStatistics:")
+		fmt.Printf("  Users: %d success, %d failed\n", stats.Users.Success, stats.Users.Failed)
 		fmt.Printf("  Categories: %d success, %d failed\n", stats.Categories.Success, stats.Categories.Failed)
 		fmt.Printf("  Cash Flows: %d success, %d failed\n", stats.CashFlows.Success, stats.CashFlows.Failed)
 		return nil

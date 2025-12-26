@@ -47,6 +47,7 @@ WARNING: This will replace all existing data unless --merge is used.`,
 
 		fmt.Printf("Database restored successfully from: %s\n", restorePath)
 		fmt.Println("\nStatistics:")
+		fmt.Printf("  Users: %d success, %d failed\n", stats.Users.Success, stats.Users.Failed)
 		fmt.Printf("  Categories: %d success, %d failed\n", stats.Categories.Success, stats.Categories.Failed)
 		fmt.Printf("  Cash Flows: %d success, %d failed\n", stats.CashFlows.Success, stats.CashFlows.Failed)
 		return nil

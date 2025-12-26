@@ -8,6 +8,7 @@ import (
 
 	"github.com/macar-x/cashlenx-server/mapper/cash_flow_mapper"
 	"github.com/macar-x/cashlenx-server/mapper/category_mapper"
+	"github.com/macar-x/cashlenx-server/mapper/user_mapper"
 	"github.com/macar-x/cashlenx-server/model"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -15,8 +16,9 @@ import (
 // RestoreBackup restores database from a backup file
 func RestoreBackup(filePath string) (OperationStats, error) {
 	stats := OperationStats{
-		CashFlows:  EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
+		Users:      EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
 		Categories: EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
+		CashFlows:  EntityStats{Success: 0, Failed: 0, FailedList: []string{}},
 	}
 
 	if filePath == "" {
@@ -38,40 +40,80 @@ func RestoreBackup(filePath string) (OperationStats, error) {
 	}
 
 	// Update total counts for stats
+	totalUsers := len(backup.Users)
 	totalCategories := len(backup.Categories)
 	totalCashFlows := len(backup.CashFlows)
+	stats.Users.Failed = totalUsers
 	stats.Categories.Failed = totalCategories
 	stats.CashFlows.Failed = totalCashFlows
 
-	// Step 1: Clear existing data
+	// Step 0: Clear existing data
 	if _, err := ResetDatabase(); err != nil {
 		return stats, err
+	}
+
+	// Step 1: Insert users from backup (must be first, as categories and cash flows reference users)
+	for _, userMap := range backup.Users {
+		// Parse Id from backup data
+		id, _ := primitive.ObjectIDFromHex(userMap["Id"].(string))
+
+		// Parse timestamps
+		createdAt, _ := time.Parse(time.RFC3339, userMap["CreatedAt"].(string))
+		updatedAt, _ := time.Parse(time.RFC3339, userMap["UpdatedAt"].(string))
+
+		// Create user entity from backup data, preserving all original fields
+		userEntity := model.UserEntity{
+			Id:           id,
+			Username:     userMap["Username"].(string),
+			PasswordHash: userMap["PasswordHash"].(string),
+			CreatedAt:    createdAt,
+			UpdatedAt:    updatedAt,
+			IsActive:     userMap["IsActive"].(bool),
+			Role:         userMap["Role"].(string),
+		}
+
+		// Insert user
+		if userId := user_mapper.INSTANCE.InsertUserByEntity(userEntity); userId != "" {
+			stats.Users.Success++
+			stats.Users.Failed--
+		}
 	}
 
 	// Step 2: Insert categories from backup
 	for _, catMap := range backup.Categories {
 		// Parse Id from backup data
 		id, _ := primitive.ObjectIDFromHex(catMap["Id"].(string))
-		
+
+		// Parse UserId from backup data (with fallback for old backups without UserId)
+		var userId primitive.ObjectID
+		if userIdStr, ok := catMap["UserId"].(string); ok && userIdStr != "" {
+			userId, _ = primitive.ObjectIDFromHex(userIdStr)
+		}
+
 		// Parse ParentId from backup data
 		parentId, _ := primitive.ObjectIDFromHex(catMap["ParentId"].(string))
-		
+
 		// Parse CreateTime and ModifyTime
 		createTime, _ := time.Parse(time.RFC3339, catMap["CreateTime"].(string))
 		modifyTime, _ := time.Parse(time.RFC3339, catMap["ModifyTime"].(string))
-		
+
+		// Get Type with fallback for old backups
+		categoryType, _ := catMap["Type"].(string)
+
 		// Create category entity from backup data, preserving all original fields
 		catEntity := model.CategoryEntity{
 			Id:         id,
+			UserId:     userId,
 			ParentId:   parentId,
 			Name:       catMap["Name"].(string),
+			Type:       categoryType,
 			Remark:     catMap["Remark"].(string),
 			CreateTime: createTime,
 			ModifyTime: modifyTime,
 		}
 
 		// Insert category
-		if id := category_mapper.INSTANCE.InsertCategoryByEntity(catEntity); id != "" {
+		if catId := category_mapper.INSTANCE.InsertCategoryByEntity(catEntity); catId != "" {
 			stats.Categories.Success++
 			stats.Categories.Failed--
 		}
@@ -82,20 +124,27 @@ func RestoreBackup(filePath string) (OperationStats, error) {
 	for i, cfMap := range backup.CashFlows {
 		// Parse Id from backup data
 		id, _ := primitive.ObjectIDFromHex(cfMap["Id"].(string))
-		
+
+		// Parse UserId from backup data (with fallback for old backups without UserId)
+		var userId primitive.ObjectID
+		if userIdStr, ok := cfMap["UserId"].(string); ok && userIdStr != "" {
+			userId, _ = primitive.ObjectIDFromHex(userIdStr)
+		}
+
 		// Parse belongs_date string to time.Time
 		belongsDate, _ := time.Parse(time.RFC3339, cfMap["BelongsDate"].(string))
 
 		// Parse CategoryId from backup data
 		categoryId, _ := primitive.ObjectIDFromHex(cfMap["CategoryId"].(string))
-		
+
 		// Parse CreateTime and ModifyTime
 		createTime, _ := time.Parse(time.RFC3339, cfMap["CreateTime"].(string))
 		modifyTime, _ := time.Parse(time.RFC3339, cfMap["ModifyTime"].(string))
-		
+
 		// Create cash flow entity from backup data, preserving all original fields
 		cfEntity := model.CashFlowEntity{
 			Id:          id,
+			UserId:      userId,
 			CategoryId:  categoryId,
 			BelongsDate: belongsDate,
 			FlowType:    cfMap["FlowType"].(string),

@@ -13,15 +13,10 @@ var AdminCmd = &cobra.Command{
 These commands are restricted and mirror the /api/admin/* endpoints.
 
 Available sub-commands:
-  connect - Test database connection
   backup  - Create database backup
   restore - Restore database from backup
-  export  - Export data to Excel
-  import  - Import data from Excel
-  stats   - Show database statistics
-  init    - Initialize with demo data
-  reset   - Clear all data (dangerous!)
-  indexes - Manage database indexes`,
+  export  - Export data to Excel (TODO: move to user statistic module with data isolation)
+  import  - Import data from Excel (TODO: move to user statistic module with data isolation)`,
 }
 
 func init() {
@@ -30,13 +25,8 @@ func init() {
 		&adminToken, "admin-token", "t", "", "Admin token for dangerous operations")
 
 	// Register all admin commands directly
-	AdminCmd.AddCommand(connectCmd)
 	AdminCmd.AddCommand(backupCmd)
 	AdminCmd.AddCommand(restoreBackupCmd)
 	AdminCmd.AddCommand(exportCmd)
 	AdminCmd.AddCommand(importCmd)
-	AdminCmd.AddCommand(statsCmd)
-	AdminCmd.AddCommand(initCmd)
-	AdminCmd.AddCommand(resetCmd)
-	AdminCmd.AddCommand(indexesCmd)
 }

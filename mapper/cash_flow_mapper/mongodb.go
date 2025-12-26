@@ -371,6 +371,188 @@ func (CashFlowMongoDbMapper) TruncateCashFlows() error {
 	return nil
 }
 
+// User-specific methods for data isolation
+
+func (CashFlowMongoDbMapper) GetCashFlowByObjectIdAndUser(plainId string, userId primitive.ObjectID) model.CashFlowEntity {
+	objectId := util.Convert2ObjectId(plainId)
+	if plainId == "" || objectId == primitive.NilObjectID {
+		util.Logger.Warnln("cash_flow's id is not acceptable")
+		return model.CashFlowEntity{}
+	}
+
+	filter := bson.D{
+		primitive.E{Key: "_id", Value: objectId},
+		primitive.E{Key: "user_id", Value: userId},
+	}
+
+	database.OpenMongoDbConnection(database.CashFlowTableName)
+	defer database.CloseMongoDbConnection()
+	return convertBsonM2CashFlowEntity(database.GetOneInMongoDB(filter))
+}
+
+func (CashFlowMongoDbMapper) GetCashFlowsByBelongsDateAndUser(belongsDate time.Time, userId primitive.ObjectID) []model.CashFlowEntity {
+	filter := bson.D{
+		primitive.E{Key: "belongs_date", Value: belongsDate},
+		primitive.E{Key: "user_id", Value: userId},
+	}
+
+	database.OpenMongoDbConnection(database.CashFlowTableName)
+	defer database.CloseMongoDbConnection()
+
+	var targetEntityList []model.CashFlowEntity
+	queryResultList := database.GetManyInMongoDB(filter)
+	for _, queryResult := range queryResultList {
+		targetEntityList = append(targetEntityList, convertBsonM2CashFlowEntity(queryResult))
+	}
+	return targetEntityList
+}
+
+func (CashFlowMongoDbMapper) GetCashFlowsByDateRangeAndUser(from, to time.Time, userId primitive.ObjectID) []model.CashFlowEntity {
+	filter := bson.D{
+		primitive.E{Key: "belongs_date", Value: bson.M{
+			"$gte": from,
+			"$lte": to,
+		}},
+		primitive.E{Key: "user_id", Value: userId},
+	}
+
+	database.OpenMongoDbConnection(database.CashFlowTableName)
+	defer database.CloseMongoDbConnection()
+
+	var targetEntityList []model.CashFlowEntity
+	queryResultList := database.GetManyInMongoDB(filter)
+	for _, queryResult := range queryResultList {
+		targetEntityList = append(targetEntityList, convertBsonM2CashFlowEntity(queryResult))
+	}
+	return targetEntityList
+}
+
+func (CashFlowMongoDbMapper) GetCashFlowsByCategoryIdAndUser(categoryPlainId string, userId primitive.ObjectID) []model.CashFlowEntity {
+	categoryObjectId := util.Convert2ObjectId(categoryPlainId)
+	if categoryPlainId == "" || categoryObjectId == primitive.NilObjectID {
+		util.Logger.Warnln("category's id is not acceptable")
+		return nil
+	}
+
+	filter := bson.D{
+		primitive.E{Key: "category_id", Value: categoryObjectId},
+		primitive.E{Key: "user_id", Value: userId},
+	}
+
+	database.OpenMongoDbConnection(database.CashFlowTableName)
+	defer database.CloseMongoDbConnection()
+
+	var targetEntityList []model.CashFlowEntity
+	queryResultList := database.GetManyInMongoDB(filter)
+	for _, queryResult := range queryResultList {
+		targetEntityList = append(targetEntityList, convertBsonM2CashFlowEntity(queryResult))
+	}
+	return targetEntityList
+}
+
+func (CashFlowMongoDbMapper) GetAllCashFlowsByUser(userId primitive.ObjectID, limit, offset int) []model.CashFlowEntity {
+	database.OpenMongoDbConnection(database.CashFlowTableName)
+	defer database.CloseMongoDbConnection()
+
+	collection := database.GetMongoCollection(database.CashFlowTableName)
+
+	filter := bson.D{
+		primitive.E{Key: "user_id", Value: userId},
+	}
+
+	ctx := context.TODO()
+	findOptions := options.Find()
+	if limit > 0 {
+		findOptions.SetLimit(int64(limit))
+	}
+	if offset > 0 {
+		findOptions.SetSkip(int64(offset))
+	}
+	// Sort by belongs_date descending (newest first)
+	findOptions.SetSort(bson.D{primitive.E{Key: "belongs_date", Value: -1}})
+
+	cursor, err := collection.Find(ctx, filter, findOptions)
+	if err != nil {
+		util.Logger.Errorw("query all by user failed", "error", err)
+		return []model.CashFlowEntity{}
+	}
+	defer cursor.Close(ctx)
+
+	var targetEntityList []model.CashFlowEntity
+	for cursor.Next(ctx) {
+		var bsonM bson.M
+		if err := cursor.Decode(&bsonM); err != nil {
+			util.Logger.Errorw("decode failed", "error", err)
+			continue
+		}
+		targetEntityList = append(targetEntityList, convertBsonM2CashFlowEntity(bsonM))
+	}
+
+	return targetEntityList
+}
+
+func (CashFlowMongoDbMapper) CountAllCashFlowsByUser(userId primitive.ObjectID) int64 {
+	filter := bson.D{
+		primitive.E{Key: "user_id", Value: userId},
+	}
+
+	database.OpenMongoDbConnection(database.CashFlowTableName)
+	defer database.CloseMongoDbConnection()
+
+	return database.CountInMongoDB(filter)
+}
+
+func (CashFlowMongoDbMapper) DeleteCashFlowByObjectIdAndUser(plainId string, userId primitive.ObjectID) model.CashFlowEntity {
+	objectId := util.Convert2ObjectId(plainId)
+	if plainId == "" || objectId == primitive.NilObjectID {
+		util.Logger.Warnln("cash_flow's id is not acceptable")
+		return model.CashFlowEntity{}
+	}
+
+	filter := bson.D{
+		primitive.E{Key: "_id", Value: objectId},
+		primitive.E{Key: "user_id", Value: userId},
+	}
+
+	database.OpenMongoDbConnection(database.CashFlowTableName)
+	defer database.CloseMongoDbConnection()
+	targetEntity := convertBsonM2CashFlowEntity(database.GetOneInMongoDB(filter))
+	if targetEntity.IsEmpty() {
+		util.Logger.Infoln("cash_flow is not exist or does not belong to user")
+		return model.CashFlowEntity{}
+	}
+	rowsAffected := database.DeleteManyInMongoDB(filter)
+	if rowsAffected != 1 {
+		util.Logger.Errorw("delete failed", "rows_affected", rowsAffected)
+		return model.CashFlowEntity{}
+	}
+	return targetEntity
+}
+
+func (CashFlowMongoDbMapper) DeleteCashFlowsByBelongsDateAndUser(belongsDate time.Time, userId primitive.ObjectID) []model.CashFlowEntity {
+	filter := bson.D{
+		primitive.E{Key: "belongs_date", Value: belongsDate},
+		primitive.E{Key: "user_id", Value: userId},
+	}
+
+	cashFlowList := INSTANCE.GetCashFlowsByBelongsDateAndUser(belongsDate, userId)
+	if cashFlowList == nil {
+		util.Logger.Infoln("no cash_flow(s) found")
+		return []model.CashFlowEntity{}
+	}
+
+	database.OpenMongoDbConnection(database.CashFlowTableName)
+	defer database.CloseMongoDbConnection()
+
+	rowsAffected := database.DeleteManyInMongoDB(filter)
+	if rowsAffected != int64(len(cashFlowList)) {
+		util.Logger.Errorw("delete failed", "rows_affected", rowsAffected)
+	}
+	return cashFlowList
+}
+
+// Helper functions
+
 func convertCashFlowEntity2BsonD(entity model.CashFlowEntity) bson.D {
 	// Generate a new Id automatically if it's empty
 	if entity.Id == primitive.NilObjectID {

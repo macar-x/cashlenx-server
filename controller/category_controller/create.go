@@ -20,9 +20,9 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 从请求上下文中获取用户ID
-	userId := r.Context().Value("user_id")
-	if userId == nil {
+	// Get user ID from request context
+	userIdStr, ok := r.Context().Value("user_id").(string)
+	if !ok || userIdStr == "" {
 		util.ComposeJSONResponse(w, http.StatusUnauthorized, map[string]interface{}{
 			"code":    http.StatusUnauthorized,
 			"message": "user not authenticated",
@@ -30,17 +30,8 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 验证用户ID格式
-	userIdStr, ok := userId.(string)
-	if !ok {
-		util.ComposeJSONResponse(w, http.StatusUnauthorized, map[string]interface{}{
-			"code":    http.StatusUnauthorized,
-			"message": "invalid user ID format",
-		})
-		return
-	}
-
-	categoryId, err := category_service.CreateService(userIdStr, req.ParentId, req.Name, req.Type)
+	// Create category using user-specific service
+	createdCategory, err := category_service.CreateForUser(req.Name, req.Type, req.Remark, req.ParentId, userIdStr)
 	if err != nil {
 		util.ComposeJSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
 			"code":    http.StatusInternalServerError,
@@ -51,8 +42,6 @@ func Create(w http.ResponseWriter, r *http.Request) {
 
 	util.ComposeJSONResponse(w, http.StatusOK, map[string]interface{}{
 		"code": http.StatusOK,
-		"data": map[string]interface{}{
-			"category_id": categoryId,
-		},
+		"data": createdCategory,
 	})
 }

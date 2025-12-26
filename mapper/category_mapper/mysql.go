@@ -295,6 +295,370 @@ func (CategoryMySqlMapper) CountAllCategories() int64 {
 	return count
 }
 
+// User-specific methods for data isolation
+
+func (CategoryMySqlMapper) GetCategoriesByUserAndType(userId primitive.ObjectID, categoryType string, limit, offset int) ([]model.CategoryEntity, error) {
+	var sqlString bytes.Buffer
+	sqlString.WriteString("SELECT ID, USER_ID, PARENT_ID, NAME, TYPE, REMARK, CREATE_TIME, MODIFY_TIME FROM ")
+	sqlString.WriteString(database.CategoryTableName)
+	sqlString.WriteString(" WHERE USER_ID = ? AND TYPE = ? ORDER BY NAME ASC")
+
+	if limit > 0 {
+		sqlString.WriteString(" LIMIT ? OFFSET ?")
+	}
+
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	var rows *sql.Rows
+	var err error
+
+	if limit > 0 {
+		rows, err = connection.Query(sqlString.String(), userId.Hex(), categoryType, limit, offset)
+	} else {
+		rows, err = connection.Query(sqlString.String(), userId.Hex(), categoryType)
+	}
+
+	if err != nil {
+		util.Logger.Errorw("query categories by user and type failed", "error", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []model.CategoryEntity
+	for rows.Next() {
+		categories = append(categories, convertRow2CategoryEntityWithUser(rows))
+	}
+
+	return categories, nil
+}
+
+func (CategoryMySqlMapper) CountCategoriesByUserAndType(userId primitive.ObjectID, categoryType string) (int64, error) {
+	var sqlString bytes.Buffer
+	sqlString.WriteString("SELECT COUNT(1) FROM ")
+	sqlString.WriteString(database.CategoryTableName)
+	sqlString.WriteString(" WHERE USER_ID = ? AND TYPE = ?")
+
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	rows, err := connection.Query(sqlString.String(), userId.Hex(), categoryType)
+	if err != nil {
+		util.Logger.Errorw("count categories by user and type failed", "error", err)
+		return 0, err
+	}
+	defer rows.Close()
+
+	var count int64
+	if rows.Next() {
+		if err = rows.Scan(&count); err != nil {
+			util.Logger.Errorw("parse count failed", "error", err)
+			return 0, err
+		}
+	}
+	return count, nil
+}
+
+func (CategoryMySqlMapper) GetRootCategoriesByUser(userId primitive.ObjectID) ([]model.CategoryEntity, error) {
+	var sqlString bytes.Buffer
+	sqlString.WriteString("SELECT ID, USER_ID, PARENT_ID, NAME, TYPE, REMARK, CREATE_TIME, MODIFY_TIME FROM ")
+	sqlString.WriteString(database.CategoryTableName)
+	sqlString.WriteString(" WHERE USER_ID = ? AND (PARENT_ID = '' OR PARENT_ID IS NULL)")
+
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	rows, err := connection.Query(sqlString.String(), userId.Hex())
+	if err != nil {
+		util.Logger.Errorw("query root categories by user failed", "error", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []model.CategoryEntity
+	for rows.Next() {
+		categories = append(categories, convertRow2CategoryEntityWithUser(rows))
+	}
+
+	return categories, nil
+}
+
+func (CategoryMySqlMapper) GetRootCategoriesByUserAndType(userId primitive.ObjectID, categoryType string) ([]model.CategoryEntity, error) {
+	var sqlString bytes.Buffer
+	sqlString.WriteString("SELECT ID, USER_ID, PARENT_ID, NAME, TYPE, REMARK, CREATE_TIME, MODIFY_TIME FROM ")
+	sqlString.WriteString(database.CategoryTableName)
+	sqlString.WriteString(" WHERE USER_ID = ? AND TYPE = ? AND (PARENT_ID = '' OR PARENT_ID IS NULL)")
+
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	rows, err := connection.Query(sqlString.String(), userId.Hex(), categoryType)
+	if err != nil {
+		util.Logger.Errorw("query root categories by user and type failed", "error", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []model.CategoryEntity
+	for rows.Next() {
+		categories = append(categories, convertRow2CategoryEntityWithUser(rows))
+	}
+
+	return categories, nil
+}
+
+func (CategoryMySqlMapper) GetCategoriesByParentIdAndUser(parentId primitive.ObjectID, userId primitive.ObjectID) ([]model.CategoryEntity, error) {
+	var sqlString bytes.Buffer
+	sqlString.WriteString("SELECT ID, USER_ID, PARENT_ID, NAME, TYPE, REMARK, CREATE_TIME, MODIFY_TIME FROM ")
+	sqlString.WriteString(database.CategoryTableName)
+	sqlString.WriteString(" WHERE PARENT_ID = ? AND USER_ID = ?")
+
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	rows, err := connection.Query(sqlString.String(), parentId.Hex(), userId.Hex())
+	if err != nil {
+		util.Logger.Errorw("query categories by parent and user failed", "error", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []model.CategoryEntity
+	for rows.Next() {
+		categories = append(categories, convertRow2CategoryEntityWithUser(rows))
+	}
+
+	return categories, nil
+}
+
+func (CategoryMySqlMapper) GetCategoriesByParentIdUserAndType(parentId primitive.ObjectID, userId primitive.ObjectID, categoryType string) ([]model.CategoryEntity, error) {
+	var sqlString bytes.Buffer
+	sqlString.WriteString("SELECT ID, USER_ID, PARENT_ID, NAME, TYPE, REMARK, CREATE_TIME, MODIFY_TIME FROM ")
+	sqlString.WriteString(database.CategoryTableName)
+	sqlString.WriteString(" WHERE PARENT_ID = ? AND USER_ID = ? AND TYPE = ?")
+
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	rows, err := connection.Query(sqlString.String(), parentId.Hex(), userId.Hex(), categoryType)
+	if err != nil {
+		util.Logger.Errorw("query categories by parent, user and type failed", "error", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []model.CategoryEntity
+	for rows.Next() {
+		categories = append(categories, convertRow2CategoryEntityWithUser(rows))
+	}
+
+	return categories, nil
+}
+
+func (CategoryMySqlMapper) GetCategoryByObjectIdAndUser(plainId string, userId primitive.ObjectID) model.CategoryEntity {
+	var sqlString bytes.Buffer
+	sqlString.WriteString("SELECT ID, USER_ID, PARENT_ID, NAME, TYPE, REMARK, CREATE_TIME, MODIFY_TIME FROM ")
+	sqlString.WriteString(database.CategoryTableName)
+	sqlString.WriteString(" WHERE ID = ? AND USER_ID = ?")
+
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	rows, err := connection.Query(sqlString.String(), plainId, userId.Hex())
+	if err != nil {
+		util.Logger.Errorw("query category by id and user failed", "error", err)
+		return model.CategoryEntity{}
+	}
+	defer rows.Close()
+
+	var categoryEntity model.CategoryEntity
+	if rows.Next() {
+		categoryEntity = convertRow2CategoryEntityWithUser(rows)
+	}
+	return categoryEntity
+}
+
+func (CategoryMySqlMapper) GetCategoryByNameAndUser(categoryName string, userId primitive.ObjectID) model.CategoryEntity {
+	var sqlString bytes.Buffer
+	sqlString.WriteString("SELECT ID, USER_ID, PARENT_ID, NAME, TYPE, REMARK, CREATE_TIME, MODIFY_TIME FROM ")
+	sqlString.WriteString(database.CategoryTableName)
+	sqlString.WriteString(" WHERE NAME = ? AND USER_ID = ?")
+
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	rows, err := connection.Query(sqlString.String(), categoryName, userId.Hex())
+	if err != nil {
+		util.Logger.Errorw("query category by name and user failed", "error", err)
+		return model.CategoryEntity{}
+	}
+	defer rows.Close()
+
+	var categoryEntity model.CategoryEntity
+	if rows.Next() {
+		categoryEntity = convertRow2CategoryEntityWithUser(rows)
+	}
+	return categoryEntity
+}
+
+func (CategoryMySqlMapper) DeleteCategoryByObjectIdAndUser(plainId string, userId primitive.ObjectID) model.CategoryEntity {
+	targetEntity := INSTANCE.GetCategoryByObjectIdAndUser(plainId, userId)
+	if targetEntity.IsEmpty() {
+		util.Logger.Infoln("category is not exist or access denied")
+		return model.CategoryEntity{}
+	}
+
+	// can not delete a category that has referred child-categories (user-specific check)
+	childCategories, _ := INSTANCE.GetCategoriesByParentIdAndUser(targetEntity.Id, userId)
+	if len(childCategories) != 0 {
+		util.Logger.Infoln("can not delete a category which has child-categories refer to")
+		return model.CategoryEntity{}
+	}
+
+	var sqlString bytes.Buffer
+	sqlString.WriteString("DELETE FROM ")
+	sqlString.WriteString(database.CategoryTableName)
+	sqlString.WriteString(" WHERE ID = ? AND USER_ID = ?")
+
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	statement, err := connection.Prepare(sqlString.String())
+	if err != nil {
+		util.Logger.Errorw("delete failed", "error", err)
+		return model.CategoryEntity{}
+	}
+
+	result, err := statement.Exec(plainId, userId.Hex())
+	if err != nil {
+		util.Logger.Errorw("delete failed", "error", err)
+		return model.CategoryEntity{}
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil || rowsAffected != 1 {
+		util.Logger.Errorw("delete failed", "error", err, "rows_affected", rowsAffected)
+		return model.CategoryEntity{}
+	}
+
+	// Invalidate cache on delete
+	cache.GetCategoryCache().Clear()
+
+	return targetEntity
+}
+
+func (CategoryMySqlMapper) UpdateCategoryByEntityAndUser(plainId string, updatedEntity model.CategoryEntity, userId primitive.ObjectID) model.CategoryEntity {
+	targetEntity := INSTANCE.GetCategoryByObjectIdAndUser(plainId, userId)
+	if targetEntity.IsEmpty() {
+		util.Logger.Infoln("category is not exist or access denied")
+		return model.CategoryEntity{}
+	}
+
+	// Update fields from updatedEntity while preserving ID, UserId, and CreateTime
+	updatedEntity.Id = targetEntity.Id
+	updatedEntity.UserId = userId
+	updatedEntity.CreateTime = targetEntity.CreateTime
+	updatedEntity.ModifyTime = time.Now().UTC()
+
+	var sqlString bytes.Buffer
+	sqlString.WriteString("UPDATE ")
+	sqlString.WriteString(database.CategoryTableName)
+	sqlString.WriteString(" SET PARENT_ID = ?, ")
+	sqlString.WriteString(" NAME = ?, ")
+	sqlString.WriteString(" TYPE = ?, ")
+	sqlString.WriteString(" REMARK = ?, ")
+	sqlString.WriteString(" MODIFY_TIME = ? ")
+	sqlString.WriteString(" WHERE ID = ? AND USER_ID = ?")
+
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	statement, err := connection.Prepare(sqlString.String())
+	if err != nil {
+		util.Logger.Errorw("update failed", "error", err)
+		return model.CategoryEntity{}
+	}
+
+	result, err := statement.Exec(updatedEntity.ParentId.Hex(), updatedEntity.Name, updatedEntity.Type,
+		updatedEntity.Remark, updatedEntity.ModifyTime, updatedEntity.Id.Hex(), userId.Hex())
+	if err != nil {
+		util.Logger.Errorw("update failed", "error", err)
+		return model.CategoryEntity{}
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil || rowsAffected != 1 {
+		util.Logger.Errorw("update failed", "error", err, "rows_affected", rowsAffected)
+		return model.CategoryEntity{}
+	}
+
+	// Invalidate cache on update
+	cache.GetCategoryCache().Clear()
+
+	return updatedEntity
+}
+
+func (CategoryMySqlMapper) GetAllCategoriesByUser(userId primitive.ObjectID, limit, offset int) []model.CategoryEntity {
+	var sqlString bytes.Buffer
+	sqlString.WriteString("SELECT ID, USER_ID, PARENT_ID, NAME, TYPE, REMARK, CREATE_TIME, MODIFY_TIME FROM ")
+	sqlString.WriteString(database.CategoryTableName)
+	sqlString.WriteString(" WHERE USER_ID = ? ORDER BY NAME ASC")
+
+	if limit > 0 {
+		sqlString.WriteString(" LIMIT ? OFFSET ?")
+	}
+
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	var rows *sql.Rows
+	var err error
+
+	if limit > 0 {
+		rows, err = connection.Query(sqlString.String(), userId.Hex(), limit, offset)
+	} else {
+		rows, err = connection.Query(sqlString.String(), userId.Hex())
+	}
+
+	if err != nil {
+		util.Logger.Errorw("query all categories by user failed", "error", err)
+		return []model.CategoryEntity{}
+	}
+	defer rows.Close()
+
+	var targetEntityList []model.CategoryEntity
+	for rows.Next() {
+		targetEntityList = append(targetEntityList, convertRow2CategoryEntityWithUser(rows))
+	}
+	return targetEntityList
+}
+
+func (CategoryMySqlMapper) CountAllCategoriesByUser(userId primitive.ObjectID) int64 {
+	var sqlString bytes.Buffer
+	sqlString.WriteString("SELECT COUNT(1) FROM ")
+	sqlString.WriteString(database.CategoryTableName)
+	sqlString.WriteString(" WHERE USER_ID = ?")
+
+	connection := database.GetMySqlConnection()
+	defer database.CloseMySqlConnection()
+
+	rows, err := connection.Query(sqlString.String(), userId.Hex())
+	if err != nil {
+		util.Logger.Errorw("count all categories by user failed", "error", err)
+		return 0
+	}
+	defer rows.Close()
+
+	var count int64
+	if rows.Next() {
+		if err = rows.Scan(&count); err != nil {
+			util.Logger.Errorw("parse count failed", "error", err)
+			return 0
+		}
+	}
+	return count
+}
+
 func (CategoryMySqlMapper) TruncateCategories() error {
 	var sqlString bytes.Buffer
 	sqlString.WriteString("TRUNCATE TABLE ")
@@ -332,5 +696,27 @@ func convertRow2CategoryEntity(rows *sql.Rows) model.CategoryEntity {
 		ParentId: util.Convert2ObjectId(parentId),
 		Name:     name,
 		Type:     categoryType,
+	}
+}
+
+// convertRow2CategoryEntityWithUser converts SQL rows to CategoryEntity including all fields
+func convertRow2CategoryEntityWithUser(rows *sql.Rows) model.CategoryEntity {
+	var id, userId, parentId, name, categoryType, remark string
+	var createTime, modifyTime time.Time
+
+	err := rows.Scan(&id, &userId, &parentId, &name, &categoryType, &remark, &createTime, &modifyTime)
+	if err != nil {
+		util.Logger.Errorw("convert into entity failed", "error", err)
+	}
+
+	return model.CategoryEntity{
+		Id:         util.Convert2ObjectId(id),
+		UserId:     util.Convert2ObjectId(userId),
+		ParentId:   util.Convert2ObjectId(parentId),
+		Name:       name,
+		Type:       categoryType,
+		Remark:     remark,
+		CreateTime: createTime,
+		ModifyTime: modifyTime,
 	}
 }

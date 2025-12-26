@@ -42,13 +42,13 @@ func ListAll(w http.ResponseWriter, r *http.Request) {
 	// Get category type filter
 	categoryType := r.URL.Query().Get("type")
 
-	// Call service to get paginated results with user ID and type filter
-	categories, totalCount, err := category_service.ListAllService(userId, categoryType, limit, offset)
+	// Call user-specific service to get paginated results
+	categories, totalCount, err := category_service.QueryAllForUser(userId, categoryType, limit, offset)
 	if err != nil {
 		util.ComposeJSONResponse(w, http.StatusInternalServerError, map[string]interface{}{
-	"error": err.Error(),
-	"message": "Failed to retrieve categories",
-})
+			"error":   err.Error(),
+			"message": "Failed to retrieve categories",
+		})
 		return
 	}
 

@@ -359,6 +359,171 @@ func (CategoryMongoDbMapper) TruncateCategories() error {
 	return nil
 }
 
+// GetCategoryByObjectIdAndUser retrieves a category by ID, ensuring it belongs to the user
+func (CategoryMongoDbMapper) GetCategoryByObjectIdAndUser(plainId string, userId primitive.ObjectID) model.CategoryEntity {
+	objectId := util.Convert2ObjectId(plainId)
+	if plainId == "" || objectId == primitive.NilObjectID {
+		util.Logger.Warnln("category's id is not acceptable")
+		return model.CategoryEntity{}
+	}
+
+	filter := bson.D{
+		primitive.E{Key: "_id", Value: objectId},
+		primitive.E{Key: "user_id", Value: userId},
+	}
+
+	database.OpenMongoDbConnection(database.CategoryTableName)
+	defer database.CloseMongoDbConnection()
+	return convertBsonM2CategoryEntity(database.GetOneInMongoDB(filter))
+}
+
+// GetCategoryByNameAndUser retrieves a category by name, ensuring it belongs to the user
+func (CategoryMongoDbMapper) GetCategoryByNameAndUser(categoryName string, userId primitive.ObjectID) model.CategoryEntity {
+	filter := bson.D{
+		primitive.E{Key: "name", Value: categoryName},
+		primitive.E{Key: "user_id", Value: userId},
+	}
+
+	database.OpenMongoDbConnection(database.CategoryTableName)
+	defer database.CloseMongoDbConnection()
+	return convertBsonM2CategoryEntity(database.GetOneInMongoDB(filter))
+}
+
+// DeleteCategoryByObjectIdAndUser deletes a category by ID, ensuring it belongs to the user
+func (CategoryMongoDbMapper) DeleteCategoryByObjectIdAndUser(plainId string, userId primitive.ObjectID) model.CategoryEntity {
+	objectId := util.Convert2ObjectId(plainId)
+	if plainId == "" || objectId == primitive.NilObjectID {
+		util.Logger.Warnln("category's id is not acceptable")
+		return model.CategoryEntity{}
+	}
+
+	filter := bson.D{
+		primitive.E{Key: "_id", Value: objectId},
+		primitive.E{Key: "user_id", Value: userId},
+	}
+
+	database.OpenMongoDbConnection(database.CategoryTableName)
+	defer database.CloseMongoDbConnection()
+
+	targetEntity := convertBsonM2CategoryEntity(database.GetOneInMongoDB(filter))
+	if targetEntity.IsEmpty() {
+		util.Logger.Infoln("category is not exist or access denied")
+		return model.CategoryEntity{}
+	}
+
+	// can not delete a category that has referred child-categories (user-specific check)
+	childCategories, _ := INSTANCE.GetCategoriesByParentIdAndUser(objectId, userId)
+	if len(childCategories) != 0 {
+		util.Logger.Infoln("can not delete a category which has child-categories refer to")
+		return model.CategoryEntity{}
+	}
+
+	rowsAffected := database.DeleteManyInMongoDB(filter)
+	if rowsAffected != 1 {
+		util.Logger.Errorw("delete failed", "rows_affected", rowsAffected)
+		return model.CategoryEntity{}
+	}
+
+	// Invalidate cache on delete
+	cache.GetCategoryCache().Clear()
+
+	return targetEntity
+}
+
+// UpdateCategoryByEntityAndUser updates a category by ID, ensuring it belongs to the user
+func (CategoryMongoDbMapper) UpdateCategoryByEntityAndUser(plainId string, updatedEntity model.CategoryEntity, userId primitive.ObjectID) model.CategoryEntity {
+	objectId := util.Convert2ObjectId(plainId)
+	if plainId == "" || objectId == primitive.NilObjectID {
+		util.Logger.Warnln("category's id is not acceptable")
+		return model.CategoryEntity{}
+	}
+
+	filter := bson.D{
+		primitive.E{Key: "_id", Value: objectId},
+		primitive.E{Key: "user_id", Value: userId},
+	}
+
+	database.OpenMongoDbConnection(database.CategoryTableName)
+	defer database.CloseMongoDbConnection()
+
+	targetEntity := convertBsonM2CategoryEntity(database.GetOneInMongoDB(filter))
+	if targetEntity.IsEmpty() {
+		util.Logger.Infoln("category is not exist or access denied")
+		return model.CategoryEntity{}
+	}
+
+	// Update fields from updatedEntity while preserving ID, UserId, and CreateTime
+	updatedEntity.Id = targetEntity.Id
+	updatedEntity.UserId = userId
+	updatedEntity.CreateTime = targetEntity.CreateTime
+	updatedEntity.ModifyTime = time.Now().UTC()
+
+	rowsAffected := database.UpdateManyInMongoDB(filter, convertCategoryEntity2BsonD(updatedEntity))
+	if rowsAffected != 1 {
+		util.Logger.Errorw("update failed", "rows_affected", rowsAffected)
+		return model.CategoryEntity{}
+	}
+
+	// Invalidate cache on update
+	cache.GetCategoryCache().Clear()
+
+	return updatedEntity
+}
+
+// GetAllCategoriesByUser retrieves all categories for a specific user with pagination
+func (CategoryMongoDbMapper) GetAllCategoriesByUser(userId primitive.ObjectID, limit, offset int) []model.CategoryEntity {
+	database.OpenMongoDbConnection(database.CategoryTableName)
+	defer database.CloseMongoDbConnection()
+
+	collection := database.GetMongoCollection(database.CategoryTableName)
+
+	filter := bson.D{
+		primitive.E{Key: "user_id", Value: userId},
+	}
+
+	ctx := context.TODO()
+	findOptions := options.Find()
+	if limit > 0 {
+		findOptions.SetLimit(int64(limit))
+	}
+	if offset > 0 {
+		findOptions.SetSkip(int64(offset))
+	}
+	// Sort by name ascending
+	findOptions.SetSort(bson.D{primitive.E{Key: "name", Value: 1}})
+
+	cursor, err := collection.Find(ctx, filter, findOptions)
+	if err != nil {
+		util.Logger.Errorw("query all categories by user failed", "error", err)
+		return []model.CategoryEntity{}
+	}
+	defer cursor.Close(ctx)
+
+	var targetEntityList []model.CategoryEntity
+	for cursor.Next(ctx) {
+		var bsonM bson.M
+		if err := cursor.Decode(&bsonM); err != nil {
+			util.Logger.Errorw("decode failed", "error", err)
+			continue
+		}
+		targetEntityList = append(targetEntityList, convertBsonM2CategoryEntity(bsonM))
+	}
+
+	return targetEntityList
+}
+
+// CountAllCategoriesByUser counts all categories for a specific user
+func (CategoryMongoDbMapper) CountAllCategoriesByUser(userId primitive.ObjectID) int64 {
+	filter := bson.D{
+		primitive.E{Key: "user_id", Value: userId},
+	}
+
+	database.OpenMongoDbConnection(database.CategoryTableName)
+	defer database.CloseMongoDbConnection()
+
+	return database.CountInMongoDB(filter)
+}
+
 func convertCategoryEntity2BsonD(entity model.CategoryEntity) bson.D {
 	// Generate a new Id automatically if it's empty
 	if entity.Id == primitive.NilObjectID {

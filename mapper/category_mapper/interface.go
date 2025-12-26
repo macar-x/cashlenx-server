@@ -25,6 +25,13 @@ type CategoryMapper interface {
 	GetRootCategoriesByUserAndType(userId primitive.ObjectID, categoryType string) ([]model.CategoryEntity, error)
 	GetCategoriesByParentIdAndUser(parentId primitive.ObjectID, userId primitive.ObjectID) ([]model.CategoryEntity, error)
 	GetCategoriesByParentIdUserAndType(parentId primitive.ObjectID, userId primitive.ObjectID, categoryType string) ([]model.CategoryEntity, error)
+	// Additional user-specific methods for data isolation
+	GetCategoryByObjectIdAndUser(plainId string, userId primitive.ObjectID) model.CategoryEntity
+	GetCategoryByNameAndUser(categoryName string, userId primitive.ObjectID) model.CategoryEntity
+	DeleteCategoryByObjectIdAndUser(plainId string, userId primitive.ObjectID) model.CategoryEntity
+	UpdateCategoryByEntityAndUser(plainId string, updatedEntity model.CategoryEntity, userId primitive.ObjectID) model.CategoryEntity
+	GetAllCategoriesByUser(userId primitive.ObjectID, limit, offset int) []model.CategoryEntity
+	CountAllCategoriesByUser(userId primitive.ObjectID) int64
 }
 
 func init() {

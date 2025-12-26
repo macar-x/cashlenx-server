@@ -11,6 +11,13 @@ import (
 
 // UpdateById updates a category by ID
 func UpdateById(w http.ResponseWriter, r *http.Request) {
+	// Get user ID from request context
+	userId, ok := r.Context().Value("user_id").(string)
+	if !ok || userId == "" {
+		util.ComposeJSONResponse(w, http.StatusUnauthorized, errors.NewUnauthorizedError("user not authenticated"))
+		return
+	}
+
 	vars := mux.Vars(r)
 	plainId := vars["id"]
 
@@ -30,25 +37,18 @@ func UpdateById(w http.ResponseWriter, r *http.Request) {
 	parentPlainId, _ := requestBody["parent_id"].(string)
 	categoryName, _ := requestBody["name"].(string)
 	categoryType, _ := requestBody["type"].(string)
+	remark, _ := requestBody["remark"].(string)
 
-	// Call service to update
-	err := category_service.UpdateService(plainId, parentPlainId, categoryName, categoryType)
+	// Call user-specific service to update
+	updatedCategory, err := category_service.UpdateByIdForUser(plainId, categoryName, categoryType, remark, parentPlainId, userId)
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
+		if err.Error() == "category not found or access denied" {
+			util.ComposeJSONResponse(w, http.StatusNotFound, errors.NewNotFoundError(err.Error()))
+		} else {
+			util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
+		}
 		return
 	}
 
-	// Get the updated category entity
-	updatedCategory, err := category_service.QueryService(plainId, "", "")
-	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	if len(updatedCategory) == 0 {
-		util.ComposeJSONResponse(w, http.StatusInternalServerError, errors.NewInternalError("failed to retrieve updated category", nil))
-		return
-	}
-
-	util.ComposeJSONResponse(w, http.StatusOK, updatedCategory[0])
+	util.ComposeJSONResponse(w, http.StatusOK, updatedCategory)
 }

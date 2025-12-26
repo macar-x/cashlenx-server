@@ -11,6 +11,14 @@ import (
 
 // ListAll returns paginated list of all cash flows with filtering
 func ListAll(w http.ResponseWriter, r *http.Request) {
+	// Get user ID from request context (set by Auth middleware)
+	userId, ok := r.Context().Value("user_id").(string)
+	if !ok || userId == "" {
+		response := model.NewErrorResponse("UNAUTHORIZED", "user not authenticated")
+		util.ComposeJSONResponse(w, http.StatusUnauthorized, response)
+		return
+	}
+
 	// Parse query parameters for pagination and filtering
 	limitStr := r.URL.Query().Get("limit")
 	offsetStr := r.URL.Query().Get("offset")
@@ -46,8 +54,9 @@ func ListAll(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Call service to get paginated and filtered results
-	cashFlows, totalCount, err := cash_flow_service.QueryAll(
+	// Call user-specific service to get paginated and filtered results
+	cashFlows, totalCount, err := cash_flow_service.QueryAllForUser(
+		userId,
 		cashType,
 		categoryId,
 		description,

@@ -12,6 +12,13 @@ import (
 
 // UpdateById updates a cash flow record by ID
 func UpdateById(w http.ResponseWriter, r *http.Request) {
+	// Get user ID from request context
+	userId, ok := r.Context().Value("user_id").(string)
+	if !ok || userId == "" {
+		util.ComposeJSONResponse(w, http.StatusUnauthorized, errors.NewUnauthorizedError("user not authenticated"))
+		return
+	}
+
 	vars := mux.Vars(r)
 	plainId := vars["id"]
 	if plainId == "" {
@@ -41,10 +48,14 @@ func UpdateById(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Call service to update
-	updatedEntity, err := cash_flow_service.UpdateById(plainId, belongsDate, categoryName, amount, description)
+	// Call user-specific service to update
+	updatedEntity, err := cash_flow_service.UpdateByIdForUser(plainId, belongsDate, categoryName, amount, description, userId)
 	if err != nil {
-		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
+		if err.Error() == "cash_flow not found or access denied" {
+			util.ComposeJSONResponse(w, http.StatusNotFound, errors.NewNotFoundError(err.Error()))
+		} else {
+			util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
+		}
 		return
 	}
 

@@ -11,6 +11,13 @@ import (
 
 // GetDailySummary returns summary for a specific day
 func GetDailySummary(w http.ResponseWriter, r *http.Request) {
+	// Get user ID from request context
+	userId, ok := r.Context().Value("user_id").(string)
+	if !ok || userId == "" {
+		util.ComposeJSONResponse(w, http.StatusUnauthorized, errors.NewUnauthorizedError("user not authenticated"))
+		return
+	}
+
 	vars := mux.Vars(r)
 	date := vars["date"]
 
@@ -19,7 +26,7 @@ func GetDailySummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	summary, err := cash_flow_service.GetSummary("daily", date)
+	summary, err := cash_flow_service.GetSummaryForUser("daily", date, userId)
 	if err != nil {
 		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
@@ -30,6 +37,13 @@ func GetDailySummary(w http.ResponseWriter, r *http.Request) {
 
 // GetMonthlySummary returns summary for a specific month (YYYYMM format)
 func GetMonthlySummary(w http.ResponseWriter, r *http.Request) {
+	// Get user ID from request context
+	userId, ok := r.Context().Value("user_id").(string)
+	if !ok || userId == "" {
+		util.ComposeJSONResponse(w, http.StatusUnauthorized, errors.NewUnauthorizedError("user not authenticated"))
+		return
+	}
+
 	vars := mux.Vars(r)
 	month := vars["month"]
 
@@ -38,7 +52,7 @@ func GetMonthlySummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	summary, err := cash_flow_service.GetSummary("monthly", month)
+	summary, err := cash_flow_service.GetSummaryForUser("monthly", month, userId)
 	if err != nil {
 		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return
@@ -49,6 +63,13 @@ func GetMonthlySummary(w http.ResponseWriter, r *http.Request) {
 
 // GetYearlySummary returns summary for a specific year (YYYY format)
 func GetYearlySummary(w http.ResponseWriter, r *http.Request) {
+	// Get user ID from request context
+	userId, ok := r.Context().Value("user_id").(string)
+	if !ok || userId == "" {
+		util.ComposeJSONResponse(w, http.StatusUnauthorized, errors.NewUnauthorizedError("user not authenticated"))
+		return
+	}
+
 	vars := mux.Vars(r)
 	year := vars["year"]
 
@@ -57,7 +78,7 @@ func GetYearlySummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	summary, err := cash_flow_service.GetSummary("yearly", year)
+	summary, err := cash_flow_service.GetSummaryForUser("yearly", year, userId)
 	if err != nil {
 		util.ComposeJSONResponse(w, http.StatusInternalServerError, err)
 		return

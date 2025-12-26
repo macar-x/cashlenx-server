@@ -310,3 +310,97 @@ func UpdateByIdForUser(plainId, belongsDate, categoryName string, amount float64
 
 	return updatedEntity, nil
 }
+
+// Summary represents financial summary data
+type Summary struct {
+	TotalIncome       float64            `json:"total_income"`
+	TotalExpense      float64            `json:"total_expense"`
+	Balance           float64            `json:"balance"`
+	TransactionCount  int                `json:"transaction_count"`
+	CategoryBreakdown map[string]float64 `json:"category_breakdown"`
+}
+
+// GetSummaryForUser returns financial summary for a given period for a specific user
+func GetSummaryForUser(period, date string, userId string) (*Summary, error) {
+	validPeriods := map[string]bool{
+		"daily":   true,
+		"monthly": true,
+		"yearly":  true,
+	}
+
+	if !validPeriods[period] {
+		return nil, errors.New("invalid period: must be daily, monthly, or yearly")
+	}
+
+	// Validate and convert userId
+	userObjectId := util.Convert2ObjectId(userId)
+	if userObjectId == primitive.NilObjectID {
+		return nil, errors.New("invalid user ID")
+	}
+
+	var fromDate, toDate time.Time
+	var err error
+
+	// Parse date based on period
+	switch period {
+	case "daily":
+		// Date format: YYYY-MM-DD or YYYYMMDD
+		parsedDate, err := util.ParseDate(date)
+		if err != nil {
+			return nil, errors.New("invalid date format for daily")
+		}
+		fromDate = time.Date(parsedDate.Year(), parsedDate.Month(), parsedDate.Day(), 0, 0, 0, 0, time.UTC)
+		toDate = fromDate
+	case "monthly":
+		// Date format: YYYY-MM or YYYYMM
+		var parsedDate time.Time
+		if strings.Contains(date, "-") {
+			parsedDate, err = time.Parse("2006-01", date)
+		} else if len(date) == 6 {
+			parsedDate, err = time.Parse("200601", date)
+		} else {
+			return nil, errors.New("invalid date format for monthly, use YYYY-MM or YYYYMM")
+		}
+		if err != nil {
+			return nil, errors.New("invalid date format for monthly")
+		}
+		fromDate = time.Date(parsedDate.Year(), parsedDate.Month(), 1, 0, 0, 0, 0, time.UTC)
+		toDate = fromDate.AddDate(0, 1, -1) // Last day of month
+	case "yearly":
+		// Date format: YYYY
+		parsedDate, err := time.Parse("2006", date)
+		if err != nil {
+			return nil, errors.New("invalid date format for yearly, use YYYY")
+		}
+		fromDate = time.Date(parsedDate.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
+		toDate = fromDate.AddDate(1, 0, -1) // Last day of year
+	}
+
+	// Query transactions for period using user-specific methods
+	summary := &Summary{
+		CategoryBreakdown: make(map[string]float64),
+	}
+
+	// Use date range query for efficiency instead of iterating day by day
+	cashFlows := cash_flow_mapper.INSTANCE.GetCashFlowsByDateRangeAndUser(fromDate, toDate, userObjectId)
+
+	for _, cashFlow := range cashFlows {
+		summary.TransactionCount++
+
+		if cashFlow.FlowType == model.FlowTypeIncome {
+			summary.TotalIncome += cashFlow.Amount
+		} else {
+			summary.TotalExpense += cashFlow.Amount
+		}
+
+		// Get category name for breakdown
+		category := category_mapper.INSTANCE.GetCategoryByObjectId(cashFlow.CategoryId.Hex())
+		if !category.IsEmpty() {
+			summary.CategoryBreakdown[category.Name] += cashFlow.Amount
+		}
+	}
+
+	summary.Balance = summary.TotalIncome - summary.TotalExpense
+
+	return summary, nil
+}

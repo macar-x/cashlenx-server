@@ -10,6 +10,7 @@ import (
 	"github.com/macar-x/cashlenx-server/cmd/cash_flow_cmd"
 	"github.com/macar-x/cashlenx-server/cmd/category_cmd"
 	"github.com/macar-x/cashlenx-server/cmd/open_cmd"
+	"github.com/macar-x/cashlenx-server/cmd/statistic_cmd"
 	"github.com/macar-x/cashlenx-server/util"
 	"github.com/macar-x/cashlenx-server/util/database"
 	"github.com/spf13/cobra"
@@ -73,4 +74,5 @@ func init() {
 	// User-specific commands (auth required)
 	rootCmd.AddCommand(cash_flow_cmd.CashCmd)
 	rootCmd.AddCommand(category_cmd.CategoryCmd)
+	rootCmd.AddCommand(statistic_cmd.StatisticCmd)
 }

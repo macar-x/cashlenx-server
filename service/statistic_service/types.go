@@ -24,11 +24,11 @@ type CategoryBreakdownItem struct {
 
 // Breakdown represents category breakdown analysis
 type Breakdown struct {
-	Period             string                  `json:"period"`
-	TotalExpense       float64                 `json:"total_expense"`
-	TotalIncome        float64                 `json:"total_income"`
-	ExpenseCategories  []CategoryBreakdownItem `json:"expense_categories"`
-	IncomeCategories   []CategoryBreakdownItem `json:"income_categories"`
+	Period            string                  `json:"period"`
+	TotalExpense      float64                 `json:"total_expense"`
+	TotalIncome       float64                 `json:"total_income"`
+	ExpenseCategories []CategoryBreakdownItem `json:"expense_categories"`
+	IncomeCategories  []CategoryBreakdownItem `json:"income_categories"`
 }
 
 // TrendDataPoint represents a single data point in the trend
@@ -48,10 +48,10 @@ type TrendAnalysis struct {
 
 // Trends represents spending trends over time
 type Trends struct {
-	Period     string            `json:"period"`
-	PeriodType string            `json:"period_type"`
-	DataPoints []TrendDataPoint  `json:"data_points"`
-	Trends     TrendAnalysis     `json:"trends"`
+	Period     string           `json:"period"`
+	PeriodType string           `json:"period_type"`
+	DataPoints []TrendDataPoint `json:"data_points"`
+	Trends     TrendAnalysis    `json:"trends"`
 }
 
 // TopExpense represents a single top expense

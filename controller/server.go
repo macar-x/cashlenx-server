@@ -9,6 +9,7 @@ import (
 	"github.com/macar-x/cashlenx-server/controller/cash_flow_controller"
 	"github.com/macar-x/cashlenx-server/controller/category_controller"
 	"github.com/macar-x/cashlenx-server/controller/manage_controller"
+	"github.com/macar-x/cashlenx-server/controller/statistic_controller"
 	"github.com/macar-x/cashlenx-server/controller/user_controller"
 	"github.com/macar-x/cashlenx-server/middleware"
 	"github.com/macar-x/cashlenx-server/model"
@@ -32,6 +33,7 @@ func StartServer(port int32) {
 	registerAdminRoutes(r)      // Admin-only endpoints
 	registerCashRoute(r)        // User-specific cash flow endpoints
 	registerCategoryRoute(r)    // User-specific category endpoints
+	registerStatisticRoute(r)   // User-specific statistic endpoints
 
 	// Apply middleware
 	handler := middleware.Logging(middleware.Auth(middleware.SchemaValidation(middleware.CORS(r))))
@@ -113,6 +115,32 @@ func registerCategoryRoute(r *mux.Router) {
 	r.HandleFunc("/api/category/{id}", category_controller.DeleteById).Methods("DELETE")
 }
 
+func registerStatisticRoute(r *mux.Router) {
+	// Export/Import user-specific data
+	r.HandleFunc("/api/statistic/export", statistic_controller.ExportData).Methods("GET")
+	r.HandleFunc("/api/statistic/import", statistic_controller.ImportData).Methods("POST")
+
+	// Summary endpoints
+	r.HandleFunc("/api/statistic/summary/daily/{date}", statistic_controller.GetDailySummary).Methods("GET")
+	r.HandleFunc("/api/statistic/summary/monthly/{month}", statistic_controller.GetMonthlySummary).Methods("GET")
+	r.HandleFunc("/api/statistic/summary/yearly/{year}", statistic_controller.GetYearlySummary).Methods("GET")
+
+	// Breakdown endpoints
+	r.HandleFunc("/api/statistic/breakdown/daily/{date}", statistic_controller.GetDailyBreakdown).Methods("GET")
+	r.HandleFunc("/api/statistic/breakdown/monthly/{month}", statistic_controller.GetMonthlyBreakdown).Methods("GET")
+	r.HandleFunc("/api/statistic/breakdown/yearly/{year}", statistic_controller.GetYearlyBreakdown).Methods("GET")
+
+	// Trends endpoints
+	r.HandleFunc("/api/statistic/trends/daily/{date}", statistic_controller.GetDailyTrends).Methods("GET")
+	r.HandleFunc("/api/statistic/trends/monthly/{month}", statistic_controller.GetMonthlyTrends).Methods("GET")
+	r.HandleFunc("/api/statistic/trends/yearly/{year}", statistic_controller.GetYearlyTrends).Methods("GET")
+
+	// Top expenses endpoints
+	r.HandleFunc("/api/statistic/top/daily/{date}", statistic_controller.GetDailyTopExpenses).Methods("GET")
+	r.HandleFunc("/api/statistic/top/monthly/{month}", statistic_controller.GetMonthlyTopExpenses).Methods("GET")
+	r.HandleFunc("/api/statistic/top/yearly/{year}", statistic_controller.GetYearlyTopExpenses).Methods("GET")
+}
+
 // Health check endpoint
 func healthCheck(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
@@ -172,6 +200,22 @@ func versionInfo(w http.ResponseWriter, r *http.Request) {
 				"GET /api/category/tree",
 				"PUT /api/category/{id}",
 				"DELETE /api/category/{id}",
+			},
+			"statistic": {
+				"GET /api/statistic/export?from_date=YYYYMMDD&to_date=YYYYMMDD&file_path=path",
+				"POST /api/statistic/import?file_path=path",
+				"GET /api/statistic/summary/daily/{date}",
+				"GET /api/statistic/summary/monthly/{month}",
+				"GET /api/statistic/summary/yearly/{year}",
+				"GET /api/statistic/breakdown/daily/{date}",
+				"GET /api/statistic/breakdown/monthly/{month}",
+				"GET /api/statistic/breakdown/yearly/{year}",
+				"GET /api/statistic/trends/daily/{date}",
+				"GET /api/statistic/trends/monthly/{month}",
+				"GET /api/statistic/trends/yearly/{year}",
+				"GET /api/statistic/top/daily/{date}?limit=10",
+				"GET /api/statistic/top/monthly/{month}?limit=10",
+				"GET /api/statistic/top/yearly/{year}?limit=10",
 			},
 		},
 	}
